@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="raceresults:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/raceresults_jar</output-path>
+    <root id="archive" name="raceresults.jar">
+      <element id="module-output" name="raceresults" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../newwidgets/out/artifacts/mywidgets_jar/mywidgets.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

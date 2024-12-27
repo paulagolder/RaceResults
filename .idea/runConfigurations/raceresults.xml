@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="raceresults" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.lerot.raceresults.mainrace_gui" />
+    <module name="raceresults" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
