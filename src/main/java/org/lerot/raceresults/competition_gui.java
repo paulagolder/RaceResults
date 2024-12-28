@@ -20,6 +20,7 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
 {
 
     private final jswHorizontalPanel racedayspanel;
+    private final jswHorizontalPanel scorespanel;
     private final jswHorizontalPanel racedayheader;
     private competition currentcomp;
 
@@ -36,6 +37,8 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         add(" FILLW ", racedayheader);
         racedayspanel = displayraces();
         add(" FILLH ", racedayspanel);
+        scorespanel = displayscores();
+      //  add(" FILLH ", scorespanel);
         revalidate();
         repaint();
     }
@@ -43,11 +46,11 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
     private jswHorizontalPanel displayraces()
     {
         jswHorizontalPanel racespanel = new jswHorizontalPanel("races", false, false);
-        racespanel.add(" FILLH ", currentcomp.displayrankcolumn( smalltable1styles()));
+        racespanel.add(" FILLW ", currentcomp.displayrankcolumn( smalltable1styles()));
         for (int i = 0; i < currentcomp.racedayfilenames.size(); i++)
         {
             racedaymatrix raceday = currentcomp.getracedaymatrix(i);
-            racespanel.add(" FILLH ", raceday.displayraceresults(this, smalltable1styles(), i));
+            racespanel.add(" FILLW ", raceday.displayraceresults(this, smalltable1styles(), i));
         }
         return racespanel;
     }
@@ -126,6 +129,15 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         return racedayheader;
     }
 
+    public jswHorizontalPanel displaysailheader()
+    {
+        jswHorizontalPanel sailheader = new jswHorizontalPanel("RaceHeader", true, false);
+        jswLabel label00 = new jswLabel(" Sail Number ");
+        label00.applyStyle(mainrace_gui.defaultStyles().getStyle("largetext"));
+        sailheader.applyStyle();
+        return sailheader;
+    }
+
 
     public void actionPerformed(ActionEvent e)
     {
@@ -195,7 +207,7 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
                 racedayheader.add(" FILLW ", displayheader());
                 racedayspanel.removeAll();
               //  racedayspanel.add("FILLW FILLH ", displayraces());
-                racedayspanel.add("FILLW FILLH ", displayscores());
+                racedayspanel.add("FILLW ", displayscores());
                 revalidate();
             }
         }

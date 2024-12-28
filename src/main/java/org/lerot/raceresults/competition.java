@@ -8,6 +8,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -95,6 +96,13 @@ public class competition
     {
         jswVerticalPanel leftcolumn = new jswVerticalPanel("Rank", false, false);
         leftcolumn.setStyleAttribute("borderwidth", 2);
+        leftcolumn.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
+        jswHorizontalPanel leftheader = new jswHorizontalPanel("heading", false, false);
+        jswLabel label00 = new jswLabel(" Rank ");
+        label00.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
+        leftheader.add(" height=40 ", label00);
+        leftcolumn.add(" FILLW FILLH middle ", leftheader);
+
         jswTable datagrid = new jswTable(null, "form1", tablestyles);
         datagrid.addCell(new jswLabel("corner"), 0, 0);
 
@@ -103,8 +111,8 @@ public class competition
         {
             datagrid.addCell(new jswLabel(ranklist.get(r )), r+1, 0);
         }
-        leftcolumn.add(" FILLW FILLH middle ", datagrid);
-
+        leftcolumn.add(" FILLH ", datagrid);
+        leftcolumn.setPadding(5, 5, 5, 5);
         return leftcolumn;
     }
 
