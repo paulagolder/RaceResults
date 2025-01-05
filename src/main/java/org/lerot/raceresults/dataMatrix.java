@@ -34,46 +34,76 @@ public class dataMatrix
     {
         int ncols = nc;
         int nrows = nr;
+        Random rn = new Random();
         data = new Vector<Vector<String>>();
-        Vector<Integer> root= new Vector<Integer>();
-        for (int r = 1; r < nrows+1; r++)
+        Vector<Integer> root = new Vector<Integer>();
+        for (int r = 1; r < nrows + 1; r++)
         {
-            root.add(r);
+            int j = rn.nextInt(10) + 1;
+            root.add(r + j * 10);
         }
-
-
         for (int c = 0; c < ncols; c++)
         {
             Collections.shuffle(root);
-            colname.add("Race " + ((char)(65+c)));
+            colname.add("Race " + ((char) (65 + c)));
             coltype.add("string");
             Vector<String> coldata = new Vector<String>();
             for (int r = 0; r < nrows; r++)
             {
-                coldata.add(" "+root.get(r));
+                coldata.add(" " + root.get(r));
             }
             data.add(coldata);
         }
         for (int r = 0; r < nrows; r++)
         {
-            rowname.add("Rank " + (r+1));
+            rowname.add("Rank" + utils.pad(r + 1));
         }
+    }
+
+    public dataMatrix(int nc, Vector<String> saillist)
+    {
+        int ncols = nc;
+        int nrows = saillist.size();
+        Random rn = new Random();
+        data = new Vector<Vector<String>>();
+        for (int c = 0; c < ncols; c++)
+        {
+            Vector<String> root = new Vector<String>();
+            for (int r = 0; r < nrows; r++)
+            {
+                root.add(saillist.get(r));
+            }
+            Collections.shuffle(root);
+            colname.add("Race " + ((char) (65 + c)));
+            coltype.add("string");
+            data.add(root);
+        }
+        for (int r = 0; r < nrows; r++)
+        {
+            rowname.add("Rank" + utils.pad(r + 1));
+        }
+    }
+
+    public static dataMatrix demo(int ncols, int nrows)
+    {
+        dataMatrix dm = new dataMatrix(ncols, nrows);
+        return dm;
     }
 
     public void printToXML(BufferedWriter bw) throws IOException
     {
-        bw.write( "<colnames>\n");
-        for(String aname : colname)
+        bw.write("<colnames>\n");
+        for (String aname : colname)
         {
-            bw.write( "<cell colname=\""+aname+"\"/>\n");
+            bw.write("<cell colname=\"" + aname + "\"/>\n");
         }
-        bw.write( "</colnames>\n");
-        bw.write( "<rownames>\n");
-        for(String aname : rowname)
+        bw.write("</colnames>\n");
+        bw.write("<rownames>\n");
+        for (String aname : rowname)
         {
-            bw.write( "<cell rowname =\""+aname+"\"/>\n");
+            bw.write("<cell rowname =\"" + aname + "\"/>\n");
         }
-        bw.write( "</rownames>\n");
+        bw.write("</rownames>\n");
         int ncols = colname.size();
 
         for (int c = 0; c < ncols; c++)
@@ -93,29 +123,26 @@ public class dataMatrix
     {
         int ncols = colname.size();
         int nrows = rowname.size();
-        bw.write( "<table>\n");
-        bw.write("<tr>\n<th> </th><th  colspan="+ncols+ ">"+ boatclass+" "+racedate +"</th>\n</tr>");
+        bw.write("<table>\n");
+        bw.write("<tr>\n<th> </th><th  colspan=" + ncols + ">" + boatclass + " " + racedate + "</th>\n</tr>");
 
         bw.write("<tr>\n<th> </th>\n");
         for (int c = 0; c < ncols; c++)
         {
-        bw.write("<th>"+colname.get(c)+"</th>");
+            bw.write("<th>" + colname.get(c) + "</th>");
         }
         bw.write("\n</tr>\n");
         for (int r = 0; r < nrows; r++)
         {
-            bw.write("<tr>\n<td>"+rowname.get(r)+"</td>\n");
+            bw.write("<tr>\n<td>" + rowname.get(r) + "</td>\n");
             for (int c = 0; c < ncols; c++)
             {
-                    bw.write("<td >"+ data.get(c).get(r) + "</td>");
+                bw.write("<td >" + data.get(c).get(r) + "</td>");
             }
             bw.write("\n</tr>\n");
         }
         bw.write("</table>\n");
     }
-
-
-
 
     public Document readXML(String fileNameWithPath)
     {
@@ -183,13 +210,6 @@ public class dataMatrix
         }
     }
 
-    public static dataMatrix demo(int ncols, int nrows)
-    {
-        dataMatrix dm = new dataMatrix(ncols, nrows);
-        return dm;
-    }
-
-
     public int getIntValue(int c, int r)
     {
         return Integer.parseInt(data.get(c).get(r));
@@ -197,10 +217,10 @@ public class dataMatrix
 
     public String getValue(int c, int r)
     {
-        if(data.get(c) == null)
+        if (data.get(c) == null)
             return null;
         else
-          return data.get(c).get(r);
+            return data.get(c).get(r);
     }
 
     public int getncols()
@@ -216,9 +236,9 @@ public class dataMatrix
     public void loadresults(Element rootelement)
     {
 
-     //   Element dm = ((Element) children.item(0));
+        //   Element dm = ((Element) children.item(0));
         NodeList colnames = rootelement.getElementsByTagName("colnames");
-        if(colnames.getLength()>0)
+        if (colnames.getLength() > 0)
         {
             Element acolname = (Element) colnames.item(0);
             NodeList cells = acolname.getElementsByTagName("cell");
@@ -231,7 +251,7 @@ public class dataMatrix
         }
         NodeList rownames = rootelement.getElementsByTagName("rownames");
         NodeList cells;
-        if(rownames.getLength()>0)
+        if (rownames.getLength() > 0)
         {
             cells = ((Element) rownames.item(0)).getElementsByTagName("cell");
             for (int r = 0; r < cells.getLength(); r++)
@@ -247,18 +267,18 @@ public class dataMatrix
             Element acol = (Element) cols.item(c);
             String cname = acol.getAttribute("name");
             String ctype = acol.getAttribute("type");
-            if(!colname.contains(cname))
+            if (!colname.contains(cname))
             {
                 colname.add(cname);
             }
             int cnum = colname.indexOf(cname);
-            coltype.add(cnum,ctype);
+            coltype.add(cnum, ctype);
             cells = acol.getElementsByTagName("cell");
             for (int r = 0; r < cells.getLength(); r++)
             {
                 Element acell = (Element) cells.item(r);
                 String rname = acell.getAttribute("rowname");
-                if(!rowname.contains(rname))
+                if (!rowname.contains(rname))
                 {
                     rowname.add(rname);
                 }
@@ -287,21 +307,22 @@ public class dataMatrix
             col.setSize(rowname.size());
         }
         int rown = rowname.indexOf(rname);
-        if(col.size() > rown)
+        if (col.size() > rown)
         {
 
             col.set(rown, val);
-        }
-         else
+        } else
             col.add(rown, val);
     }
 
 
     public void setCell(int c, int r, String value)
     {
-        Vector<String> col = data.get(c-1);
-        col.set(r-1, value);
+        Vector<String> col = data.get(c - 1);
+        col.set(r - 1, value);
     }
+
+
 
     public Vector<String> getValuevector()
     {
@@ -310,15 +331,15 @@ public class dataMatrix
         {
             for (int c = 0; c < getncols(); c++)
             {
-                String token = "    "+data.get(c).get(r);
+                String token = "    " + data.get(c).get(r);
                 String tlabel = token.substring(token.length() - 4);
-                if (! values.contains(tlabel) && !tlabel.equalsIgnoreCase("    "))
+                if (!values.contains(tlabel) && !tlabel.equalsIgnoreCase("    "))
                 {
                     values.add(tlabel);
                 }
             }
         }
-        Collections.sort(values);
+       // Collections.sort(values);
         return values;
     }
 
@@ -328,25 +349,25 @@ public class dataMatrix
         for (int c = 0; c < getncols(); c++)
         {
             Vector<String> col = new Vector<String>();
-           vm.add(col);
+            vm.add(col);
             Vector<String> values = data.get(c);
             HashMap<String, String> colmap = new HashMap<String, String>();
             for (int r = 0; r < values.size(); r++)
             {
-                String token = "        "+values.get(r);
+                String token = "        " + values.get(r);
 
                 String ttoken = token.substring(token.length() - 4);
-                String  rowlabel = rowname.get(r).replace("Rank","    ");
+                String rowlabel = rowname.get(r).replace("Rank", "    ");
                 String tlabel = rowlabel.substring(rowlabel.length() - 4);
-                colmap.put(ttoken,tlabel);
+                colmap.put(ttoken, tlabel);
             }
-            for(int nr =0; nr<newrownames.size(); nr++)
+            for (int nr = 0; nr < newrownames.size(); nr++)
             {
-                if(colmap.containsKey(newrownames.get(nr)))
+                if (colmap.containsKey(newrownames.get(nr)))
                 {
                     String nv = colmap.get(newrownames.get(nr));
                     col.add(nv);
-                }else
+                } else
                 {
                     col.add("");
                 }
@@ -360,15 +381,15 @@ public class dataMatrix
         jswTable datagrid = new jswTable(null, "form1", tablestyles);
         datagrid.addCell(new jswLabel("corner"), 0, 0);
         int ncols = colname.size();
-        for (int c = 0; c < ncols ; c++)
+        for (int c = 0; c < ncols; c++)
         {
             String value = colname.get(c);
-            datagrid.addCell(new jswLabel(value), 0, c+1);
+            datagrid.addCell(new jswLabel(value), 0, c + 1);
         }
         int nrows = rownames.size();
-        for (int r = 0; r < nrows ; r++)
+        for (int r = 0; r < nrows; r++)
         {
-            datagrid.addCell(new jswLabel(rownames.get(r )), r+1, 0);
+            datagrid.addCell(new jswLabel(rownames.get(r)), r + 1, 0);
         }
         for (int c = 0; c < ncols; c++)
         {
@@ -376,8 +397,8 @@ public class dataMatrix
             for (int r = 0; r < nrows; r++)
             {
                 String value;
-                if(r>=snrows)
-                    value ="-";
+                if (r >= snrows)
+                    value = "-";
                 else
                     value = getValue(c, r);
                 jswLabel alabel = new jswLabel(value);
@@ -386,4 +407,54 @@ public class dataMatrix
         }
         return datagrid;
     }
+
+
+
+    public void load(int[][] matrix2, int racecount )
+    {
+        data.clear();
+        Vector<String> points = new Vector<String>();
+        data.add(points);
+        int nsails  = rowname.size();
+        for (int r = 0; r < nsails; r++)
+        {
+            int sum=0;
+            int nr=0;
+            for (int c = 1; c < matrix2.length; c++)
+            {
+                int value = matrix2[c][r];
+                if(nr + value <racecount)
+                {
+                    sum += value * c;
+                    nr += value;
+                }
+                else
+                {
+                    int rem = racecount-nr;
+                    if(rem >0 )
+                    {
+                        sum += rem* c;
+                        nr+=rem;
+                    }
+                }
+            }
+
+            points.add(" "+sum);
+        }
+
+        for (int c = 1; c < matrix2.length; c++)
+        {
+            Vector<String> acol = new Vector<String>();
+            int nrows = matrix2[c].length;
+            for (int r = 0; r < nrows; r++)
+            {
+                int value = matrix2[c][r];
+               acol.add(" "+value);
+            }
+            data.add(acol);
+        }
+    }
+
+
+
 }

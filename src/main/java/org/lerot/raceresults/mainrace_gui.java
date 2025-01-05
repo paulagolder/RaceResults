@@ -19,6 +19,7 @@ public class mainrace_gui extends JFrame implements ActionListener
     public static final boolean RACEDAY = false;
     public static boolean mode;
     public  static  mainrace_gui mframe;
+    public static competition_gui compgui;
     public  jswVerticalPanel mainpanel;
     private String osversion;
     private String os;
@@ -93,7 +94,8 @@ public class mainrace_gui extends JFrame implements ActionListener
             mainpanel.add( " FILLH FILLW ", new raceday_gui(null));
         } else
         {
-            mainpanel.add( " FILLH FILLW ", new  competition_gui("competition_2024.xml"));
+            compgui = new  competition_gui("competition_2024.xml");
+            mainpanel.add( " FILLH FILLW ", compgui);
         }
         add(mainpanel);
         mainpanel.repaint();
@@ -109,11 +111,6 @@ public class mainrace_gui extends JFrame implements ActionListener
             }
         });
     }
-
-
-
-
-
 
     public static jswStyles defaultStyles()
     {
@@ -173,13 +170,13 @@ public class mainrace_gui extends JFrame implements ActionListener
         jswStyle colstyle0 = tablestyles.makeStyle("col_0");
         colstyle0.putAttribute("backgroundcolor", "blue");
         colstyle0.putAttribute("horizontalAlignment", "RIGHT");
-        colstyle0.putAttribute("width", 70);
+        colstyle0.putAttribute("minwidth", 30);
         colstyle0.putAttribute("fontsize", "16");
         colstyle0.putAttribute("foregroundcolor", "gray");
 
         jswStyle colstyle = tablestyles.makeStyle("col");
         colstyle.putAttribute("horizontalAlignment", "RIGHT");
-        colstyle.putAttribute("width", 80);
+        colstyle.putAttribute("width", 30);
         // colstyle.putAttribute("foregroundcolor", "yellow");
 
         jswStyle cellstyle = tablestyles.makeStyle("cellx");
@@ -200,23 +197,66 @@ public class mainrace_gui extends JFrame implements ActionListener
         tablestyle.putAttribute("borderwidth", 1);
         tablestyle.putAttribute("bordercolor", "gray");
 
-        //  jswStyle rowstyle = tablestyles.makeStyle("row");
-        //  rowstyle.putAttribute("height", 100);
+        jswStyle rowstyle0 = tablestyles.makeStyle("row_0");
+        rowstyle0.putAttribute("backgroundcolor", "gray");
+        rowstyle0.putAttribute("fontsize", 12);
+
+        jswStyle rowstyle = tablestyles.makeStyle("row");
+        rowstyle.putAttribute("backgroundcolor", "gray");
+        rowstyle.putAttribute("fontsize", 10);
+        rowstyle.putAttribute("minheight", 40);
+        //rowstyle.putAttribute("mywidth", 100);
+
+        jswStyle colstyle0 = tablestyles.makeStyle("col_0");
+        colstyle0.putAttribute("backgroundcolor", "blue");
+        colstyle0.putAttribute("horizontalAlignment", "RIGHT");
+        colstyle0.putAttribute("width", 40);
+        colstyle0.putAttribute("fontsize", "12");
+        colstyle0.putAttribute("foregroundcolor", "gray");
+
+        jswStyle colstyle = tablestyles.makeStyle("col");
+        colstyle.putAttribute("horizontalAlignment", "RIGHT");
+        colstyle.putAttribute("width", 20);
+
+        jswStyle cellstyle = tablestyles.makeStyle("cellx");
+        cellstyle.putAttribute("foregroundcolor", "yellow");
+        cellstyle.putAttribute("borderWidth", "1");
+        cellstyle.putAttribute("borderColor", "blue");
+        cellstyle.putAttribute("fontsize", 10);
+
+        return tablestyles;
+    }
+
+    public static jswStyles smalltable2styles()
+    {
+        jswStyles tablestyles = new jswStyles();
+        tablestyles = jswStyles.getDefaultTableStyles();
+        tablestyles.name = "defaulttable";
+
+        jswStyle tablestyle = tablestyles.makeStyle("table");
+        tablestyle.putAttribute("borderwidth", 1);
+        tablestyle.putAttribute("bordercolor", "gray");
 
         jswStyle rowstyle0 = tablestyles.makeStyle("row_0");
         rowstyle0.putAttribute("backgroundcolor", "gray");
         rowstyle0.putAttribute("fontsize", 10);
 
+        jswStyle rowstyle = tablestyles.makeStyle("row");
+        rowstyle.putAttribute("backgroundcolor", "gray");
+        rowstyle.putAttribute("fontsize", 10);
+        rowstyle.putAttribute("minheight", 40);
+
         jswStyle colstyle0 = tablestyles.makeStyle("col_0");
         colstyle0.putAttribute("backgroundcolor", "blue");
-        colstyle0.putAttribute("horizontalAlignment", "RIGHT");
-        colstyle0.putAttribute("width", 70);
-        colstyle0.putAttribute("fontsize", "10");
+        colstyle0.putAttribute("horizontalAlignment", "MIDDLE");
+        colstyle0.putAttribute("width", 40);
+        colstyle0.putAttribute("fontsize", "12");
         colstyle0.putAttribute("foregroundcolor", "gray");
+        colstyle0.putAttribute("padding",4);
 
         jswStyle colstyle = tablestyles.makeStyle("col");
         colstyle.putAttribute("horizontalAlignment", "RIGHT");
-        colstyle.putAttribute("width", 80);
+        colstyle.putAttribute("minwidth", 40);
         // colstyle.putAttribute("foregroundcolor", "yellow");
 
         jswStyle cellstyle = tablestyles.makeStyle("cellx");
@@ -224,8 +264,10 @@ public class mainrace_gui extends JFrame implements ActionListener
         cellstyle.putAttribute("borderWidth", "1");
         cellstyle.putAttribute("borderColor", "blue");
         cellstyle.putAttribute("fontsize", 10);
+
         return tablestyles;
     }
+
 
     @Override
     public void actionPerformed(ActionEvent actionEvent)

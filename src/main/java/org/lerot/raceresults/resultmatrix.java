@@ -10,24 +10,27 @@ import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Collections;
+import java.util.Vector;
 
 public class resultmatrix
 {
     private String boatclass_str;
     private String racedate_str;
-    private dataMatrix resultmatrix;
+    private dataMatrix datamatrix;
 
     public resultmatrix()
     {
-        resultmatrix = new dataMatrix();
+        datamatrix = new dataMatrix();
     }
 
     public resultmatrix (String boatclass, String racedate, int nraces, int nparticipants)
     {
         setBoatclass_str(boatclass);
         setRacedate_str(racedate);
-        resultmatrix = new dataMatrix(nraces, nparticipants);
+        datamatrix = new dataMatrix(nraces, nparticipants);
     }
+
 
     public  String getBoatclass_str()
     {
@@ -54,14 +57,14 @@ public class resultmatrix
         return racedate_str.replace("/", ch);
     }
 
-    public dataMatrix getResultmatrix()
+    public dataMatrix getDatamatrix()
     {
-        return resultmatrix;
+        return datamatrix;
     }
 
-    public void setResultmatrix(dataMatrix resultmatrix)
+    public void setDatamatrix(dataMatrix datamatrix)
     {
-        this.resultmatrix = resultmatrix;
+        this.datamatrix = datamatrix;
     }
 
 
@@ -82,7 +85,7 @@ public class resultmatrix
             bw.write(" td { text-align: center; }\n");
             bw.write(" table, th, td { border: 1px solid; }\n");
             bw.write("</style>\n</head>\n<body>\n");
-            resultmatrix.printToHTML(bw, boatclass_str, racedate_str);
+            datamatrix.printToHTML(bw, boatclass_str, racedate_str);
             bw.write("\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
@@ -96,7 +99,7 @@ public class resultmatrix
         Document document;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = null;
-        resultmatrix = new dataMatrix();
+        datamatrix = new dataMatrix();
         System.out.println( "You chose to open this file:"+fileNameWithPath);
         try
         {
@@ -105,7 +108,7 @@ public class resultmatrix
             Element rootele = document.getDocumentElement();
             racedate_str = rootele.getAttributeNode("date").getValue();
             boatclass_str = rootele.getAttributeNode("class").getValue();
-            resultmatrix.loadresults(rootele);
+            datamatrix.loadresults(rootele);
         } catch (Exception e)
         {
             throw new RuntimeException(e);
@@ -151,7 +154,7 @@ public class resultmatrix
         {
             for (int r = 0; r < nrows; r++)
             {
-                jswLabel alabel = new jswLabel(getResultmatrix().getValue(c, r));
+                jswLabel alabel = new jswLabel(getDatamatrix().getValue(c, r));
                 jswCell acell = datagrid.addCell(alabel, r + 1, c + 1);
                 //alabel.addMouseListener(acell);
             }
@@ -163,27 +166,27 @@ public class resultmatrix
 
     public String getValue(int c, int r)
     {
-        return resultmatrix.getValue(c, r);
+        return datamatrix.getValue(c, r);
     }
 
     public int getNcols()
     {
-        return resultmatrix.getncols();
+        return datamatrix.getncols();
     }
 
     public int getNrows()
     {
-        return resultmatrix.getnrows();
+        return datamatrix.getnrows();
     }
 
     public String getColname(int c)
     {
-        return resultmatrix.colname.get(c);
+        return datamatrix.colname.get(c);
     }
 
     public String getRowname(int r)
     {
-        return resultmatrix.rowname.get(r);
+        return datamatrix.rowname.get(r);
     }
 
 

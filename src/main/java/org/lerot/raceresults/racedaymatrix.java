@@ -18,6 +18,8 @@ public class racedaymatrix
     private String racedate_str;
     private dataMatrix racematrix;
     dataMatrix compmatrix;
+    boolean saved = false;
+    String filename;
 
     public racedaymatrix()
     {
@@ -32,6 +34,15 @@ public class racedaymatrix
         racematrix = new dataMatrix(nraces, nparticipants);
         makecompmatrix();
     }
+
+    public racedaymatrix(String boatclass, String racedate, int nraces, Vector<String> saillist)
+    {
+        setBoatclass_str(boatclass);
+        setRacedate_str(racedate);
+        racematrix = new dataMatrix(nraces, saillist);
+        makecompmatrix();
+    }
+
 
     public static racedaymatrix demo()
     {
@@ -64,7 +75,8 @@ public class racedaymatrix
 
     public String getRacedate(String ch)
     {
-        return racedate_str.replace("/", ch);
+        String date = utils.getDate(racedate_str, "dd/mm/yyyy");
+        return date.replace("/", ch);
     }
 
     public dataMatrix getRacematrix()
@@ -92,6 +104,7 @@ public class racedaymatrix
             racematrix.printToXML(bw);
             bw.write("</raceresults>");
             bw.close();
+            saved=true;
         } catch (Exception e)
         {
             System.out.println(e);
@@ -139,6 +152,7 @@ public class racedaymatrix
             boatclass_str = rootele.getAttributeNode("class").getValue();
             racematrix.loadresults(rootele);
             makecompmatrix();
+            saved=true;
         } catch (Exception e)
         {
             throw new RuntimeException(e);
@@ -150,19 +164,14 @@ public class racedaymatrix
     {
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
         raceresults.setStyleAttribute("borderwidth", 2);
+        raceresults.setPadding(10,10,10,10);
         int ncols = getNcols();
         int nrows = getNrows();
         raceresults.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
         jswHorizontalPanel racedayheader = new jswHorizontalPanel("heading", false, false);
-        jswLabel label00 = new jswLabel(" Class ");
-        label00.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" ", label00);
         jswLabel addb = new jswLabel(getBoatclass_str());
         addb.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
         racedayheader.add(" ", addb);
-        jswLabel label01 = new jswLabel(" Date ");
-        label01.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" middle ", label01);
         jswLabel dt = new jswLabel(getRacedate("/"));
         dt.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
         racedayheader.add(" ", dt);
@@ -172,11 +181,17 @@ public class racedaymatrix
             al = (ActionListener)parent;
         }
         jswButton editheader = new jswButton(al, "EDIT", "editraceday:" + index);
+        if(!saved)
+        {
+            editheader.addStyle("foregroundcolor","red");
+            editheader.applyStyle();
+        }
         racedayheader.add(" right ", editheader);
-        raceresults.add(" FILLW FILLH middle ", racedayheader);
-        raceresults.add(" FILLW FILLH middle ", racematrix.makedatapanel(parent.getRankVector(),tablestyles));
+        raceresults.add(" FILLW middle ", racedayheader);
+        raceresults.add(" FILLW middle ", racematrix.makedatapanel(parent.getRankVector(),tablestyles));
         raceresults.applyStyle();
         raceresults.setPadding(5, 5, 5, 5);
+        raceresults.setPadding(10,10,10,10);
         return raceresults;
     }
 
@@ -208,8 +223,8 @@ public class racedaymatrix
         }
         jswButton editheader = new jswButton(al, "EDIT", "editraceday:" + index);
         racedayheader.add(" right ", editheader);
-        raceresults.add(" FILLW FILLH middle ", racedayheader);
-        raceresults.add(" FILLW FILLH middle ", compmatrix.makedatapanel( parent.getSailVector(), tablestyles));
+        raceresults.add(" FILLW  middle ", racedayheader);
+        raceresults.add(" FILLW  middle ", compmatrix.makedatapanel( parent.getSailVector(), tablestyles));
         raceresults.applyStyle();
         raceresults.setPadding(5, 5, 5, 5);
         return raceresults;
@@ -240,6 +255,11 @@ public class racedaymatrix
         return racematrix.rowname.get(r);
     }
 
+    public void setRowname(Vector<String> saillist)
+    {
+        racematrix.rowname = saillist;
+    }
+
     public void makecompmatrix()
     {
         compmatrix = new dataMatrix();
@@ -258,6 +278,33 @@ public class racedaymatrix
 
     public Vector<String> getRankvector()
     {
-        return  compmatrix.rowname;
+        return  racematrix.rowname;
+    }
+
+    public void setfilename(String selfile)
+    {
+        filename = selfile;
+    }
+
+    public void loadcomp(int[][] matrix2, int racecount)
+    {
+        //racematrix.colnames();
+        compmatrix.load(matrix2, racecount);
+    }
+
+
+    public void setColname(Vector<String> collist)
+    {
+        racematrix.colname = collist;
+    }
+
+    public void setCompColname(Vector<String> collist)
+    {
+        compmatrix.colname = collist;
+    }
+
+    public void setCompRowname(Vector<String> saillist)
+    {
+        compmatrix.rowname = saillist;
     }
 }

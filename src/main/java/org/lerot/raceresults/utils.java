@@ -46,7 +46,14 @@ public class utils
         return cmdmap;
     }
 
-    public String getDate(String date,String format)
+    public static String sailmaker(int j)
+    {
+        String si = "     "+j;
+        return si.substring(si.length()-4);
+
+    }
+
+    public static String getDate(String date, String format)
     {
        try
     {
@@ -94,4 +101,9 @@ public static String fileexists(String filepath)
 }
 
 
+    public static String pad(int i)
+    {
+        String si = "     "+i;
+        return si.substring(si.length()-4);
+    }
 }
