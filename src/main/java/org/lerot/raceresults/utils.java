@@ -14,12 +14,16 @@ public class utils
 {
 
 
-    public static HashMap<String, String> parseaction(String text)
+    public static HashMap<String, String> xparseaction(String text)
     {
         HashMap<String, String> cmdmap = new HashMap<String, String>();
-        String text2 = text.replace("{", "");
-        String text3 = text2.replace("}", "");
-        String[] cmdarray = text3.split(",");
+        String text2 = text;
+       // String text2 = text.replace("{", "");
+        if(text2.substring(0, 1).equals("{")) text2=text2.substring(1);
+        if(text2.substring(text2.length()-1).equals("}")) text2=text2.substring(0,text2.length()-1);
+
+       // String text3 = text2.replace("}", "");
+        String[] cmdarray = text2.split(",");
         for (String acmd : cmdarray)
         {
             //System.out.println( acmd)   ;
@@ -30,7 +34,7 @@ public class utils
         return cmdmap;
     }
 
-    public static HashMap<String, Integer> parsecoords(String text)
+   /* public static HashMap<String, Integer> parsecoords(String text)
     {
         HashMap<String, Integer> cmdmap = new HashMap<String, Integer>();
         String text2 = text.replace("{", "");
@@ -44,7 +48,7 @@ public class utils
         }
         //    System.out.println(cmdmap);
         return cmdmap;
-    }
+    }*/
 
     public static String sailmaker(int j)
     {
@@ -63,7 +67,8 @@ public class utils
         return fdate;
     } catch( ParseException e)
        {
-        return " format error " + date;
+
+        return  date;
     }
 }
 

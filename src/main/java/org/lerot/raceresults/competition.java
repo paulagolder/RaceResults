@@ -22,9 +22,20 @@ public class competition
     private String compyear;
     private String raceclass;
     private String competitionname;
-
     private Vector<String> saillist = new Vector<String>();
     private Vector<String> ranklist = new Vector<String>();
+    private Vector<sail> boatlist = new Vector<sail>();
+    public String getCsscompetition()
+    {
+        return csscompetition;
+    }
+
+    public void setCsscompetition(String csscompetition)
+    {
+        this.csscompetition = csscompetition;
+    }
+
+    private String csscompetition="competition";
 
     public int getRacecount()
     {
@@ -88,7 +99,7 @@ public class competition
     {
         String path = utils.fileexists(filename);
         if (path == null) return;
-        readracedaylistdXML(path);
+        readCompetitionXML(path);
         reloadracedays();
     }
 
@@ -102,6 +113,8 @@ public class competition
                 racedaymatrix raceday = new racedaymatrix();
                 String filename = racedayfilenames.get(i);
                 raceday.readXML(mainrace_gui.mysailinghome + filename);
+
+                raceday.setfilename(filename);
                 racedaymatrixlist.add(raceday);
             } catch (Exception e)
             {
@@ -110,8 +123,17 @@ public class competition
         }
         setSaillist(makesailnumbervector());
         setRanklist(makerankvector());
+        makeCompMatrices();
     }
 
+    void makeCompMatrices()
+    {
+        for (int i = 0; i < racedayfilenames.size(); i++)
+        {
+            racedaymatrix raceday = racedaymatrixlist.get(i);
+            raceday.makecompmatrix(saillist);
+        }
+    }
 
     public jswVerticalPanel displayrankcolumn(jswStyles tablestyles )
     {
@@ -123,22 +145,17 @@ public class competition
         label00.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
         leftheader.add(" minheight=30 ", label00);
         leftcolumn.add(" FILLW middle minheight=30 ", leftheader);
-
-
         jswTable datagrid = new jswTable(null, "form1", tablestyles);
         datagrid.addCell(new jswLabel("corner"), 0, 0);
-
         int nrows = getRanklist().size();
         for (int r = 0; r < nrows ; r++)
         {
-            //
             datagrid.addCell(new jswLabel(getRanklist().get(r )), r+1, 0);
         }
         leftcolumn.add(" FILLW ", datagrid);
         leftcolumn.setPadding(5, 5, 5, 5);
         return leftcolumn;
     }
-
 
     public jswVerticalPanel displaysailcolumn(jswStyles tablestyles )
     {
@@ -150,10 +167,8 @@ public class competition
         label00.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
         leftheader.add(" minheight=30 ", label00);
         leftcolumn.add(" FILLW middle minheight=30 ", leftheader);
-
         jswTable datagrid = new jswTable(null, "form1", tablestyles);
         datagrid.addCell(new jswLabel("corner"), 0, 0);
-
         int nrows = getSaillist().size();
         for (int r = 0; r < nrows ; r++)
         {
@@ -169,7 +184,7 @@ public class competition
         return (new jswVerticalPanel("tesrt", true, true));
     }
 
-    public void readracedaylistdXML(String fileNameWithPath)
+    public void readCompetitionXML(String fileNameWithPath)
     {
         Document document;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -191,8 +206,19 @@ public class competition
                 Element acell = (Element) racedaysnl.item(i);
                 String cname = acell.getAttribute("filename");
                 racedayfilenames.add(cname);
-                System.out.println(cname);
             }
+
+            NodeList sails = rootele.getElementsByTagName("sail");
+            for (int i = 0; i < sails.getLength(); i++)
+            {
+                Element acell = (Element) sails.item(i);
+                String sailnumber = acell.getAttribute("sailnumber");
+                String sailorname = acell.getAttribute("sailorname");
+                String boatclass = acell.getAttribute("boatclass");
+                sail asail = new sail(sailnumber, boatclass,sailorname);
+                boatlist.add(asail);
+            }
+
         } catch (Exception e)
         {
             throw new RuntimeException(e);
@@ -259,20 +285,30 @@ public class competition
         Set sl = new HashSet<String>();
         Random rn = new Random();
         getSaillist().clear();
-
         while(sl.size()<n+1)
         {
             int j = rn.nextInt(90) + 10;
             sl.add(utils.sailmaker(j));
         }
         getSaillist().addAll(sl);
-       Collections.sort(getSaillist());
-
+        Collections.sort(getSaillist());
     }
 
     public void addracedaymatrix(int nraces)
     {
-        racedaymatrix sailday = new racedaymatrix(getRaceclass(), "01/"+ (racedaymatrixlist.size()+1)+"/" + getCompyear(), nraces, getSaillist());
+        racedaymatrix sailday;
+
+            sailday = new racedaymatrix(getRaceclass(), "01/" + (racedaymatrixlist.size() + 1) + "/" + getCompyear(), nraces, getSaillist());
+
+        racedaymatrixlist.add(sailday);
+        sailday.filename = "raceday_"+getRaceclass()+"_"+sailday.getRacedate("-")+".xml";
+        racedayfilenames.add( sailday.filename );
+    }
+
+    public void addEmptyRacedayMatrix(int nraces)
+    {
+        racedaymatrix sailday = new racedaymatrix(getRaceclass(), "01/" + (racedaymatrixlist.size() + 1) + "/" + getCompyear(), nraces, getSaillist().size());
+
         racedaymatrixlist.add(sailday);
         sailday.filename = "raceday_"+getRaceclass()+"_"+sailday.getRacedate("-")+".xml";
         racedayfilenames.add( sailday.filename );
@@ -280,10 +316,12 @@ public class competition
 
     public void addracedaymatrices(int ndays, int nraces)
     {
-        for (int d= 0;d<ndays;d++)
-        {
-            addracedaymatrix(nraces);
-        }
+
+            for (int d = 0; d < ndays; d++)
+            {
+                addracedaymatrix(nraces);
+            }
+
     }
 
     public void generateranklist(int nrows)
@@ -340,5 +378,86 @@ public class competition
     public void setRanklist(Vector<String> ranklist)
     {
         this.ranklist = ranklist;
+    }
+
+    public void addRaceday(String filename)
+    {
+        racedayfilenames.add(filename);
+    }
+
+    public void printRacedaysToHTML(String selfile, String competitionname)
+    {
+        try
+        {
+            File file = new File(selfile);
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(" <!DOCTYPE html>\n<html>\n");
+            bw.write("<head>\n<style>\n");
+            bw.write(" td { text-align: center; }\n");
+            bw.write(" table, th, td { border: 1px solid; }\n");
+            bw.write("</style>\n");
+            bw.write("<link rel=\"stylesheet\" href=\"raceday.css\">\n");
+            bw.write("</head>\n<body id=\"" + csscompetition+"\">\n");
+            bw.write( "<h1> Competition "+ getCompetitionname() + " "+ compyear+ "</h1>\n");
+            for (int i = 0; i < racedaymatrixlist.size(); i++)
+            {
+                racedaymatrix racematrix = racedaymatrixlist.get(i);
+                racematrix.printToHTML(bw, racematrix.getRacedate_str());
+            }
+            bw.write("\n</body>\n</html>\n");
+            bw.close();
+        } catch (Exception e)
+        {
+            // System.out.println(e);
+        }
+    }
+
+    public void printToHTML(String path)
+    {
+        try
+        {
+            File file = new File(path);
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(" <!DOCTYPE html>\n<html>\n");
+            bw.write("<head>\n<style>");
+            bw.write(" td { text-align: center; }\n");
+            bw.write(" table, th, td { border: 1px solid; }\n");
+            bw.write("</style>\n</head>\n<body id=\n" + csscompetition+"\">\n");
+            bw.write( "<h1> Competition "+ competitionname + " "+ compyear+ "</h1>\n");
+            for (int i = 0; i < racedaymatrixlist.size(); i++)
+            {
+                racedaymatrix racematrix= racedaymatrixlist.get(i);
+                racematrix.printToHTML(bw, this.getRaceclass()+" "+this.getCompyear());
+            }
+            bw.write("\n</body>\n</html>\n");
+            bw.close();
+        } catch (Exception e)
+        {
+           // System.out.println(e);
+        }
+    }
+
+    public void createSaillist(String bclass)
+    {
+        Vector<String> sl = new Vector<>();
+        for (int s=0;s<mainrace_gui.mframe.getBoatlist().size();s++)
+        {
+            sail asail = mainrace_gui.mframe.getBoatlist().get(s);
+            if(asail.getBoatclass().equalsIgnoreCase(bclass))
+            {
+                sl.add(asail.getSailnumber());
+            }
+        }
+        setSaillist(sl);
     }
 }

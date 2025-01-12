@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Vector;
 
 public class racedaymatrix
@@ -32,7 +33,6 @@ public class racedaymatrix
         setBoatclass_str(boatclass);
         setRacedate_str(racedate);
         racematrix = new dataMatrix(nraces, nparticipants);
-        makecompmatrix();
     }
 
     public racedaymatrix(String boatclass, String racedate, int nraces, Vector<String> saillist)
@@ -40,9 +40,7 @@ public class racedaymatrix
         setBoatclass_str(boatclass);
         setRacedate_str(racedate);
         racematrix = new dataMatrix(nraces, saillist);
-        makecompmatrix();
     }
-
 
     public static racedaymatrix demo()
     {
@@ -127,12 +125,23 @@ public class racedaymatrix
             bw.write(" td { text-align: center; }\n");
             bw.write(" table, th, td { border: 1px solid; }\n");
             bw.write("</style>\n</head>\n<body>\n");
-            racematrix.printToHTML(bw, boatclass_str, racedate_str);
+            racematrix.printToHTML(bw, boatclass_str+" "+racedate_str);
             bw.write("\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
         {
             System.out.println(e);
+        }
+    }
+
+    public void printToHTML( BufferedWriter bw ,String heading)
+    {
+        try
+        {
+            racematrix.printToHTML(bw, heading);
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 
@@ -142,7 +151,7 @@ public class racedaymatrix
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = null;
         racematrix = new dataMatrix();
-        System.out.println("You chose to open this file:" + fileNameWithPath);
+        System.out.println("Importing:" + fileNameWithPath);
         try
         {
             builder = factory.newDocumentBuilder();
@@ -151,11 +160,12 @@ public class racedaymatrix
             racedate_str = rootele.getAttributeNode("date").getValue();
             boatclass_str = rootele.getAttributeNode("class").getValue();
             racematrix.loadresults(rootele);
-            makecompmatrix();
+            //makecompmatrix();
             saved=true;
         } catch (Exception e)
         {
-            throw new RuntimeException(e);
+            System.out.println("Does not exist:" + fileNameWithPath);
+            return null;
         }
         return document;
     }
@@ -187,8 +197,8 @@ public class racedaymatrix
             editheader.applyStyle();
         }
         racedayheader.add(" right ", editheader);
-        raceresults.add(" FILLW middle ", racedayheader);
-        raceresults.add(" FILLW middle ", racematrix.makedatapanel(parent.getRankVector(),tablestyles));
+        raceresults.add("  ", racedayheader);
+        raceresults.add("  ", racematrix.makedatapanel(parent.getRankVector(),tablestyles));
         raceresults.applyStyle();
         raceresults.setPadding(5, 5, 5, 5);
         raceresults.setPadding(10,10,10,10);
@@ -199,20 +209,10 @@ public class racedaymatrix
     public jswVerticalPanel displayscoreresults(competition_gui parent, jswStyles tablestyles, int index)
     {
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
-        raceresults.setStyleAttribute("borderwidth", 2);
+        raceresults.setStyleAttribute("borderwidth", 1);
         int ncols = getNcols();
         int nrows = getNrows();
-        raceresults.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
         jswHorizontalPanel racedayheader = new jswHorizontalPanel("heading", false, false);
-        jswLabel label00 = new jswLabel(" Class ");
-        label00.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" ", label00);
-        jswLabel addb = new jswLabel(getBoatclass_str());
-        addb.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" ", addb);
-        jswLabel label01 = new jswLabel(" Date ");
-        label01.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" middle ", label01);
         jswLabel dt = new jswLabel(getRacedate("/"));
         dt.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
         racedayheader.add(" ", dt);
@@ -221,10 +221,13 @@ public class racedaymatrix
         {
             al = (ActionListener)parent;
         }
-        jswButton editheader = new jswButton(al, "EDIT", "editraceday:" + index);
-        racedayheader.add(" right ", editheader);
-        raceresults.add(" FILLW  middle ", racedayheader);
-        raceresults.add(" FILLW  middle ", compmatrix.makedatapanel( parent.getSailVector(), tablestyles));
+        jswButton editheaderbutton = new jswButton(al, "EDIT", "editraceday:" + index);
+        racedayheader.add(" right ", editheaderbutton);
+        raceresults.add(" FILLW   ", racedayheader);
+        if(compmatrix != null)
+        {
+            raceresults.add("    ", compmatrix.makesmalldatapanel(parent.getSailVector(), tablestyles));
+        }
         raceresults.applyStyle();
         raceresults.setPadding(5, 5, 5, 5);
         return raceresults;
@@ -260,12 +263,12 @@ public class racedaymatrix
         racematrix.rowname = saillist;
     }
 
-    public void makecompmatrix()
+    public void makecompmatrix(Vector<String> saillist)
     {
         compmatrix = new dataMatrix();
         compmatrix.colname = racematrix.colname;
-        compmatrix.rowname = racematrix.getValuevector();
-        compmatrix.data = racematrix.getValueMatrix(compmatrix.rowname);
+        compmatrix.rowname = saillist;
+        compmatrix.data = racematrix.getValueMatrix(saillist);
     }
 
 
@@ -306,5 +309,30 @@ public class racedaymatrix
     public void setCompRowname(Vector<String> saillist)
     {
         compmatrix.rowname = saillist;
+    }
+
+    public void printResultsToHTML(String path,String comptitle)
+    {
+        try
+        {
+            File file = new File(path);
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(" <!DOCTYPE html>\n<html>\n");
+            bw.write("<head>\n<style>");
+            bw.write(" td { text-align: center; }\n");
+            bw.write(" table, th, td { border: 1px solid; }\n");
+            bw.write("</style>\n</head>\n<body>\n");
+            compmatrix.printToHTML(bw, comptitle+" "+boatclass_str+" "+ racedate_str);
+            bw.write("\n</body>\n</html>\n");
+            bw.close();
+        } catch (Exception e)
+        {
+            System.out.println(e);
+        }
     }
 }

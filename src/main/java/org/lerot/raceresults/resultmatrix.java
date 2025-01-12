@@ -85,7 +85,7 @@ public class resultmatrix
             bw.write(" td { text-align: center; }\n");
             bw.write(" table, th, td { border: 1px solid; }\n");
             bw.write("</style>\n</head>\n<body>\n");
-            datamatrix.printToHTML(bw, boatclass_str, racedate_str);
+            datamatrix.printToHTML(bw,  boatclass_str+" "+racedate_str);
             bw.write("\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
