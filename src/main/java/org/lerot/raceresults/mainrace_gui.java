@@ -7,6 +7,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 import java.util.Vector;
@@ -37,8 +38,8 @@ public class mainrace_gui extends JFrame implements ActionListener
     private String propsfile;
     private boolean editheader = false;
     private jswPanel resultpanel;
-    racedaymatrix results;
-    competition competition;
+   // racedaymatrix results;
+   // competition competition;
     private boolean activecell;
     String  saillistfile;
 
@@ -333,6 +334,22 @@ public class mainrace_gui extends JFrame implements ActionListener
     @Override
     public void actionPerformed(ActionEvent actionEvent)
     {
+
+    }
+
+    public HashMap<String, String> makeList(String boatclass)
+    {
+        HashMap<String, String> list = new HashMap<String, String>();
+
+        for(int b =0;b<boatlist.size();b++)
+        {
+            sail asail = boatlist.get(b);
+            if(asail.getBoatclass().equalsIgnoreCase(boatclass))
+            {
+                list.put(asail.getSailnumber(),asail.getSailorname());
+            }
+        }
+        return list;
 
     }
 }

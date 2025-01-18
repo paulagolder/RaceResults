@@ -24,7 +24,7 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
     private jswHorizontalPanel compheader;
     private jswHorizontalPanel editpanel = null;
     private jswHorizontalPanel scorespanel;
-    private competition currentcomp;
+    public competition currentcomp;
     private racedaymatrix scorematrix = null;
     private jswTextBox classfield;
     private jswTextBox yearfield;
@@ -43,16 +43,6 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         currentcomp.loadCompetition(compfile);
         applyStyle(jswStyle.getDefaultStyle());
         setBorder(jswStyle.makeLineBorder(Color.red, 4));
-      /*  headermenu = makeheadermenu();
-        add(" FILLW HEIGHT=200  ", headermenu);
-        compheader = displayheader();
-        add(" FILLW HEIGHT=200 ", compheader);
-        compheader.applyStyle();
-        scorespanel = displayscores();
-        add(" FILLH ", scorespanel);
-        editpanel = editcompetition();
-        add(" FILLW HEIGHT=200 ", editpanel);
-        editpanel.setVisible(false);*/
         refreshcompetition_gui();
         editpanel.setVisible(false);
         revalidate();
@@ -142,7 +132,7 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         viewmenu = menubar.addMenuHeading("View");
         menubar.addMenuItem(viewmenu, "Edit Competition", "editcompetition");
         actionmenu = menubar.addMenuHeading("Action");
-        menubar.addMenuItem(actionmenu, "Make Sores", "makescore");
+        menubar.addMenuItem(actionmenu, "Make Scores", "makescore");
         menubar.addMenuItem(actionmenu, "Add New Raceday", "addnewraceday");
         menubar.addMenuItem(actionmenu, "Load Raceday", "loadraceday");
         menubar.addMenuItem(actionmenu, "New Competitiion", "newcompetition");
@@ -263,7 +253,8 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this file: " + selfile);
-                scorematrix.printResultsToHTML(selfile, currentcomp.getCompetitionname());
+                HashMap<String,String> sailorlist = mainrace_gui.mframe.makeList(currentcomp.getRaceclass()  );
+                scorematrix.printResultsToHTML(selfile, currentcomp.getCompetitionname(),sailorlist);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
@@ -326,6 +317,7 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             scorematrix.setBoatclass_str(currentcomp.getRaceclass());
             scorematrix.setRacedate_str(currentcomp.getCompyear());
             scorematrix.setCompRowname(currentcomp.getSaillist());
+            //scorematrix.
             Vector<String> collabels = new Vector<String>();
             collabels.add("Points");
             collabels.add("1st");
@@ -336,7 +328,8 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
                 collabels.add(r + "th");
             }
             scorematrix.setCompColname(collabels);
-            scorematrix.loadcomp(matrix2, currentcomp.getRacecount());
+            scorematrix.setSelect(true);
+            scorematrix.loadcomp(currentcomp.getracedaymatrix(), currentcomp.getRacecount());
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
@@ -485,6 +478,9 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         editpanel.applyStyle();
         return editpanel;
     }
+
+
+
 
 
 }

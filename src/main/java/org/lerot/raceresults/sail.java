@@ -8,6 +8,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.HashMap;
 import java.util.Vector;
 
 public class sail
@@ -22,6 +23,8 @@ public class sail
         boatclass = aboatclass;
         sailorname= asailorname;
     }
+
+
 
 
     public String getSailnumber()

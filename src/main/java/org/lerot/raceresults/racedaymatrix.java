@@ -11,6 +11,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Vector;
 
 public class racedaymatrix
@@ -209,6 +210,7 @@ public class racedaymatrix
     public jswVerticalPanel displayscoreresults(competition_gui parent, jswStyles tablestyles, int index)
     {
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
+        raceresults.setPadding(2,2,2,4);
         raceresults.setStyleAttribute("borderwidth", 1);
         int ncols = getNcols();
         int nrows = getNrows();
@@ -268,6 +270,7 @@ public class racedaymatrix
         compmatrix = new dataMatrix();
         compmatrix.colname = racematrix.colname;
         compmatrix.rowname = saillist;
+        compmatrix.selected = racematrix.selected;
         compmatrix.data = racematrix.getValueMatrix(saillist);
     }
 
@@ -289,10 +292,10 @@ public class racedaymatrix
         filename = selfile;
     }
 
-    public void loadcomp(int[][] matrix2, int racecount)
+    public void loadcomp(dataMatrix matrix2, int racecount)
     {
         //racematrix.colnames();
-        compmatrix.load(matrix2, racecount);
+        compmatrix.createcompmatrix(matrix2, racecount);
     }
 
 
@@ -306,12 +309,22 @@ public class racedaymatrix
         compmatrix.colname = collist;
     }
 
+    public void setSelect(boolean b)
+    {
+        Vector<Boolean> sel = new Vector<>();
+        for(int c=0;c< compmatrix.getncols();c++)
+        {
+            sel.add(b);
+        }
+        compmatrix.selected = sel;
+    }
+
     public void setCompRowname(Vector<String> saillist)
     {
         compmatrix.rowname = saillist;
     }
 
-    public void printResultsToHTML(String path,String comptitle)
+    public void printResultsToHTML(String path, String comptitle, HashMap<String, String> boatlist)
     {
         try
         {
@@ -327,7 +340,7 @@ public class racedaymatrix
             bw.write(" td { text-align: center; }\n");
             bw.write(" table, th, td { border: 1px solid; }\n");
             bw.write("</style>\n</head>\n<body>\n");
-            compmatrix.printToHTML(bw, comptitle+" "+boatclass_str+" "+ racedate_str);
+            printScoresToHTML(bw, comptitle+" "+boatclass_str+" "+ racedate_str,boatlist);
             bw.write("\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
@@ -335,4 +348,37 @@ public class racedaymatrix
             System.out.println(e);
         }
     }
+
+    public void printScoresToHTML(BufferedWriter bw, String title, HashMap<String, String> boatlist) throws IOException
+    {
+        int ncols = compmatrix.colname.size();
+        int nrows = compmatrix.rowname.size();
+        bw.write("<table id=\"" + compmatrix.getCssid() + "\" class=\"" + compmatrix.getCssclass() + "\">\n");
+        bw.write("<tr>\n<th  colspan=" + (ncols + 2) + ">" + title + "</th>\n</tr>");
+
+        bw.write("<tr>\n<th>Sail No</th>");
+        bw.write("<th>Sailor</th>");
+        for (int c = 0; c < ncols; c++)
+        {
+            bw.write("<th>" + compmatrix.colname.get(c) + "</th>");
+        }
+        bw.write("</tr>\n");
+        for (int r = 0; r < nrows; r++)
+        {
+            bw.write("<tr><td>" + compmatrix.rowname.get(r) + "</td>");
+            bw.write("<td>" +boatlist.get(compmatrix.rowname.get(r).trim() ) + "</td>");
+            for (int c = 0; c < ncols; c++)
+            {
+                bw.write("<td >" + compmatrix.data.get(c).get(r) + "</td>");
+            }
+            bw.write("</tr>\n");
+        }
+        bw.write("</table>\n");
+    }
+
+    public void addRace()
+    {
+        racematrix.addRace();
+    }
+
 }

@@ -17,14 +17,15 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
 {
     private final jswVerticalPanel raceresults;
     private final jswHorizontalPanel racedayheader;
+    private final HashMap<String, Integer> activecell;
     private racedaymatrix racedayresults;
-    private HashMap<String, Integer> activecell;
     private HashMap<String, Integer> moveto;
     private boolean editheader;
     private jswTextBox racedate;
     private jswDropDownBox boatclass;
     private jswTextBox activebox;
     private org.lerot.raceresults.competition competition;
+    private cell currentcell;
 
 
     public raceday_gui(racedaymatrix nresults)
@@ -75,7 +76,8 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
         JMenu actionmenu = menubar.addMenuHeading("Action");
         menubar.addMenuItem(actionmenu, "Make Result Matrix", "makeresults");
         menubar.addMenuItem(actionmenu, "Make New Raceday", "makenewraceday");
-       // menubar.addMenuItem(actionmenu, "New Competitiion", "newcompetition");
+        menubar.addMenuItem(actionmenu, "Add Race", "addrace");
+        // menubar.addMenuItem(actionmenu, "New Competitiion", "newcompetition");
         menubar.setBackground(jswStyle.transparentColor());
         raceheader.add(" FILLW  ", menubar);
 
@@ -86,11 +88,7 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
     {
         if (activecell == null) return false;
         if (activecell.get("r") == null) return false;
-        if ((activecell.get("r") == r) && (activecell.get("c") == c))
-        {
-            return true;
-        }
-        return false;
+        return (activecell.get("r") == r) && (activecell.get("c") == c);
     }
 
     public jswHorizontalPanel displayheader()
@@ -139,6 +137,11 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             jswLabel dt = new jswLabel(racedayresults.getRacedate("/"));
             dt.applyStyle(mainrace_gui.defaultStyles().getStyle("largetext"));
             racedayheader.add(" ", dt);
+            if (!racedayresults.saved)
+            {
+                jswButton saveraceday = new jswButton(this, "SAVE", "saveraceday");
+                racedayheader.add(" right ", saveraceday);
+            }
             jswButton editheader = new jswButton(this, "EDIT", "editheader");
             racedayheader.add(" right ", editheader);
         }
@@ -151,21 +154,27 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
     {
         moveto = null;
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
-
         int ncols = racedayresults.getNcols();
         int nrows = racedayresults.getNrows();
         raceresults.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
         //raceresults.setTrace(true);
         jswTable datagrid = new jswTable(this, "form1", tablestyles);
         raceresults.add(" FILLW FILLH middle ", datagrid);
-        datagrid.addCell(new jswLabel("corner"), 0, 0);
+        datagrid.addCell(new jswLabel(" "), 0, 0);
+        datagrid.addCell(new jswLabel("Select"), 1, 0);
         for (int c = 1; c < ncols + 1; c++)
         {
             datagrid.addCell(new jswLabel(racedayresults.getColname(c - 1)), 0, c);
         }
+        for (int c = 1; c < ncols + 1; c++)
+        {
+            jswCheckbox no = new jswCheckbox(this, " ");
+            no.setSelected(racedayresults.getRacematrix().selected.get(c - 1));
+            datagrid.addCell(no, 1, c);
+        }
         for (int r = 1; r < nrows + 1; r++)
         {
-            datagrid.addCell(new jswLabel(racedayresults.getRowname(r - 1)), r, 0);
+            datagrid.addCell(new jswLabel(racedayresults.getRowname(r - 1)), r + 1, 0);
         }
         for (int c = 0; c < ncols; c++)
         {
@@ -176,7 +185,7 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
                     activebox = new jswTextBox(this, racedayresults.getRacematrix().getValue(c, r));
                     activebox.setStyleAttribute("mywidth", 60);
                     activebox.applyStyle();
-                    jswCell acell = datagrid.addCell(activebox, r + 1, c + 1);
+                    jswCell acell = datagrid.addCell(activebox, r + 2, c + 1);
                     activebox.setStyleAttribute("mywidth", 100);
                     activebox.setStyleAttribute("myheight", 50);
                     activebox.applyStyle();
@@ -184,7 +193,7 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
                 } else
                 {
                     jswLabel alabel = new jswLabel(racedayresults.getRacematrix().getValue(c, r));
-                    jswCell acell = datagrid.addCell(alabel, r + 1, c + 1);
+                    jswCell acell = datagrid.addCell(alabel, r + 2, c + 1);
                     alabel.addMouseListener(acell);
                 }
             }
@@ -201,23 +210,67 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
         String cmd = e.getActionCommand();
         System.out.println(" here we are x " + cmd);
         HashMap<String, String> cmdmap = jswUtils.parsecsvstring(cmd);
-        String  command = "";
-        if(cmdmap.get("command")!= null)
+        String command = "";
+        if (cmdmap.get("command") != null)
         {
             command = cmdmap.get("command").toLowerCase();
-        }else
+        } else
         {
             command = cmdmap.get("commandstringjsw").toLowerCase();
         }
-        System.out.println(" here we are x " + command);
-        if (command.equalsIgnoreCase("View Competition"))
+        System.out.println(" here we are x 2:" + command);
+        if (command.equalsIgnoreCase("action"))
+        {
+            if (cmdmap.get("handlerclass").toLowerCase().equalsIgnoreCase("jswCheckbox"))
+            {
+                int col = Integer.parseInt(cmdmap.get("column"));
+                String chk = cmdmap.get("status").toLowerCase();
+                if (chk.equalsIgnoreCase("checked"))
+                    racedayresults.getRacematrix().selected.set(col - 1, true);
+                else
+                    racedayresults.getRacematrix().selected.set(col - 1, false);
+                racedayresults.saved = false;
+                raceresults.removeAll();
+                racedayheader.removeAll();
+                racedayheader.add(" FILLW  ", displayheader());
+                jswPanel apanel = displayresults(table1styles());
+                raceresults.add(" FILLW FILLH ", apanel);
+            }
+            if (cmdmap.get("handlerclass").toLowerCase().equalsIgnoreCase("jswCell"))
+            {
+                if ((cmdmap.get("commandstring")).equalsIgnoreCase("mouseclick"))
+                {
+                    editheader = false;
+                    System.out.println("editing cell a " + cmdmap.get("column") + ":" + cmdmap.get("row") + "=" + cmdmap.get("cellcontent"));
+                    currentcell = new cell(Integer.parseInt(cmdmap.get("column")), Integer.parseInt(cmdmap.get("row")), cmdmap.get("cellcontent"));
+                    int c = Integer.parseInt(cmdmap.get("column"));
+                    int r = Integer.parseInt(cmdmap.get("row"));
+                    String value = cmdmap.get("cellcontent");
+                    racedayresults.getRacematrix().setCell(c, r-1, value);
+                    activecell.put("r", r-1);
+                    activecell.put("c", c);
+                    raceresults.removeAll();
+                    racedayheader.removeAll();
+                    racedayheader.add(" FILLW  ", displayheader());
+                    jswPanel apanel = displayresults(table1styles());
+                    raceresults.add(" FILLW FILLH ", apanel);
+                }
+            }
+        } else if (command.equalsIgnoreCase("View Competition"))
         {
             mode = COMPETITION;
-            mframe.mainpanel.removeAll();
-            mframe.mainpanel.add(" FILLH FILLW ", compgui);
-            mframe.mainpanel.repaint();
-        }
-        if (command.equalsIgnoreCase("racedaytohtml"))
+            mainpanel.removeAll();
+            mainpanel.add(" FILLH FILLW ", compgui);
+            mainpanel.repaint();
+        } else if (command.equalsIgnoreCase("addrace"))
+        {
+            racedayresults.addRace();
+            raceresults.removeAll();
+            racedayheader.removeAll();
+            racedayheader.add(" FILLW  ", displayheader());
+            jswPanel apanel = displayresults(table1styles());
+            raceresults.add(" FILLW FILLH ", apanel);
+        } else if (command.equalsIgnoreCase("racedaytohtml"))
         {
             activecell.put("r", -1);
             String outfile = "raceday_" + racedayresults.getBoatclass_str() + "_" + racedayresults.getRacedate("-") + ".html";
@@ -234,31 +287,35 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
                 System.out.println("You chose to save to this file to html: " + selfile);
                 racedayresults.printToHTML(selfile);
             }
-        }
-        if (command.equalsIgnoreCase("saveraceday"))
+        } else if (command.equalsIgnoreCase("saveraceday"))
         {
             activecell.put("r", -1);
             final File directorylock = new File(mainrace_gui.mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
-            //  JFileChooser chooser = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                    "xml", "xml");
+            String filename = "raceday_" + racedayresults.getBoatclass_str() +"_"+ racedayresults.getRacedate("-") + ".xml";
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
             chooser.setFileFilter(filter);
-            String outfile = racedayresults.filename;
-            System.out.println("++" + outfile);
+            String outfile = filename;
             chooser.setSelectedFile(new File(outfile));
             int returnVal = chooser.showSaveDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this file: " + selfile);
+                if (!(mainrace_gui.mysailinghome+filename).equalsIgnoreCase(racedayresults.filename))
+                {
+                    compgui.currentcomp.replacefilename(racedayresults.filename, selfile);
+                   // mframe.competition.s
+                }
                 racedayresults.setfilename(selfile);
                 racedayresults.printfileToXML(selfile);
                 racedayresults.saved = true;
-                racedayheader.removeAll();
-                racedayheader.add(" FILLW ", displayheader());
-                repaint();
             }
+            racedayheader.removeAll();
+            racedayheader.add(" FILLW ", displayheader());
+            raceresults.removeAll();
+            jswPanel apanel = displayresults(table1styles());
+            raceresults.add(" FILLW FILLH ", apanel);
         } else if (command.equalsIgnoreCase("reloadraceday"))
         {
             final File directorylock = new File(mainrace_gui.mysailinghome);
@@ -324,13 +381,13 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             racedayheader.add(" FILLW  ", displayheader());
             jswPanel apanel = displayresults(table1styles());
             raceresults.add(" FILLW FILLH ", apanel);
-
-        } else if (command.equalsIgnoreCase("mouseclick"))
+        } else if (command.equalsIgnoreCase("mouseclick") || (cmdmap.get("commandstring")).equalsIgnoreCase("mouseclick"))
         {
             editheader = false;
-            System.out.println("editing cell " + cmdmap.get("columnjsw") + ":" + cmdmap.get("rowjsw") + "=" + cmdmap.get("cellcontentjsw"));
-            int c = Integer.parseInt(cmdmap.get("columnjsw"));
-            int r = Integer.parseInt(cmdmap.get("rowjsw"));
+            System.out.println("editing cell b " + cmdmap.get("column") + ":" + cmdmap.get("row") + "=" + cmdmap.get("cellcontent"));
+            currentcell = new cell(Integer.parseInt(cmdmap.get("column")), Integer.parseInt(cmdmap.get("row")), cmdmap.get("cellcontent"));
+            int c = Integer.parseInt(cmdmap.get("column"));
+            int r = Integer.parseInt(cmdmap.get("row"));
             String value = cmdmap.get("cellcontentjsw");
             racedayresults.getRacematrix().setCell(c, r, value);
             activecell.put("r", r);
@@ -342,18 +399,46 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             raceresults.add(" FILLW FILLH ", apanel);
         } else if ((cmdmap.get("handlerclass")).equalsIgnoreCase("jswTextBox"))
         {
-            int c = activecell.get("c");
-            int r = activecell.get("r");
-            activecell.put("r", r + 1);
+            int nc = activecell.get("c");
+            int nr = activecell.get("r");
+            activecell.put("r", nr + 1);
             System.out.println("edited cell " + cmdmap.get("column") + ":" + cmdmap.get("row") + "=" + cmdmap.get("textboxvalue"));
+            System.out.println(currentcell);
             System.out.println(activecell);
-            try
+            String cd = cmdmap.get("command");
+            if (cd.equalsIgnoreCase("i"))
             {
-                int ti = Integer.parseInt(cmdmap.get("textboxvalue"));
-                racedayresults.getRacematrix().setCell(c, r, "" + ti);
-            } catch (NumberFormatException ex)
+                String thiscell = currentcell.value;
+                int rn = nr;
+                while (thiscell != null && !thiscell.trim().isEmpty())
+                {
+                    String nextcell = racedayresults.getRacematrix().getCell(nc, rn + 1);
+                    racedayresults.getRacematrix().setCell(nc, rn + 1, thiscell);
+                    thiscell = nextcell;
+                    rn++;
+                }
+            } else if (cd.equalsIgnoreCase("d"))
             {
-                racedayresults.getRacematrix().setCell(c, r, " ");
+                int rn = nr;
+                String nextcell = racedayresults.getRacematrix().getCell(nc, rn + 1);
+                while (nextcell != null && !nextcell.trim().isEmpty())
+                {
+                    racedayresults.getRacematrix().setCell(nc, rn, nextcell);
+                    nextcell = racedayresults.getRacematrix().getCell(nc, rn + 2);
+                    rn++;
+                }
+                racedayresults.getRacematrix().setCell(nc, rn, " ");
+            } else
+            {
+                if (!cd.isEmpty())
+                    try
+                    {
+                        int ti = Integer.parseInt(cmdmap.get("textboxvalue"));
+                        racedayresults.getRacematrix().setCell(nc, nr, "" + ti);
+                    } catch (NumberFormatException ex)
+                    {
+                        racedayresults.getRacematrix().setCell(nc, nr, " ");
+                    }
             }
             racedayresults.saved = false;
             racedayheader.removeAll();
@@ -363,28 +448,42 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             raceresults.add(" FILLW FILLH ", apanel);
             EventQueue.invokeLater(() -> activebox.getTextField().requestFocusInWindow());
             repaint();
-        }  else if (command.equalsIgnoreCase("makeresults"))
+        } else if (command.equalsIgnoreCase("makeresults"))
         {
             racedayresults.makecompmatrix(compgui.getSailVector());
-        }
-        else if (command.equalsIgnoreCase("viewcompetition"))
+        } else if (command.equalsIgnoreCase("viewcompetition"))
         {
             mode = COMPETITION;
             String selfile = mysailinghome + currentcompetitionfile;
-
-                System.out.println("reopening: " + selfile);
-                mainrace_gui.mainpanel.removeAll();
-                   // compgui = new  competition_gui(selfile);
-                   mainrace_gui.mainpanel.add( " FILLH FILLW ", compgui);
-
-                revalidate();
-
+            System.out.println("reopening: " + selfile);
+            mainrace_gui.mainpanel.removeAll();
+            // compgui = new  competition_gui(selfile);
+            mainrace_gui.mainpanel.add(" FILLH FILLW ", compgui);
+            revalidate();
+        } else
+        {
+            System.out.println("command not found : " + command);
         }
-
         mainrace_gui.mframe.revalidate();
         mainrace_gui.mframe.repaint();
         mainrace_gui.mframe.pack();
     }
 
 
+    private class cell
+    {
+        private final int column;
+        private final int row;
+        private final String value;
+        public cell(int acolumn, int arow, String s)
+        {
+            column = acolumn;
+            row = arow;
+            value = s;
+        }
+        public String toString()
+        {
+            return "{" + column + "," + row + "," + value + ")";
+        }
+    }
 }

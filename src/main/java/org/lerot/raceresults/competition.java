@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
 
+import static org.lerot.raceresults.utils.fileexists;
+
 public class competition
 {
 
@@ -97,7 +99,7 @@ public class competition
 
     public void loadCompetition(String filename)
     {
-        String path = utils.fileexists(filename);
+        String path = fileexists(filename);
         if (path == null) return;
         readCompetitionXML(path);
         reloadracedays();
@@ -112,10 +114,13 @@ public class competition
             {
                 racedaymatrix raceday = new racedaymatrix();
                 String filename = racedayfilenames.get(i);
-                raceday.readXML(mainrace_gui.mysailinghome + filename);
-
-                raceday.setfilename(filename);
-                racedaymatrixlist.add(raceday);
+                String file = fileexists(filename);
+                if(file!=null)
+                {
+                    raceday.readXML(file);
+                    raceday.setfilename(file);
+                    racedaymatrixlist.add(raceday);
+                }
             } catch (Exception e)
             {
                 throw new RuntimeException(e);
@@ -459,5 +464,11 @@ public class competition
             }
         }
         setSaillist(sl);
+    }
+
+    public void replacefilename(String oldfile, String newfile)
+    {
+        int fn = racedayfilenames.indexOf(oldfile);
+        racedayfilenames.set(fn,newfile);
     }
 }
