@@ -1,7 +1,6 @@
 package org.lerot.raceresults;
 
 import org.lerot.mywidgets.*;
-import org.lerot.mywidgets.jswUtils.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -10,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.HashMap;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -20,12 +18,12 @@ import static org.lerot.raceresults.mainrace_gui.*;
 public class competition_gui extends jswVerticalPanel implements ActionListener
 {
 
+    public competition currentcomp;
     private jswVerticalPanel headermenu;
     private jswHorizontalPanel compheader;
     private jswHorizontalPanel editpanel = null;
     private jswHorizontalPanel scorespanel;
-    public competition currentcomp;
-    private racedaymatrix scorematrix = null;
+    private ranksmatrix pointsmatrix = null;
     private jswTextBox classfield;
     private jswTextBox yearfield;
     private jswTextBox countfield;
@@ -34,17 +32,23 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
     private JMenu filemenu;
     private JMenu viewmenu;
     private JMenu actionmenu;
+    private jswHorizontalPanel sailpanel;
+    private int maxsailors;
+    private org.lerot.raceresults.scoresmatrix scoresmatrix;
 
 
     public competition_gui(String compfile)
     {
         super("mainpanel", true, false);
         currentcomp = new competition();
-        currentcomp.loadCompetition(compfile);
+        currentcomp.competitionfile = compfile;
+        String cfile = utils.fileexists(compfile);
+        currentcomp.loadCompetition(cfile);
         applyStyle(jswStyle.getDefaultStyle());
         setBorder(jswStyle.makeLineBorder(Color.red, 4));
         refreshcompetition_gui();
         editpanel.setVisible(false);
+        sailpanel.setVisible(false);
         revalidate();
         repaint();
     }
@@ -57,11 +61,12 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         compheader = displayheader();
         add(" FILLW HEIGHT=200 ", compheader);
         compheader.applyStyle();
-        scorespanel = displayscores();
+        scorespanel = displayscorepanels();
         add(" FILLH  FILLW ", scorespanel);
         editpanel = editcompetition();
         add(" FILLW HEIGHT=200 ", editpanel);
-
+        sailpanel = new jswHorizontalPanel("Sail List", false, true);
+        add(" FILLW HEIGHT=200 ", sailpanel);
         revalidate();
         repaint();
     }
@@ -73,14 +78,14 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         for (int i = 0; i < currentcomp.racedayfilenames.size(); i++)
         {
             racedaymatrix raceday = currentcomp.getracedaymatrix(i);
-            racespanel.add("  ", raceday.displayraceresults(this, smalltable1styles(), i));
+            racespanel.add("  ", raceday.displayraceresults(this, smalltable2styles(), i));
         }
         racespanel.setStyleAttribute("backgroundcolor", "pink");
         racespanel.applyStyle();
         return racespanel;
     }
 
-    private jswHorizontalPanel displayscores()
+    private jswHorizontalPanel displayscorepanels()
     {
         jswHorizontalPanel racespanel = new jswHorizontalPanel("scores", false, false);
         racespanel.add(" WIDTH=50 ", currentcomp.displaysailcolumn(smalltable2styles()));
@@ -89,9 +94,13 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             racedaymatrix raceday = currentcomp.getracedaymatrix(i);
             racespanel.add("  ", raceday.displayscoreresults(this, smalltable1styles(), i));
         }
-        if (scorematrix != null)
+        if (scoresmatrix != null)
         {
-            racespanel.add(" FILLW RIGHT ", scorematrix.displayscoreresults(this, smalltable1styles(), 0));
+           racespanel.add(" FILLW ", scoresmatrix.displayresults(this, smalltable1styles(),maxsailors));
+        }
+        if (pointsmatrix != null)
+        {
+            racespanel.add(" FILLW RIGHT ", pointsmatrix.displayresults(this, smalltable1styles(),maxsailors));
         }
         return racespanel;
     }
@@ -125,17 +134,19 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         menubar.addMenuItem(filemenu, "Load Competition", "loadcompetition");
         menubar.addMenuItem(filemenu, "Save Competition", "savecompetition");
         menubar.addMenuItem(filemenu, "Export All Racedays to HTML", "racedaystohtml");
-        if (scorematrix != null)
+        if (pointsmatrix != null)
         {
             menubar.addMenuItem(filemenu, "Export Results to HTML", "competitionhtml");
         }
         viewmenu = menubar.addMenuHeading("View");
         menubar.addMenuItem(viewmenu, "Edit Competition", "editcompetition");
+        menubar.addMenuItem(viewmenu, "View Saillist", "viewsailist");
         actionmenu = menubar.addMenuHeading("Action");
         menubar.addMenuItem(actionmenu, "Make Scores", "makescore");
         menubar.addMenuItem(actionmenu, "Add New Raceday", "addnewraceday");
+        menubar.addMenuItem(actionmenu, "Add Random Raceday", "addrandomraceday");
         menubar.addMenuItem(actionmenu, "Load Raceday", "loadraceday");
-        menubar.addMenuItem(actionmenu, "New Competitiion", "newcompetition");
+        menubar.addMenuItem(actionmenu, "New Competition", "newcompetition");
         menubar.setBackground(jswStyle.transparentColor());
         add(" FILLW  ", menubar);
         return compheader;
@@ -177,6 +188,10 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
 
     public void actionPerformed(ActionEvent e)
     {
+        if (currentcomp.boatlist.isEmpty())
+        {
+            currentcomp.boatlist = new Vector<>(mainrace_gui.mframe.getBoatlist());
+        }
         String cmd = e.getActionCommand();
         System.out.println(" here we are y " + cmd);
         HashMap<String, String> cmdmap = jswUtils.parsecsvstring(cmd);
@@ -201,6 +216,18 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             compheader.setVisible(false);
             scorespanel.setVisible(false);
             editpanel.setVisible(true);
+            sailpanel.setVisible(false);
+        }
+        if (command.startsWith("viewsailist"))
+        {
+            mode = SAILLIST;
+            refreshcompetition_gui();
+            sailpanel.removeAll();
+            sailpanel.add(" ", showsaillist(smalltable2styles()));
+            sailpanel.setVisible(true);
+            compheader.setVisible(false);
+            scorespanel.setVisible(false);
+            editpanel.setVisible(false);
         }
         if (command.equalsIgnoreCase("saveeditcompetition"))
         {
@@ -230,7 +257,7 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
                 String selfile = chooser.getSelectedFile().getPath();
-                System.out.println("You chose to save to this file: " + selfile);
+                System.out.println("You chose to save to this html file: " + selfile);
                 currentcomp.printRacedaysToHTML(selfile, currentcomp.getCompetitionname());
             }
             refreshcompetition_gui();
@@ -252,9 +279,9 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
                 String selfile = chooser.getSelectedFile().getPath();
-                System.out.println("You chose to save to this file: " + selfile);
-                HashMap<String,String> sailorlist = mainrace_gui.mframe.makeList(currentcomp.getRaceclass()  );
-                scorematrix.printResultsToHTML(selfile, currentcomp.getCompetitionname(),sailorlist);
+                System.out.println("You chose to save to this html file: " + selfile);
+                HashMap<String, String> sailorlist = mainrace_gui.mframe.makeList(currentcomp.getRaceclass());
+                pointsmatrix.printResultsToHTML(selfile, currentcomp.getCompetitionname(), sailorlist, maxsailors);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
@@ -266,15 +293,14 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             String outfile = "competition_" + currentcomp.getRaceclass() + "_" + currentcomp.getCompyear() + ".xml";
             final File directorylock = new File(mainrace_gui.mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                    "xml", "xml");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
             chooser.setFileFilter(filter);
             chooser.setSelectedFile(new File(outfile));
             int returnVal = chooser.showSaveDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
                 String selfile = chooser.getSelectedFile().getPath();
-                System.out.println("You chose to save to this file: " + selfile);
+                System.out.println("You chose to save to this xml file: " + selfile);
                 currentcomp.printfileToXML(selfile);
                 mainrace_gui.mframe.saveProperties();
             }
@@ -285,55 +311,19 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         }
         if (command.equalsIgnoreCase("makescore"))
         {
-            SortedSet<String> boatlist;
-            boatlist = new TreeSet<String>();
-            boatlist.addAll(currentcomp.getSaillist());
-            int ns = boatlist.size();
-            int[][] matrix2 = new int[ns + 1][ns + 1];
-            for (int r = 0; r < getSailVector().size(); r++)
-            {
-                int totalscore = 0;
-                for (int i = 0; i < currentcomp.racedayfilenames.size(); i++)
-                {
-                    racedaymatrix aracedaymatrix = currentcomp.getRacedayNo(i);
-                    for (int c = 0; c < aracedaymatrix.getNcols(); c++)
-                    {
-                        String value = aracedaymatrix.compmatrix.getValue(c, r);
-                        int iv;
-                        try
-                        {
-                            iv = Integer.parseInt(value.trim());
-                            matrix2[iv][r] = matrix2[iv][r] + 1;
-                        } catch (NumberFormatException ex)
-                        {
-                            iv = 0;
-                        }
-                        totalscore += iv;
-                    }
-                }
-                System.out.println(" Total for " + getSailVector().get(r) + " = " + totalscore);
-            }
-            scorematrix = new racedaymatrix();
-            scorematrix.setBoatclass_str(currentcomp.getRaceclass());
-            scorematrix.setRacedate_str(currentcomp.getCompyear());
-            scorematrix.setCompRowname(currentcomp.getSaillist());
-            //scorematrix.
-            Vector<String> collabels = new Vector<String>();
-            collabels.add("Points");
-            collabels.add("1st");
-            collabels.add("2nd");
-            collabels.add("3rd");
-            for (int r = 4; r < currentcomp.getSaillist().size() + 1; r++)
-            {
-                collabels.add(r + "th");
-            }
-            scorematrix.setCompColname(collabels);
-            scorematrix.setSelect(true);
-            scorematrix.loadcomp(currentcomp.getracedaymatrix(), currentcomp.getRacecount());
+            maxsailors=currentcomp.getSaillist().size();
+            System.out.println("Max sailors" + maxsailors);
+            int[][] rankmatrix = makePointsMatrix();
+            scoresmatrix = new scoresmatrix(currentcomp);
+            scoresmatrix.makeMatrix(rankmatrix);
+            pointsmatrix = new ranksmatrix(currentcomp);
+            pointsmatrix.setColnames(utils.makePositionNames(maxsailors));
+            pointsmatrix.makeMatrix();
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
+            sailpanel.setVisible(false);
         } else if (command.equalsIgnoreCase("loadcompetition"))
         {
             final File directorylock = new File(mysailinghome);
@@ -365,9 +355,9 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             currentcomp.createSaillist("DF95");
             currentcomp.racedayfilenames.clear();
             currentcomp.getRacedaymatrixlist().clear();
-            scorematrix = null;
+            pointsmatrix = null;
             currentcomp.generateranklist(currentcomp.getSaillist().size());
-            currentcomp.addEmptyRacedayMatrix(4);
+            currentcomp.addEmptyRacedayMatrix(4, 16);
             currentcomp.makeCompMatrices();
             refreshcompetition_gui();
             compheader.setVisible(true);
@@ -386,7 +376,7 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
                 String selfile = chooser.getSelectedFile().getName();
                 System.out.println("You chose to open this file: " + selfile);
                 currentcomp.addRaceday(selfile);
-                racedaymatrix raceday = new racedaymatrix();
+                racedaymatrix raceday = new racedaymatrix(currentcomp);
                 raceday.readXML(mainrace_gui.mysailinghome + selfile);
                 currentcomp.getRacedaymatrixlist().add(raceday);
             }
@@ -400,12 +390,31 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             int nr = getSailVector().size();
             String boatclass = currentcomp.getRaceclass();
             String racedate = "12/12/" + currentcomp.getCompyear();
-            racedaymatrix racedayresults = new racedaymatrix(boatclass, racedate, nc, nr);
+            racedaymatrix racedayresults = new racedaymatrix(currentcomp,boatclass, racedate, nc, nr);
             racedayresults.makecompmatrix(getSailVector());
             racedayresults.filename = "raceday_" + boatclass + "_" + racedate + ".xml";
             currentcomp.getRacedaymatrixlist().add(racedayresults);
             currentcomp.racedayfilenames.add(racedayresults.filename);
             racedayresults.saved = false;
+            refreshcompetition_gui();
+            compheader.setVisible(true);
+            scorespanel.setVisible(true);
+            editpanel.setVisible(false);
+        } else if (command.equalsIgnoreCase("addrandomraceday"))
+        {
+            int nc = 4;
+            int nsailors = 15;
+            int nr = currentcomp.boatlist.size();
+            String boatclass = currentcomp.getRaceclass();
+            String racedate = "12/12/" + currentcomp.getCompyear();
+            racedaymatrix racedayresults = new racedaymatrix(boatclass, racedate, nc, nsailors, currentcomp.boatlist);
+            racedayresults.makecompmatrix(getSailVector());
+            racedayresults.filename = ("raceday_" + boatclass + "_" + racedate + ".xml").replace("/", "-");
+            currentcomp.getRacedaymatrixlist().add(racedayresults);
+            currentcomp.racedayfilenames.add(racedayresults.filename);
+            racedayresults.printfileToXML(racedayresults.filename);
+            racedayresults.saved = true;
+            currentcomp.reloadracedays();
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
@@ -479,8 +488,73 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         return editpanel;
     }
 
+    private jswHorizontalPanel showsaillist(jswStyles tablestyles)
+    {
+
+        jswHorizontalPanel editpanel = new jswHorizontalPanel("Sail List", false, false);
+        jswTable datagrid = new jswTable(null, "form1", tablestyles);
+
+        datagrid.addCell(new jswLabel("Sail Number"), 0, 0);
+        datagrid.addCell(new jswLabel("Class"), 0, 1);
+        datagrid.addCell(new jswLabel("Sailor"), 0, 2);
+
+        int nrows = currentcomp.boatlist.size();
+        for (int r = 0; r < nrows; r++)
+        {
+            sail boat = currentcomp.boatlist.get(r);
+            datagrid.addCell(new jswLabel(boat.getSailnumber()), r + 1, 0);
+            datagrid.addCell(new jswLabel(boat.getBoatclass()), r + 1, 1);
+            datagrid.addCell(new jswLabel(boat.getSailorname()), r + 1, 2);
+        }
+
+        editpanel.add(" FILLW FILLH ", datagrid);
+        editpanel.applyStyle();
+        return editpanel;
+    }
 
 
+    public int[][] makePointsMatrix()
+    {
+        TreeSet<Integer> sailors = new TreeSet<Integer>();
+        Vector<Integer> saillist = currentcomp.getSaillistInt();
+        int maxsails=saillist.size();
+        maxsailors=0;
+        int[][] matrix2 = new int[maxsails ][maxsails];
+
+            for (int i = 0; i < currentcomp.racedayfilenames.size(); i++)
+            {
+                racedaymatrix aracedaymatrix = currentcomp.getRacedayNo(i);
+                for (int c = 0; c < aracedaymatrix.GetNoRaces(); c++)
+                {
+                   int ns= aracedaymatrix.getNoSailors();
+                    for (int r = 0; r < aracedaymatrix.getNoSailors(); r++)
+                    {
+                        if(r==15)
+                        {
+                            System.out.println("voila"+r);
+                        }
+                    String value = aracedaymatrix.getRacematrix().getValue(c, r);
+                    int iv;
+                    try
+                    {
+                        iv = Integer.parseInt(value.trim());
+                        int si = saillist.indexOf(iv);
+                        if(si<0)
+                        {
+                            System.out.println("voila");
+                        }
+                        matrix2[si][r] = matrix2[si][r] + 1;
+                        sailors.add(iv);
+                    } catch (Exception ex)
+                    {
+                        iv = 0;
+                    }
+                }
+            }
+            maxsailors = sailors.size();
+        }
+        return matrix2;
+    }
 
 
 }

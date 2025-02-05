@@ -14,53 +14,32 @@ import java.util.Vector;
 
 public class mainrace_gui extends JFrame implements ActionListener
 {
-    public static final boolean COMPETITION = true;
-    public static final boolean RACEDAY = false;
-    public static boolean mode;
-    public  static  mainrace_gui mframe;
+    public static final int COMPETITION = 0;
+    public static final int RACEDAY = 1;
+    public static final int SAILLIST = 2;
+    //  public static final int RACEDAY = 1;
+    public static int mode;
+    public static mainrace_gui mframe;
     public static competition_gui compgui;
     public static jswVerticalPanel mainpanel;
-    public Vector<sail> getBoatlist()
-    {
-        return boatlist;
-    }
+    public static String mysailinghome;
+    public static String currentcompetitionfile;
     private final Vector<sail> boatlist;
+    String saillistfile;
     private String osversion;
     private String os;
     private String userdir;
     private String userhome;
     private String user;
-    private String dotmysailing = "";
-    public static String mysailinghome;
-    public static String currentcompetitionfile;
+    public static String dotmysailing ;
     private String mysailingexport;
     private String desktop;
     private String propsfile;
     private boolean editheader = false;
     private jswPanel resultpanel;
-   // racedaymatrix results;
-   // competition competition;
+    // racedaymatrix results;
+    // competition competition;
     private boolean activecell;
-    String  saillistfile;
-
-    public static void main(String[] args)
-    {
-        mode = COMPETITION;
-        mframe = new mainrace_gui(800, 400);
-        mframe.addWindowListener(new WindowAdapter()
-        {
-            public void windowClosing(WindowEvent e)
-            {
-                System.exit(0);
-            }
-        });
-        mframe.setLocation(50, 50);
-        mframe.setMinimumSize(new Dimension(800, 400));
-        mframe.pack();
-        mframe.setVisible(true);
-    }
-
-
     public mainrace_gui(int w, int h)
     {
         osversion = System.getProperty("os.version");
@@ -68,7 +47,7 @@ public class mainrace_gui extends JFrame implements ActionListener
         userdir = System.getProperty("user.dir");
         userhome = System.getProperty("user.home");
         user = System.getProperty("user.name");
-         currentcompetitionfile = null;
+        currentcompetitionfile = null;
         if (os.startsWith("Linux"))
         {
             System.out.println(" Linux identified ");
@@ -95,16 +74,8 @@ public class mainrace_gui extends JFrame implements ActionListener
         saillistfile = props.getProperty("saillist");
         currentcompetitionfile = props.getProperty("currentcompetition");
         boatlist = sail.readSaillistXML(dotmysailing + saillistfile);
-
         mainpanel = new jswVerticalPanel("mainpanel", true, false);
-        if (mode == RACEDAY)
-        {
-            mainpanel.add( " FILLH FILLW ", new raceday_gui(null));
-        } else
-        {
-            compgui = new  competition_gui(currentcompetitionfile);
-            mainpanel.add( " FILLH FILLW ", compgui);
-        }
+        refreshGui();
         add(mainpanel);
         mainpanel.repaint();
         revalidate();
@@ -120,54 +91,21 @@ public class mainrace_gui extends JFrame implements ActionListener
         });
     }
 
-
-    public java.util.Properties readProperties(String propsfile)
+    public static void main(String[] args)
     {
-        Properties prop = new Properties();
-        try
+        mode = COMPETITION;
+        mframe = new mainrace_gui(800, 400);
+        mframe.addWindowListener(new WindowAdapter()
         {
-            prop.loadFromXML(new FileInputStream(propsfile));
-            return prop;
-        } catch (InvalidPropertiesFormatException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (FileNotFoundException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
-    public void saveProperties()
-    {
-        try
-        {
-            File file = new File("xx"+propsfile);
-            if (!file.exists())
+            public void windowClosing(WindowEvent e)
             {
-                file.createNewFile();
+                System.exit(0);
             }
-            FileWriter fw = new FileWriter(file.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-            bw.write(    "<!DOCTYPE properties SYSTEM \"http://java.sun.com/dtd/properties.dtd\">");
-            bw.write( "<properties>\n");
-            bw.write( "    <comment>raceresults  properties</comment>\n");
-            bw.write( "<entry key=\"saillist\">RMBC_sailnumberlist.xml</entry>\n");
-            bw.write(     "<entry key=\"currentcompetition\">"+ currentcompetitionfile+"</entry>\n");
-            bw.write( "   </properties>\n");
-            bw.close();
-        } catch (Exception e)
-        {
-            System.out.println(e);
-        }
+        });
+        mframe.setLocation(50, 50);
+        mframe.setMinimumSize(new Dimension(800, 400));
+        mframe.pack();
+        mframe.setVisible(true);
     }
 
     public static jswStyles defaultStyles()
@@ -211,7 +149,7 @@ public class mainrace_gui extends JFrame implements ActionListener
     public static jswStyles table1styles()
     {
         jswStyles tablestyles = new jswStyles();
-       // tablestyles = jswStyles.getDefaultTableStyles();
+        // tablestyles = jswStyles.getDefaultTableStyles();
         tablestyles.name = "defaulttable";
 
         jswStyle tablestyle = tablestyles.makeStyle("table");
@@ -250,7 +188,7 @@ public class mainrace_gui extends JFrame implements ActionListener
     public static jswStyles smalltable1styles()
     {
         jswStyles tablestyles = new jswStyles();
-       // tablestyles = jswStyles.getDefaultTableStyles();
+        // tablestyles = jswStyles.getDefaultTableStyles();
         tablestyles.name = "defaulttable";
 
         jswStyle tablestyle = tablestyles.makeStyle("table");
@@ -272,8 +210,9 @@ public class mainrace_gui extends JFrame implements ActionListener
         colstyle0.putAttribute("backgroundcolor", "blue");
         colstyle0.putAttribute("horizontalAlignment", "RIGHT");
         colstyle0.putAttribute("width", 40);
-        colstyle0.putAttribute("fontsize", "12");
-        colstyle0.putAttribute("foregroundcolor", "gray");
+        colstyle0.putAttribute("fontsize", "10");
+        colstyle0.putAttribute("fontstyle", Font.BOLD + Font.ITALIC);
+        colstyle0.putAttribute("foregroundColor", "#0e56f2");
 
         jswStyle colstyle = tablestyles.makeStyle("col");
         colstyle.putAttribute("horizontalAlignment", "RIGHT");
@@ -290,6 +229,49 @@ public class mainrace_gui extends JFrame implements ActionListener
     }
 
     public static jswStyles smalltable2styles()
+    {
+        jswStyles tablestyles = new jswStyles();
+        // tablestyles = jswStyles.getDefaultTableStyles();
+        tablestyles.name = "defaulttable";
+
+        jswStyle tablestyle = tablestyles.makeStyle("table");
+        tablestyle.putAttribute("borderwidth", 1);
+        tablestyle.putAttribute("bordercolor", "black");
+
+        jswStyle rowstyle0 = tablestyles.makeStyle("row_0");
+        rowstyle0.putAttribute("backgroundcolor", "gray");
+        rowstyle0.putAttribute("fontStyle", Font.BOLD + Font.ITALIC);
+        rowstyle0.putAttribute("foregroundColor", "#0e56f2");
+
+        jswStyle rowstyle = tablestyles.makeStyle("row");
+        rowstyle.putAttribute("backgroundcolor", "gray");
+        rowstyle.putAttribute("fontsize", 10);
+        rowstyle.putAttribute("minheight", 40);
+        //rowstyle.putAttribute("mywidth", 100);
+
+        jswStyle colstyle0 = tablestyles.makeStyle("col_0");
+        colstyle0.putAttribute("backgroundcolor", "blue");
+        colstyle0.putAttribute("horizontalAlignment", "RIGHT");
+        colstyle0.putAttribute("width", 40);
+        colstyle0.putAttribute("fontsize", "10");
+        colstyle0.putAttribute("fontstyle", Font.BOLD + Font.ITALIC);
+        colstyle0.putAttribute("foregroundColor", "#0e56f2");
+
+        jswStyle colstyle = tablestyles.makeStyle("col");
+        colstyle.putAttribute("horizontalAlignment", "RIGHT");
+        colstyle.putAttribute("width", 20);
+
+        jswStyle cellstyle = tablestyles.makeStyle("cell");
+        cellstyle.putAttribute("foregroundcolor", "black");
+        cellstyle.putAttribute("borderWidth", "1");
+        cellstyle.putAttribute("borderColor", "blue");
+        cellstyle.putAttribute("fontsize", 10);
+
+
+        return tablestyles;
+    }
+
+    public static jswStyles smalltable3styles()
     {
         jswStyles tablestyles = new jswStyles();
         tablestyles = jswStyles.getDefaultTableStyles();
@@ -314,7 +296,7 @@ public class mainrace_gui extends JFrame implements ActionListener
         colstyle0.putAttribute("width", 40);
         colstyle0.putAttribute("fontsize", "12");
         colstyle0.putAttribute("foregroundcolor", "gray");
-        colstyle0.putAttribute("padding",4);
+        colstyle0.putAttribute("padding", 4);
 
         jswStyle colstyle = tablestyles.makeStyle("col");
         colstyle.putAttribute("horizontalAlignment", "RIGHT");
@@ -330,6 +312,75 @@ public class mainrace_gui extends JFrame implements ActionListener
         return tablestyles;
     }
 
+    public Vector<sail> getBoatlist()
+    {
+        return boatlist;
+    }
+
+    public void refreshGui()
+    {
+
+        mainpanel.removeAll();
+        if (mode == RACEDAY)
+        {
+            mainpanel.add(" FILLH FILLW ", new raceday_gui(null));
+        } else if (mode == COMPETITION)
+        {
+            compgui = new competition_gui(currentcompetitionfile);
+            mainpanel.add(" FILLH FILLW ", compgui);
+        }
+
+        mainpanel.repaint();
+
+    }
+
+    public java.util.Properties readProperties(String propsfile)
+    {
+        Properties prop = new Properties();
+        try
+        {
+            prop.loadFromXML(new FileInputStream(propsfile));
+            return prop;
+        } catch (InvalidPropertiesFormatException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (FileNotFoundException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void saveProperties()
+    {
+        try
+        {
+            File file = new File(propsfile);
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            bw.write("<!DOCTYPE properties SYSTEM \"http://java.sun.com/dtd/properties.dtd\">\n");
+            bw.write("<properties>\n");
+            bw.write("<comment>raceresults  properties</comment>\n");
+            bw.write("<entry key=\"saillist\">RMBC_sailnumberlist.xml</entry>\n");
+            bw.write("<entry key=\"currentcompetition\">" + currentcompetitionfile + "</entry>\n");
+            bw.write("</properties>\n");
+            bw.close();
+        } catch (Exception e)
+        {
+            System.out.println(e);
+        }
+    }
 
     @Override
     public void actionPerformed(ActionEvent actionEvent)
@@ -341,12 +392,12 @@ public class mainrace_gui extends JFrame implements ActionListener
     {
         HashMap<String, String> list = new HashMap<String, String>();
 
-        for(int b =0;b<boatlist.size();b++)
+        for (int b = 0; b < boatlist.size(); b++)
         {
             sail asail = boatlist.get(b);
-            if(asail.getBoatclass().equalsIgnoreCase(boatclass))
+            if (asail.getBoatclass().equalsIgnoreCase(boatclass))
             {
-                list.put(asail.getSailnumber(),asail.getSailorname());
+                list.put(asail.getSailnumber(), asail.getSailorname());
             }
         }
         return list;

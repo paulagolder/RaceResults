@@ -68,9 +68,6 @@ public class sail
             builder = factory.newDocumentBuilder();
             document = builder.parse(new File(fileNameWithPath));
             Element rootele = document.getDocumentElement();
-
-
-
             NodeList sails = rootele.getElementsByTagName("sail");
             for (int i = 0; i < sails.getLength(); i++)
             {
@@ -87,5 +84,10 @@ public class sail
             throw new RuntimeException(e);
         }
         return boatlist;
+    }
+
+    public String  toxml()
+    {
+        return   "<sail sailnumber=\""+sailnumber +"\" boatclass=\""+ boatclass+ "\" sailorname=\""+sailorname+ "\" /> \n";
     }
 }

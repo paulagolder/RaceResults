@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.HashMap;
+import java.util.Vector;
 
 import static org.lerot.raceresults.mainrace_gui.*;
 
@@ -38,7 +39,7 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
         setBorder(jswStyle.makeLineBorder(Color.red, 4));
 
         if (nresults == null)
-            racedayresults = racedaymatrix.demo();
+            racedayresults = racedaymatrix.demo(competition);
         else
             racedayresults = nresults;
         add(" FILLW   minheight=90 ", makeheadermenu());
@@ -141,6 +142,10 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             {
                 jswButton saveraceday = new jswButton(this, "SAVE", "saveraceday");
                 racedayheader.add(" right ", saveraceday);
+            }else
+            {
+                jswButton removeraceday = new jswButton(this, "REMOVE", "removeraceday");
+                racedayheader.add(" right ", removeraceday);
             }
             jswButton editheader = new jswButton(this, "EDIT", "editheader");
             racedayheader.add(" right ", editheader);
@@ -152,10 +157,11 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
 
     public jswVerticalPanel displayresults(jswStyles tablestyles)
     {
+        Vector<String> saillist = racedayresults.competition.getTrimmedSaillist();
         moveto = null;
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
-        int ncols = racedayresults.getNcols();
-        int nrows = racedayresults.getNrows();
+        int ncols = racedayresults.GetNoRaces();
+        int nrows = racedayresults.getNoSailors();
         raceresults.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
         //raceresults.setTrace(true);
         jswTable datagrid = new jswTable(this, "form1", tablestyles);
@@ -169,12 +175,12 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
         for (int c = 1; c < ncols + 1; c++)
         {
             jswCheckbox no = new jswCheckbox(this, " ");
-            no.setSelected(racedayresults.getRacematrix().selected.get(c - 1));
+            no.setSelected(racedayresults.getRacematrix().getSelected().get(c - 1));
             datagrid.addCell(no, 1, c);
         }
         for (int r = 1; r < nrows + 1; r++)
         {
-            datagrid.addCell(new jswLabel(racedayresults.getRowname(r - 1)), r + 1, 0);
+            datagrid.addCell(new jswLabel(racedayresults.getRank(r - 1)), r + 1, 0);
         }
         for (int c = 0; c < ncols; c++)
         {
@@ -192,9 +198,22 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
                     EventQueue.invokeLater(() -> activebox.getTextField().requestFocusInWindow());
                 } else
                 {
-                    jswLabel alabel = new jswLabel(racedayresults.getRacematrix().getValue(c, r));
-                    jswCell acell = datagrid.addCell(alabel, r + 2, c + 1);
-                    alabel.addMouseListener(acell);
+                    String avalue = racedayresults.getRacematrix().getValue(c, r);
+                    if(avalue != null)
+                    {
+                        avalue = avalue.trim();
+                        //  String value = racedayresults.getRacematrix().getValue(c, r).trim();
+                        jswLabel alabel = new jswLabel(avalue);
+                        jswCell acell = datagrid.addCell(alabel, r + 2, c + 1);
+                        if (!saillist.contains(avalue))
+                        {
+                            alabel.setStyleAttribute("foregroundcolor", "red");
+                            System.out.println("not found" + avalue);
+                        }
+
+                        alabel.applyStyle();
+                        alabel.addMouseListener(acell);
+                    }
                 }
             }
         }
@@ -226,9 +245,9 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
                 int col = Integer.parseInt(cmdmap.get("column"));
                 String chk = cmdmap.get("status").toLowerCase();
                 if (chk.equalsIgnoreCase("checked"))
-                    racedayresults.getRacematrix().selected.set(col - 1, true);
+                    racedayresults.getRacematrix().getSelected().set(col - 1, true);
                 else
-                    racedayresults.getRacematrix().selected.set(col - 1, false);
+                    racedayresults.getRacematrix().getSelected().set(col - 1, false);
                 racedayresults.saved = false;
                 raceresults.removeAll();
                 racedayheader.removeAll();
@@ -270,6 +289,20 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             racedayheader.add(" FILLW  ", displayheader());
             jswPanel apanel = displayresults(table1styles());
             raceresults.add(" FILLW FILLH ", apanel);
+        } else if (command.equalsIgnoreCase("removeraceday"))
+        {
+            int nraceday = compgui.currentcomp.racedayfilenames.indexOf(racedayresults.filename);
+            compgui.currentcomp.racedayfilenames.removeElementAt(nraceday);
+            compgui.currentcomp.getRacedaymatrixlist().removeElementAt(nraceday);
+            String compfile = compgui.currentcomp.competitionfile;
+            String savefile = utils.fileexists(compfile);
+            compgui.currentcomp.printfileToXML(savefile);
+            compgui.currentcomp.loadCompetition(compfile);
+            mode = COMPETITION;;
+            mframe.refreshGui();
+           // mainrace_gui.mainpanel.removeAll();
+           // mainrace_gui.mainpanel.add(" FILLH FILLW ", compgui);
+            revalidate();
         } else if (command.equalsIgnoreCase("racedaytohtml"))
         {
             activecell.put("r", -1);
@@ -302,14 +335,14 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this file: " + selfile);
-                if (!(mainrace_gui.mysailinghome+filename).equalsIgnoreCase(racedayresults.filename))
+                if (!(filename).equalsIgnoreCase(racedayresults.filename))
                 {
                     compgui.currentcomp.replacefilename(racedayresults.filename, selfile);
-                   // mframe.competition.s
                 }
                 racedayresults.setfilename(selfile);
                 racedayresults.printfileToXML(selfile);
                 racedayresults.saved = true;
+                compgui.currentcomp.saveCompetition();
             }
             racedayheader.removeAll();
             racedayheader.add(" FILLW ", displayheader());
@@ -349,7 +382,7 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             int nr = 10;
             String boatclass = "DF95";
             String racedate = "01/01/2025";
-            racedayresults = new racedaymatrix(boatclass, racedate, nc, nr);
+            racedayresults = new racedaymatrix(competition,boatclass, racedate, nc, nr);
             racedayresults.filename = "raceday_" + racedayresults.getBoatclass_str() + "_" + racedayresults.getRacedate("-") + ".xml";
             racedayresults.saved = false;
             racedayheader.removeAll();
@@ -402,7 +435,7 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             int nc = activecell.get("c");
             int nr = activecell.get("r");
             activecell.put("r", nr + 1);
-            System.out.println("edited cell " + cmdmap.get("column") + ":" + cmdmap.get("row") + "=" + cmdmap.get("textboxvalue"));
+            System.out.println("edited cell " + nc+ ":" + nr+ "=" + cmdmap.get("textboxvalue"));
             System.out.println(currentcell);
             System.out.println(activecell);
             String cd = cmdmap.get("command");
@@ -431,6 +464,7 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
             } else
             {
                 if (!cd.isEmpty())
+                {
                     try
                     {
                         int ti = Integer.parseInt(cmdmap.get("textboxvalue"));
@@ -439,6 +473,7 @@ public class raceday_gui extends jswVerticalPanel implements ActionListener
                     {
                         racedayresults.getRacematrix().setCell(nc, nr, " ");
                     }
+                }
             }
             racedayresults.saved = false;
             racedayheader.removeAll();

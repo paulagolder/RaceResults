@@ -13,7 +13,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
 
+import static org.lerot.raceresults.mainrace_gui.compgui;
 import static org.lerot.raceresults.utils.fileexists;
+import static org.lerot.raceresults.mainrace_gui.dotmysailing;
+import static org.lerot.raceresults.mainrace_gui.mysailinghome;
 
 public class competition
 {
@@ -26,7 +29,7 @@ public class competition
     private String competitionname;
     private Vector<String> saillist = new Vector<String>();
     private Vector<String> ranklist = new Vector<String>();
-    private Vector<sail> boatlist = new Vector<sail>();
+    Vector<sail> boatlist = new Vector<sail>();
     public String getCsscompetition()
     {
         return csscompetition;
@@ -97,28 +100,28 @@ public class competition
         this.competitionname = competitionname;
     }
 
-    public void loadCompetition(String filename)
+    public void loadCompetition(String path)
     {
-        String path = fileexists(filename);
-        if (path == null) return;
+        //String path = fileexists(filename);
+        //if (path == null) return;
         readCompetitionXML(path);
         reloadracedays();
     }
 
-    private void reloadracedays()
+    public void reloadracedays()
     {
         racedaymatrixlist.clear();
         for (int i = 0; i < racedayfilenames.size(); i++)
         {
             try
             {
-                racedaymatrix raceday = new racedaymatrix();
+                racedaymatrix raceday = new racedaymatrix(this);
                 String filename = racedayfilenames.get(i);
                 String file = fileexists(filename);
                 if(file!=null)
                 {
                     raceday.readXML(file);
-                    raceday.setfilename(file);
+                    raceday.setfilename(filename);
                     racedaymatrixlist.add(raceday);
                 }
             } catch (Exception e)
@@ -210,10 +213,13 @@ public class competition
             {
                 Element acell = (Element) racedaysnl.item(i);
                 String cname = acell.getAttribute("filename");
+                cname = cname.replace(dotmysailing,"");
+                cname = cname.replace(mysailinghome,"");
                 racedayfilenames.add(cname);
             }
 
             NodeList sails = rootele.getElementsByTagName("sail");
+            int nl = sails.getLength();
             for (int i = 0; i < sails.getLength(); i++)
             {
                 Element acell = (Element) sails.item(i);
@@ -299,27 +305,27 @@ public class competition
         Collections.sort(getSaillist());
     }
 
-    public void addracedaymatrix(int nraces)
+ /*   public void addracedaymatrix(int nraces)
     {
         racedaymatrix sailday;
 
-            sailday = new racedaymatrix(getRaceclass(), "01/" + (racedaymatrixlist.size() + 1) + "/" + getCompyear(), nraces, getSaillist());
+            sailday = new racedaymatrix(getRaceclass(), "01/" + (racedaymatrixlist.size() + 1) + "/" + getCompyear(), nraces,  getSaillist());
 
         racedaymatrixlist.add(sailday);
         sailday.filename = "raceday_"+getRaceclass()+"_"+sailday.getRacedate("-")+".xml";
         racedayfilenames.add( sailday.filename );
-    }
+    }*/
 
-    public void addEmptyRacedayMatrix(int nraces)
+    public void addEmptyRacedayMatrix(int nraces, int nsailors )
     {
-        racedaymatrix sailday = new racedaymatrix(getRaceclass(), "01/" + (racedaymatrixlist.size() + 1) + "/" + getCompyear(), nraces, getSaillist().size());
+        racedaymatrix sailday = new racedaymatrix(this,getRaceclass(), "01/" + (racedaymatrixlist.size() + 1) + "/" + getCompyear(), nraces, nsailors);
 
         racedaymatrixlist.add(sailday);
         sailday.filename = "raceday_"+getRaceclass()+"_"+sailday.getRacedate("-")+".xml";
         racedayfilenames.add( sailday.filename );
     }
 
-    public void addracedaymatrices(int ndays, int nraces)
+  /*  public void addracedaymatrices(int ndays, int nraces)
     {
 
             for (int d = 0; d < ndays; d++)
@@ -327,7 +333,7 @@ public class competition
                 addracedaymatrix(nraces);
             }
 
-    }
+    }*/
 
     public void generateranklist(int nrows)
     {
@@ -357,6 +363,18 @@ public class competition
                 bw.write("<raceday filename=\""+racedayfilenames.get(r)+"\" />\n");
             }
             bw.write("</racedays>\n");
+            if(!boatlist.isEmpty())
+            {
+                bw.write("<sails>\n");
+                for(int b=0;b<boatlist.size();b++)
+                {
+                    sail boat = boatlist.get(b);
+                    bw.write(boat.toxml());
+                }
+
+                bw.write("</sails>\n");
+            }
+
             bw.write("</competition>\n");
             bw.close();
         } catch (Exception e)
@@ -368,6 +386,29 @@ public class competition
     public Vector<String> getSaillist()
     {
         return saillist;
+    }
+
+    public Vector<String> getTrimmedSaillist()
+    {
+        Vector<String> trimmed = new Vector<String>();
+        for(int r=0;r< boatlist.size();r++)
+        {
+            trimmed.add(boatlist.get(r).getSailnumber().trim());
+        }
+        return trimmed;
+    }
+
+    public Vector<Integer> getSaillistInt()
+    {
+        Vector<Integer> trimmed = new Vector<>();
+        for(int r=0;r< saillist.size();r++)
+        {
+            if(!saillist.get(r).equalsIgnoreCase("null"))
+            {
+                trimmed.add(Integer.parseInt(saillist.get(r).trim()));
+            }
+        }
+        return trimmed;
     }
 
     public void setSaillist(Vector<String> saillist)
@@ -469,6 +510,16 @@ public class competition
     public void replacefilename(String oldfile, String newfile)
     {
         int fn = racedayfilenames.indexOf(oldfile);
-        racedayfilenames.set(fn,newfile);
+        String nfile = newfile.replace(mysailinghome,"");
+        nfile = nfile.replace(dotmysailing,"");
+        racedayfilenames.set(fn,nfile);
+    }
+
+
+    public void saveCompetition()
+    {
+        System.out.println("You chose to save this competition file: " + competitionfile);
+        this.printfileToXML(competitionfile);
+        mainrace_gui.mframe.saveProperties();
     }
 }

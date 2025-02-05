@@ -1,5 +1,6 @@
 package org.lerot.raceresults;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -7,7 +8,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Vector;
 
+import static org.lerot.raceresults.mainrace_gui.dotmysailing;
 import static org.lerot.raceresults.mainrace_gui.mysailinghome;
 
 public class utils
@@ -18,11 +21,11 @@ public class utils
     {
         HashMap<String, String> cmdmap = new HashMap<String, String>();
         String text2 = text;
-       // String text2 = text.replace("{", "");
-        if(text2.substring(0, 1).equals("{")) text2=text2.substring(1);
-        if(text2.substring(text2.length()-1).equals("}")) text2=text2.substring(0,text2.length()-1);
+        // String text2 = text.replace("{", "");
+        if (text2.substring(0, 1).equals("{")) text2 = text2.substring(1);
+        if (text2.substring(text2.length() - 1).equals("}")) text2 = text2.substring(0, text2.length() - 1);
 
-       // String text3 = text2.replace("}", "");
+        // String text3 = text2.replace("}", "");
         String[] cmdarray = text2.split(",");
         for (String acmd : cmdarray)
         {
@@ -52,63 +55,93 @@ public class utils
 
     public static String sailmaker(int j)
     {
-        String si = "     "+j;
-        return si.substring(si.length()-4);
+        String si = "     " + j;
+        return si.substring(si.length() - 4);
 
     }
 
     public static String getDate(String date, String format)
     {
-       try
-    {
-        Date ddate = new SimpleDateFormat(format).parse(date);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
-        String fdate = simpleDateFormat.format(ddate);
-        return fdate;
-    } catch( ParseException e)
-       {
+        try
+        {
+            Date ddate = new SimpleDateFormat(format).parse(date);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+            String fdate = simpleDateFormat.format(ddate);
+            return fdate;
+        } catch (ParseException e)
+        {
 
-        return  date;
+            return date;
+        }
     }
-}
 
-public static String fileexists(String filepath)
-{
-    Path file = Paths.get(filepath);
-    if (!Files.exists(file))
+    public static String fileexists(String filepath)
     {
-        // File does not exist
-    } else if (!Files.isRegularFile(file))
-    {
-        // File is not a file, maybe a directory
-    } else if (!Files.isReadable(file))
-    {
-        // File is not readable.
-    } else
-    {
-        return filepath;
-    }
-    file = Paths.get(mysailinghome + filepath);
-    if (!Files.exists(file))
-    {
-        // File does not exist
-    } else if (!Files.isRegularFile(file))
-    {
-        // File is not a file, maybe a directory
-    } else if (!Files.isReadable(file))
-    {
-        // File is not readable.
-    } else
-    {
-        return mysailinghome + filepath;
-    }
-    return null;
-}
+        Path file = Paths.get(filepath);
+        if (file.startsWith("/") && Files.exists(file) && Files.isRegularFile(file) && Files.isReadable(file))
+        {
+            // File gfile = new File(filepath);
+            return file.toAbsolutePath().toString();
+        } else
+        {
+            file = Paths.get(mysailinghome + filepath);
+            if (Files.exists(file) && Files.isRegularFile(file) && Files.isReadable(file))
+            {
+                return file.toAbsolutePath().toString();
+            } else
+            {
+                file = Paths.get(dotmysailing + filepath);
+                if (Files.exists(file) && Files.isRegularFile(file) && Files.isReadable(file))
+                {
+                    return file.toAbsolutePath().toString();
+                } else
+                {
+                    return null;
+                }
+            }
 
+        }
+    }
 
     public static String pad(int i)
     {
-        String si = "     "+i;
-        return si.substring(si.length()-4);
+        String si = "     " + i;
+        return si.substring(si.length() - 4);
     }
+
+    public static Vector<String> makeRownames(int nrows)
+    {
+        Vector<String> rownames = new Vector<String>();
+        for (int r = 0; r < nrows; r++)
+        {
+            rownames.add("Rank" + utils.pad(r + 1));
+        }
+        return rownames;
+    }
+
+    public static Vector<String> makeColnames(int ncols)
+    {
+        Vector<String> colnames = new Vector<String>();
+        for (int c = 0; c < ncols; c++)
+        {
+            colnames.add("Race " + ((char) (65 + c)));
+        }
+        return colnames;
+    }
+
+
+    public static Vector<String> makePositionNames(int ncols)
+    {
+        Vector<String> collabels = new Vector<String>();
+        collabels.add(" ");
+        collabels.add("1st");
+        collabels.add("2nd");
+        collabels.add("3rd");
+        for (int r = 4; r < ncols + 1; r++)
+        {
+            collabels.add(r + "th");
+        }
+        return collabels;
+    }
+
 }
