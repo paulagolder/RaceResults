@@ -3,6 +3,7 @@ package org.lerot.raceresults;
 import org.lerot.mywidgets.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -13,26 +14,26 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
 
-import static org.lerot.raceresults.mainrace_gui.mysailinghome;
+import static org.lerot.raceresults.Mainrace_gui.mysailinghome;
 
-public class racedaymatrix
+public class Raceday
 {
-    dataMatrix compmatrix;
+    //dataMatrix compmatrix;
     boolean saved = false;
     String filename;
     private String boatclass_str;
     private String racedate_str;
     private dataMatrix racematrix;
-    competition competition;
+    Competition competition;
 
-    public racedaymatrix(competition comp)
+    public Raceday(Competition comp)
     {
         racematrix = new dataMatrix();
-        compmatrix = new dataMatrix();
+      //  compmatrix = new dataMatrix();
         competition = comp;
     }
 
-    public racedaymatrix(competition comp, String boatclass, String racedate, int nraces, int nparticipants)
+    public Raceday(Competition comp, String boatclass, String racedate, int nraces, int nparticipants)
     {
         competition = comp;
         setBoatclass_str(boatclass);
@@ -50,23 +51,19 @@ public class racedaymatrix
         }
     }
 
-    public racedaymatrix(String boatclass, String racedate, int nraces, int nsailors, Vector<sail> boatlist)
+    public Raceday(String boatclass, String racedate, int nraces, int nsailors, Vector<String> boatlist)
     {
-        Vector<String> saillist = new Vector<String>();
-        for (int b = 0; b < boatlist.size(); b++)
-        {
-            saillist.add(boatlist.get(b).getSailnumber());
-        }
+
         setBoatclass_str(boatclass);
         setRacedate_str(racedate);
-        racematrix = new dataMatrix(nraces, nsailors, saillist);
+        racematrix = dataMatrix.randomMatrix(nraces, nsailors, boatlist);
         racematrix.setColname(utils.makeColnames(nraces));
         racematrix.setRowname(utils.makeRownames(nsailors));
     }
 
-    public static racedaymatrix demo(competition comp)
+    public static Raceday demo(Competition comp)
     {
-        racedaymatrix rm = new racedaymatrix(comp);
+        Raceday rm = new Raceday(comp);
         rm.boatclass_str = "DF99";
         rm.racedate_str = "08/07/1944";
         rm.racematrix = dataMatrix.demo(4, 15);
@@ -120,7 +117,6 @@ public class racedaymatrix
         }
         if (!file.exists())
         {
-            System.out.println(" creating :" + file);
             boolean success = false;
             try
             {
@@ -132,8 +128,7 @@ public class racedaymatrix
             if (!success)
             {
                 System.out.println(" not created:" + file);
-            } else
-                System.out.println(" created:" + file);
+            }
         }
         try
         {
@@ -201,7 +196,7 @@ public class racedaymatrix
             Element rootele = document.getDocumentElement();
             racedate_str = rootele.getAttributeNode("date").getValue();
             boatclass_str = rootele.getAttributeNode("class").getValue();
-            racematrix.loadresults(rootele);
+            loadfromXML(rootele);
             //makecompmatrix();
             saved = true;
         } catch (Exception e)
@@ -212,7 +207,72 @@ public class racedaymatrix
         return document;
     }
 
-    public jswVerticalPanel displayraceresults(competition_gui parent, jswStyles tablestyles, int index)
+    public void loadfromXML(Element rootelement)
+    {
+        NodeList colnames = rootelement.getElementsByTagName("colnames");
+        if (colnames.getLength() > 0)
+        {
+            Element acolname = (Element) colnames.item(0);
+            NodeList cells = acolname.getElementsByTagName("cell");
+            for (int c = 0; c < cells.getLength(); c++)
+            {
+                Element acell = (Element) cells.item(c);
+                String cname = acell.getAttribute("colname");
+                racematrix.getColname().add(cname);
+            }
+        }
+        NodeList rownames = rootelement.getElementsByTagName("rownames");
+        NodeList cells;
+        if (rownames.getLength() > 0)
+        {
+            cells = ((Element) rownames.item(0)).getElementsByTagName("cell");
+            for (int r = 0; r < cells.getLength(); r++)
+            {
+                Element acell = (Element) cells.item(r);
+                String cname = acell.getAttribute("rowname");
+                racematrix.getRowname().add(cname);
+            }
+        }
+        NodeList cols = rootelement.getElementsByTagName("col");
+        for (int c = 0; c < cols.getLength(); c++)
+        {
+            Element acol = (Element) cols.item(c);
+            String cname = acol.getAttribute("name");
+            String ctype = acol.getAttribute("type");
+            String asel = acol.getAttribute("select");
+            Boolean isselected = true;
+            if (asel != null)
+            {
+                isselected = ("true".equalsIgnoreCase(asel));
+            }
+
+            if (!racematrix.getColname().contains(cname))
+            {
+                racematrix.getColname().add(cname);
+            }
+            int cnum = racematrix.getColname().indexOf(cname);
+            racematrix.getColtype().add(cnum, ctype);
+            racematrix.getSelected().add(isselected);
+            cells = acol.getElementsByTagName("cell");
+            for (int r = 0; r < cells.getLength(); r++)
+            {
+                Element acell = (Element) cells.item(r);
+                String rname = acell.getAttribute("rowname");
+                if (!racematrix.getRowname().contains(rname))
+                {
+                    racematrix.getRowname().add(rname);
+                }
+                String value = acell.getTextContent();
+                SailNumber sn = new SailNumber(value);
+                String snstr = sn.ToString(5);
+                racematrix.putCell(cname, rname, snstr);
+               // System.out.println("hello "+cname+":"+rname+":"+value+":"+sn.ToString(5));
+            }
+        }
+    }
+
+
+    public jswVerticalPanel displayraceresults(Competition_gui parent, jswStyles tablestyles, int index)
     {
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
         raceresults.setStyleAttribute("borderwidth", 2);
@@ -222,10 +282,10 @@ public class racedaymatrix
         raceresults.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
         jswHorizontalPanel racedayheader = new jswHorizontalPanel("heading", false, false);
         jswLabel addb = new jswLabel(getBoatclass_str());
-        addb.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
+        addb.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
         racedayheader.add(" ", addb);
         jswLabel dt = new jswLabel(getRacedate("/"));
-        dt.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
+        dt.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
         racedayheader.add(" ", dt);
         ActionListener al = null;
         if (parent instanceof ActionListener)
@@ -247,7 +307,7 @@ public class racedaymatrix
         return raceresults;
     }
 
-    public jswVerticalPanel displayscoreresults(competition_gui parent, jswStyles tablestyles, int index)
+    public jswVerticalPanel displayscoreresults(Competition_gui parent, jswStyles tablestyles, int index)
     {
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
         raceresults.setPadding(2, 2, 2, 4);
@@ -256,7 +316,7 @@ public class racedaymatrix
         int nrows = getNoSailors();
         jswHorizontalPanel racedayheader = new jswHorizontalPanel("heading", false, false);
         jswLabel dt = new jswLabel(getRacedate("/"));
-        dt.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
+        dt.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
         racedayheader.add(" ", dt);
         ActionListener al = null;
         if (parent instanceof ActionListener)
@@ -266,16 +326,12 @@ public class racedaymatrix
         jswButton editheaderbutton = new jswButton(al, "EDIT", "editraceday:" + index);
         racedayheader.add(" right ", editheaderbutton);
         raceresults.add(" FILLW  ", racedayheader);
-        if (compmatrix != null)
-        {
-            raceresults.add("    ", compmatrix.makesmalldatapanel(parent.getSailVector(), tablestyles));
-        }
+        dataMatrix compmatrix = racematrix.getValueMatrix(racematrix.getColname(), parent.currentcomp.competitors.getVector());
+        raceresults.add("    ", compmatrix.makesmalldatapanel(parent.currentcomp.competitors, tablestyles));
         raceresults.applyStyle();
         raceresults.setPadding(5, 5, 5, 5);
         return raceresults;
     }
-
-
 
     public String getValue(int c, int r)
     {
@@ -301,18 +357,6 @@ public class racedaymatrix
     {
         return racematrix.getRowname().get(r);
     }
-
-
-
-    public void makecompmatrix(Vector<String> saillist)
-    {
-        compmatrix = new dataMatrix();
-        compmatrix.setColname(racematrix.getColname());
-        compmatrix.setRowname(saillist);
-        compmatrix.setSelected(racematrix.getSelected());
-        compmatrix.data = racematrix.getValueMatrix(saillist);
-    }
-
 
     public Vector<String> getValuevector()
     {

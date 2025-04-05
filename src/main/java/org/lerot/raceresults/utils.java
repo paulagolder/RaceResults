@@ -1,6 +1,5 @@
 package org.lerot.raceresults;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,14 +9,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Vector;
 
-import static org.lerot.raceresults.mainrace_gui.dotmysailing;
-import static org.lerot.raceresults.mainrace_gui.mysailinghome;
+import static org.lerot.raceresults.Mainrace_gui.dotmysailing;
+import static org.lerot.raceresults.Mainrace_gui.mysailinghome;
 
 public class utils
 {
 
 
-    public static HashMap<String, String> xparseaction(String text)
+    public static HashMap<String, String> parseaction(String text)
     {
         HashMap<String, String> cmdmap = new HashMap<String, String>();
         String text2 = text;
@@ -31,7 +30,10 @@ public class utils
         {
             //System.out.println( acmd)   ;
             String[] cmdpair = acmd.split("=");
-            cmdmap.put(cmdpair[0].trim(), cmdpair[1].trim());
+            if(cmdpair.length>1)
+              cmdmap.put(cmdpair[0].trim(), cmdpair[1].trim());
+            else
+                cmdmap.put(cmdpair[0].trim(), "");
         }
         //    System.out.println(cmdmap);
         return cmdmap;
@@ -70,7 +72,6 @@ public class utils
             return fdate;
         } catch (ParseException e)
         {
-
             return date;
         }
     }
@@ -144,4 +145,17 @@ public class utils
         return collabels;
     }
 
+    public static String makeList(String[] textarray)
+    {
+        StringBuilder out = new StringBuilder();
+        int r=0;
+        for(String atext:textarray)
+        {
+            if(r>0)
+               out.append(", ").append(atext);
+            else
+                out.append(atext);
+        }
+        return out.toString();
+    }
 }

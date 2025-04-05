@@ -9,19 +9,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.HashMap;
-import java.util.TreeSet;
 import java.util.Vector;
 
-import static org.lerot.raceresults.mainrace_gui.*;
+import static org.lerot.raceresults.Mainrace_gui.*;
 
-
-public class competition_gui extends jswVerticalPanel implements ActionListener
+public class Competition_gui extends jswVerticalPanel implements ActionListener
 {
-
-    public competition currentcomp;
+    public Competition currentcomp;
+    jswHorizontalPanel editpanel = null;
     private jswVerticalPanel headermenu;
     private jswHorizontalPanel compheader;
-    private jswHorizontalPanel editpanel = null;
     private jswHorizontalPanel scorespanel;
     private ranksmatrix pointsmatrix = null;
     private jswTextBox classfield;
@@ -32,23 +29,25 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
     private JMenu filemenu;
     private JMenu viewmenu;
     private JMenu actionmenu;
-    private jswHorizontalPanel sailpanel;
+    //  jswHorizontalPanel sailpanel;
     private int maxsailors;
-    private org.lerot.raceresults.scoresmatrix scoresmatrix;
+    private jswTextBox clubslist;
+    //private jswVerticalPanel  clubpanel;
+    // private jswOptionset cluboptions;
+    //private Club_gui clubgui;
 
 
-    public competition_gui(String compfile)
+    public Competition_gui(Competition acurrentcomp)
     {
         super("mainpanel", true, false);
-        currentcomp = new competition();
-        currentcomp.competitionfile = compfile;
-        String cfile = utils.fileexists(compfile);
-        currentcomp.loadCompetition(cfile);
+        makeheadermenu();
+        currentcomp = acurrentcomp;
+        System.out.println("%%% " + currentcomp.toString());
         applyStyle(jswStyle.getDefaultStyle());
         setBorder(jswStyle.makeLineBorder(Color.red, 4));
         refreshcompetition_gui();
-        editpanel.setVisible(false);
-        sailpanel.setVisible(false);
+        compheader.setVisible(true);
+        scorespanel.setVisible(true);
         revalidate();
         repaint();
     }
@@ -56,8 +55,6 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
     public void refreshcompetition_gui()
     {
         removeAll();
-        headermenu = makeheadermenu();
-        add(" FILLW HEIGHT=200  ", headermenu);
         compheader = displayheader();
         add(" FILLW HEIGHT=200 ", compheader);
         compheader.applyStyle();
@@ -65,8 +62,9 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         add(" FILLH  FILLW ", scorespanel);
         editpanel = editcompetition();
         add(" FILLW HEIGHT=200 ", editpanel);
-        sailpanel = new jswHorizontalPanel("Sail List", false, true);
-        add(" FILLW HEIGHT=200 ", sailpanel);
+        compheader.setVisible(false);
+        scorespanel.setVisible(false);
+        editpanel.setVisible(false);
         revalidate();
         repaint();
     }
@@ -77,7 +75,7 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         racespanel.add("  ", currentcomp.displayrankcolumn(smalltable2styles()));
         for (int i = 0; i < currentcomp.racedayfilenames.size(); i++)
         {
-            racedaymatrix raceday = currentcomp.getracedaymatrix(i);
+            Raceday raceday = currentcomp.getracedaymatrix(i);
             racespanel.add("  ", raceday.displayraceresults(this, smalltable2styles(), i));
         }
         racespanel.setStyleAttribute("backgroundcolor", "pink");
@@ -89,18 +87,20 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
     {
         jswHorizontalPanel racespanel = new jswHorizontalPanel("scores", false, false);
         racespanel.add(" WIDTH=50 ", currentcomp.displaysailcolumn(smalltable2styles()));
-        for (int i = 0; i < currentcomp.racedayfilenames.size(); i++)
+        if (currentcomp.getRacedaymatrixlist().size() > 0)
         {
-            racedaymatrix raceday = currentcomp.getracedaymatrix(i);
-            racespanel.add("  ", raceday.displayscoreresults(this, smalltable1styles(), i));
-        }
-        if (scoresmatrix != null)
-        {
-           racespanel.add(" FILLW ", scoresmatrix.displayresults(this, smalltable1styles(),maxsailors));
-        }
-        if (pointsmatrix != null)
-        {
-            racespanel.add(" FILLW RIGHT ", pointsmatrix.displayresults(this, smalltable1styles(),maxsailors));
+            for (int i = 0; i < currentcomp.getRacedaymatrixlist().size(); i++)
+            {
+                Raceday raceday = currentcomp.getracedaymatrix(i);
+                racespanel.add("  ", raceday.displayscoreresults(this, smalltable1styles(), i));
+            }
+            if (pointsmatrix != null)
+            {
+                PositionList scoresorder = pointsmatrix.makePositionMap();
+                racespanel.add(" FILLW  ", scoresorder.displayresults());
+                racespanel.add(" FILLW ", pointsmatrix.displayresults(this, smalltable1styles(), maxsailors));
+                int a = 2;
+            }
         }
         return racespanel;
     }
@@ -110,18 +110,75 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         return currentcomp.getRanklist();
     }
 
-    Vector<String> getSailVector()
+    private void makeheadermenu()
     {
-        return currentcomp.getSaillist();
+        if (mainmenubar.getMenuCount() > 2)
+        {
+            mainmenubar.remove(2);
+        }
+        if (mainmenubar.getMenuCount() > 1)
+        {
+            mainmenubar.remove(1);
+        }
+
+        JMenu fmenu = new JMenu("File");
+        mainmenubar.add(fmenu);
+        JMenuItem fmenuItem1 = new JMenuItem("Load Competition");
+        fmenuItem1.addActionListener(this);
+        fmenu.add(fmenuItem1);
+        JMenuItem fmenuItem2 = new JMenuItem("Save Competition");
+        fmenuItem2.addActionListener(this);
+        fmenu.add(fmenuItem2);
+        JMenuItem fmenuItem2b = new JMenuItem("Save Competition As");
+        fmenuItem2b.addActionListener(this);
+        fmenu.add(fmenuItem2b);
+        JMenuItem fmenuItem3 = new JMenuItem("Export All Racedays to HTML");
+        fmenuItem3.addActionListener(this);
+        fmenu.add(fmenuItem3);
+        if (pointsmatrix != null)
+        {
+            JMenuItem fmenuItem4 = new JMenuItem("Export Competition to HTML");
+            fmenuItem4.addActionListener(this);
+            fmenu.add(fmenuItem4);
+            JMenuItem fmenuItem5 = new JMenuItem("Export Positions to HTML");
+            fmenuItem5.addActionListener(this);
+            fmenu.add(fmenuItem5);
+            JMenuItem fmenuItem6 = new JMenuItem("Export Results to HTML");
+            fmenuItem6.addActionListener(this);
+            fmenu.add(fmenuItem6);
+        }
+        JMenu amenu = new JMenu("Action");
+        mainmenubar.add(amenu);
+        JMenuItem amenuItem0 = new JMenuItem("Edit Competition");
+        amenuItem0.addActionListener(this);
+        amenu.add(amenuItem0);
+        JMenuItem amenuItem1 = new JMenuItem("Make Scores");
+        amenuItem1.addActionListener(this);
+        amenu.add(amenuItem1);
+        JMenuItem amenuItem2 = new JMenuItem("Add New Raceday");
+        amenuItem2.addActionListener(this);
+        amenu.add(amenuItem2);
+        JMenuItem amenuItem3 = new JMenuItem("Add Random Raceday");
+        amenuItem3.addActionListener(this);
+        amenu.add(amenuItem3);
+        JMenuItem amenuItem4 = new JMenuItem("Load Raceday");
+        amenuItem4.addActionListener(this);
+        amenu.add(amenuItem4);
+        JMenuItem amenuItem5 = new JMenuItem("New Competition");
+        amenuItem5.addActionListener(this);
+        amenu.add(amenuItem5);
     }
 
-    private jswVerticalPanel makeheadermenu()
+    private jswVerticalPanel makeheader()
     {
         jswVerticalPanel compheader = new jswVerticalPanel("compheader", true, false);
         jswHorizontalPanel panel1 = new jswHorizontalPanel("Title Panel", true, false);
+        jswLabel aclub = new jswLabel(currentcomp.getClubString());
+        panel1.add(" ", aclub);
+        aclub.applyStyle(defaultStyles().getStyle("h1"));
         jswLabel title = new jswLabel("Competition Results");
         applyStyle(jswStyle.getDefaultStyle());
-        setBorder(jswStyle.makeLineBorder(Color.red, 4));
+        //   setBorder(jswStyle.makeLineBorder(Color.red, 4));
         panel1.setStyleAttribute("verticalalignstyle", jswLayout.MIDDLE);
         title.applyStyle(defaultStyles().getStyle("h1"));
         panel1.add(" width=200 MIDDLE  ", title);
@@ -129,36 +186,19 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         name.applyStyle(defaultStyles().getStyle("h1"));
         panel1.add("  RIGHT ", name);
         add(" height=100  FILLW  ", panel1);
-        menubar = new jswMenuBar("mainmenu", this);
-        filemenu = menubar.addMenuHeading("File");
-        menubar.addMenuItem(filemenu, "Load Competition", "loadcompetition");
-        menubar.addMenuItem(filemenu, "Save Competition", "savecompetition");
-        menubar.addMenuItem(filemenu, "Export All Racedays to HTML", "racedaystohtml");
-        if (pointsmatrix != null)
-        {
-            menubar.addMenuItem(filemenu, "Export Results to HTML", "competitionhtml");
-        }
-        viewmenu = menubar.addMenuHeading("View");
-        menubar.addMenuItem(viewmenu, "Edit Competition", "editcompetition");
-        menubar.addMenuItem(viewmenu, "View Saillist", "viewsailist");
-        actionmenu = menubar.addMenuHeading("Action");
-        menubar.addMenuItem(actionmenu, "Make Scores", "makescore");
-        menubar.addMenuItem(actionmenu, "Add New Raceday", "addnewraceday");
-        menubar.addMenuItem(actionmenu, "Add Random Raceday", "addrandomraceday");
-        menubar.addMenuItem(actionmenu, "Load Raceday", "loadraceday");
-        menubar.addMenuItem(actionmenu, "New Competition", "newcompetition");
-        menubar.setBackground(jswStyle.transparentColor());
-        add(" FILLW  ", menubar);
         return compheader;
     }
 
     public jswHorizontalPanel displayheader()
     {
         jswHorizontalPanel racedayheader = new jswHorizontalPanel("RaceHeader", true, false);
+        jswLabel addcn = new jswLabel(currentcomp.getCompetitionname());
+        addcn.applyStyle(defaultStyles().getStyle("largetext"));
+        racedayheader.add(" ", addcn);
         jswLabel label00 = new jswLabel(" Class ");
         label00.applyStyle(defaultStyles().getStyle("largetext"));
         racedayheader.add(" left ", label00);
-        jswLabel addb = new jswLabel(currentcomp.getRaceclass());
+        jswLabel addb = new jswLabel(currentcomp.getRaceclasses());
         addb.applyStyle(defaultStyles().getStyle("largetext"));
         racedayheader.add(" ", addb);
         jswLabel label01 = new jswLabel(" Year ");
@@ -188,54 +228,47 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
 
     public void actionPerformed(ActionEvent e)
     {
-        if (currentcomp.boatlist.isEmpty())
+        if (currentcomp.competitors.isEmpty())
         {
-            currentcomp.boatlist = new Vector<>(mainrace_gui.mframe.getBoatlist());
+            currentcomp.competitors = mframe.clubSaiLlist.select(currentcomp.getRaceclasses(),currentcomp.getClubString());
         }
         String cmd = e.getActionCommand();
         System.out.println(" here we are y " + cmd);
         HashMap<String, String> cmdmap = jswUtils.parsecsvstring(cmd);
         String cduc = cmdmap.get("command");
-        String command = "dummy";
-        if (cduc != null)
-            command = cmdmap.get("command").toLowerCase();
+        String command = cmd;
 
         if (command.startsWith("editraceday:"))
         {
             mode = RACEDAY;
             String seq = command.replace("editraceday:", "");
             int intseq = Integer.parseInt(seq);
-            mainpanel.removeAll();
-            racedaymatrix aracedaymatrix = currentcomp.getracedaymatrix(intseq);
-            mainpanel.add(" ", new raceday_gui(aracedaymatrix));
-            mainpanel.repaint();
+            mframe.currentraceday = intseq;
+            mframe.refreshGui();
         }
-        if (command.startsWith("editcompetition"))
+        if (command.startsWith("Edit Competition"))
         {
             refreshcompetition_gui();
+            if (mainmenubar.getMenuCount() > 2)
+            {
+                mainmenubar.remove(2);
+            }
+            if (mainmenubar.getMenuCount() > 1)
+            {
+                mainmenubar.remove(1);
+            }
             compheader.setVisible(false);
             scorespanel.setVisible(false);
             editpanel.setVisible(true);
-            sailpanel.setVisible(false);
-        }
-        if (command.startsWith("viewsailist"))
-        {
-            mode = SAILLIST;
-            refreshcompetition_gui();
-            sailpanel.removeAll();
-            sailpanel.add(" ", showsaillist(smalltable2styles()));
-            sailpanel.setVisible(true);
-            compheader.setVisible(false);
-            scorespanel.setVisible(false);
-            editpanel.setVisible(false);
         }
         if (command.equalsIgnoreCase("saveeditcompetition"))
         {
             currentcomp.setCompetitionname(namefield.getText());
             currentcomp.setCompyear(yearfield.getText());
             currentcomp.setRacecount(Integer.parseInt(countfield.getText()));
-            currentcomp.setRaceclass(classfield.getText());
-            command = "savecompetition";
+            currentcomp.setRaceclasses(classfield.getText());
+            currentcomp.setClubString(clubslist.getText());
+            command = "Save Competition";
         }
         if (command.equalsIgnoreCase("canceleditcompetition"))
         {
@@ -244,13 +277,12 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
         }
-        if (command.equalsIgnoreCase("racedaystohtml"))
+        if (command.equalsIgnoreCase("Export All Racedays to HTML"))
         {
-            String outfile = "raceday_results_" + currentcomp.getRaceclass() + "_" + currentcomp.getCompyear() + ".html";
-            final File directorylock = new File(mainrace_gui.mysailinghome);
+            String outfile = "raceday_results_" + currentcomp.getRaceclasses() + "_" + currentcomp.getCompyear() + ".html";
+            final File directorylock = new File(Mainrace_gui.mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                    "html", "html");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("html", "html");
             chooser.setFileFilter(filter);
             chooser.setSelectedFile(new File(outfile));
             int returnVal = chooser.showSaveDialog(this);
@@ -265,14 +297,13 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
         }
-        if (command.equalsIgnoreCase("competitionhtml"))
+        if (command.equalsIgnoreCase("Export Competition to HTML"))
         {
-            String outfile = "competition_results_" + currentcomp.getRaceclass() + "_" + currentcomp.getCompyear() + ".html";
-            final File directorylock = new File(mainrace_gui.mysailinghome);
+            String outfile = "competition_results_" + currentcomp.getRaceclasses() + "_" + currentcomp.getCompyear() + ".html";
+            final File directorylock = new File(Mainrace_gui.mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
             //  JFileChooser chooser = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                    "html", "html");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("html", "html");
             chooser.setFileFilter(filter);
             chooser.setSelectedFile(new File(outfile));
             int returnVal = chooser.showSaveDialog(this);
@@ -280,7 +311,7 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this html file: " + selfile);
-                HashMap<String, String> sailorlist = mainrace_gui.mframe.makeList(currentcomp.getRaceclass());
+                HashMap<String, Sail> sailorlist = Mainrace_gui.mframe.getClubSaiLlist().makeList(currentcomp.getRaceclasses(), currentcomp.getClubString());
                 pointsmatrix.printResultsToHTML(selfile, currentcomp.getCompetitionname(), sailorlist, maxsailors);
             }
             refreshcompetition_gui();
@@ -288,10 +319,42 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
         }
-        if (command.equalsIgnoreCase("savecompetition"))
+        if (command.equalsIgnoreCase("Export Positions to HTML"))
         {
-            String outfile = "competition_" + currentcomp.getRaceclass() + "_" + currentcomp.getCompyear() + ".xml";
-            final File directorylock = new File(mainrace_gui.mysailinghome);
+            String outfile = "points_results_" + currentcomp.getRaceclasses() + "_" + currentcomp.getCompyear() + ".html";
+            final File directorylock = new File(Mainrace_gui.mysailinghome);
+            JFileChooser chooser = new JFileChooser(directorylock);
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("html", "html");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(new File(outfile));
+            int returnVal = chooser.showSaveDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION)
+            {
+                String selfile = chooser.getSelectedFile().getPath();
+                System.out.println("You chose to save to this html file: " + selfile);
+                PositionList map = pointsmatrix.makePositionMap();
+                PositionList map2 = map.rankMap();
+                map2.printResultsToHTML(selfile, "title");
+            }
+            refreshcompetition_gui();
+            compheader.setVisible(true);
+            scorespanel.setVisible(true);
+            editpanel.setVisible(false);
+        }
+        if (command.equalsIgnoreCase("Save Competition"))
+        {
+            String selfile = currentcomp.competitionfile;
+            System.out.println("You chose to save to this competition xml file: " + selfile);
+            currentcomp.printfileToXML(selfile);
+            refreshcompetition_gui();
+            compheader.setVisible(true);
+            scorespanel.setVisible(true);
+            editpanel.setVisible(false);
+        }
+        if (command.equalsIgnoreCase("Save Competition As"))
+        {
+            String outfile = "competition_" + currentcomp.getRaceclasses() + "_" + currentcomp.getCompyear() + ".xml";
+            final File directorylock = new File(Mainrace_gui.mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
             FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
             chooser.setFileFilter(filter);
@@ -300,36 +363,32 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
                 String selfile = chooser.getSelectedFile().getPath();
-                System.out.println("You chose to save to this xml file: " + selfile);
+                System.out.println("You chose to save to this competition xml file: " + selfile);
                 currentcomp.printfileToXML(selfile);
-                mainrace_gui.mframe.saveProperties();
+                Mainrace_gui.mframe.saveProperties(selfile);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
         }
-        if (command.equalsIgnoreCase("makescore"))
+        if (command.equalsIgnoreCase("Make Scores"))
         {
-            maxsailors=currentcomp.getSaillist().size();
-            System.out.println("Max sailors" + maxsailors);
-            int[][] rankmatrix = makePointsMatrix();
-            scoresmatrix = new scoresmatrix(currentcomp);
-            scoresmatrix.makeMatrix(rankmatrix);
+            currentcomp.makeCompetitorsList();
+            int maxsailors = currentcomp.noCompetitors;
+            System.out.println("Max sailors :" + maxsailors);
+            System.out.println("competitors :" + currentcomp.competitors);
             pointsmatrix = new ranksmatrix(currentcomp);
-            pointsmatrix.setColnames(utils.makePositionNames(maxsailors));
-            pointsmatrix.makeMatrix();
+            makeheadermenu();
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
-            sailpanel.setVisible(false);
-        } else if (command.equalsIgnoreCase("loadcompetition"))
+        } else if (command.equalsIgnoreCase("Load Competition"))
         {
             final File directorylock = new File(mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                    "xml", "xml");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
             chooser.setFileFilter(filter);
             String outfile = mysailinghome + currentcompetitionfile;
             chooser.setSelectedFile(new File(outfile));
@@ -338,37 +397,34 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to open this file: " + selfile);
-                currentcomp = new competition();
-                currentcomp.loadCompetition(selfile);
+                currentcomp = new Competition(selfile, mframe.clubSaiLlist);
                 currentcompetitionfile = selfile;
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
-        } else if (command.equalsIgnoreCase("newcompetition"))
+        } else if (command.equalsIgnoreCase("New Competition"))
         {
-            currentcomp.setRaceclass("DF95");
+            currentcomp.setRaceclasses("DF95");
             currentcomp.setCompyear("2099");
             currentcomp.setCompetitionname("new competition");
             currentcomp.setRacecount(4);
-            currentcomp.createSaillist("DF95");
+            currentcomp.createTestSaillist("DF95");
             currentcomp.racedayfilenames.clear();
             currentcomp.getRacedaymatrixlist().clear();
             pointsmatrix = null;
-            currentcomp.generateranklist(currentcomp.getSaillist().size());
+            currentcomp.generateranklist(currentcomp.noCompetitors);
             currentcomp.addEmptyRacedayMatrix(4, 16);
-            currentcomp.makeCompMatrices();
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
-        } else if (command.equalsIgnoreCase("loadraceday"))
+        } else if (command.equalsIgnoreCase("Load Raceday"))
         {
-            final File directorylock = new File(mainrace_gui.mysailinghome);
+            final File directorylock = new File(Mainrace_gui.mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                    "xml", "xml");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
             chooser.setFileFilter(filter);
             int returnVal = chooser.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION)
@@ -376,22 +432,21 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
                 String selfile = chooser.getSelectedFile().getName();
                 System.out.println("You chose to open this file: " + selfile);
                 currentcomp.addRaceday(selfile);
-                racedaymatrix raceday = new racedaymatrix(currentcomp);
-                raceday.readXML(mainrace_gui.mysailinghome + selfile);
+                Raceday raceday = new Raceday(currentcomp);
+                raceday.readXML(Mainrace_gui.mysailinghome + selfile);
                 currentcomp.getRacedaymatrixlist().add(raceday);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
-        } else if (command.equalsIgnoreCase("addnewraceday"))
+        } else if (command.equalsIgnoreCase("Add New Raceday"))
         {
             int nc = 4;
-            int nr = getSailVector().size();
-            String boatclass = currentcomp.getRaceclass();
-            String racedate = "12/12/" + currentcomp.getCompyear();
-            racedaymatrix racedayresults = new racedaymatrix(currentcomp,boatclass, racedate, nc, nr);
-            racedayresults.makecompmatrix(getSailVector());
+            int nr = currentcomp.competitors.size();
+            String boatclass = currentcomp.getRaceclasses();
+            String racedate = "32/13/" + currentcomp.getCompyear();
+            Raceday racedayresults = new Raceday(currentcomp, boatclass, racedate, nc, nr);
             racedayresults.filename = "raceday_" + boatclass + "_" + racedate + ".xml";
             currentcomp.getRacedaymatrixlist().add(racedayresults);
             currentcomp.racedayfilenames.add(racedayresults.filename);
@@ -400,15 +455,15 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
-        } else if (command.equalsIgnoreCase("addrandomraceday"))
+        } else if (command.equalsIgnoreCase("Add Random Raceday"))
         {
             int nc = 4;
             int nsailors = 15;
-            int nr = currentcomp.boatlist.size();
-            String boatclass = currentcomp.getRaceclass();
+            int nr = currentcomp.competitors.size();
+            String boatclass = currentcomp.getRaceclasses();
             String racedate = "12/12/" + currentcomp.getCompyear();
-            racedaymatrix racedayresults = new racedaymatrix(boatclass, racedate, nc, nsailors, currentcomp.boatlist);
-            racedayresults.makecompmatrix(getSailVector());
+            Vector<String> saillist = currentcomp.competitors.getVector(boatclass, currentcomp.getClubString());
+            Raceday racedayresults = new Raceday(boatclass, racedate, nc, nsailors, saillist);
             racedayresults.filename = ("raceday_" + boatclass + "_" + racedate + ".xml").replace("/", "-");
             currentcomp.getRacedaymatrixlist().add(racedayresults);
             currentcomp.racedayfilenames.add(racedayresults.filename);
@@ -420,10 +475,11 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
         }
+
         revalidate();
-        mainrace_gui.mframe.revalidate();
-        mainrace_gui.mframe.repaint();
-        mainrace_gui.mframe.pack();
+        Mainrace_gui.mframe.revalidate();
+        Mainrace_gui.mframe.repaint();
+        Mainrace_gui.mframe.pack();
     }
 
     private jswHorizontalPanel editcompetition()
@@ -441,19 +497,17 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         namefield.applyStyle();
         namepanel.add(" ", namefield);
         subpanel.add(" height=100", namepanel);
-
         jswHorizontalPanel classpanel = new jswHorizontalPanel("class", false, false);
         jswLabel label00 = new jswLabel(" Class ");
         label00.applyStyle(defaultStyles().getStyle("largetext"));
         classpanel.add(" left ", label00);
         classfield = new jswTextBox(this, "Race Class");
-        classfield.setText(currentcomp.getRaceclass());
+        classfield.setText(currentcomp.getRaceclasses());
         classfield.setStyleAttribute("mywidth", 100);
         classfield.setStyleAttribute("myheight", 50);
         classfield.applyStyle();
         classpanel.add(" ", classfield);
         subpanel.add(" height=100 ", classpanel);
-
         jswHorizontalPanel yearpanel = new jswHorizontalPanel("year", false, false);
         jswLabel label01 = new jswLabel(" Year ");
         label01.applyStyle(defaultStyles().getStyle("largetext"));
@@ -465,7 +519,6 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         yearfield.applyStyle();
         yearpanel.add(" ", yearfield);
         subpanel.add(" height=100 ", yearpanel);
-
         jswHorizontalPanel racecountpanel = new jswHorizontalPanel("contributing", false, false);
         jswLabel label02 = new jswLabel(" Contributing Races ");
         label02.applyStyle(defaultStyles().getStyle("largetext"));
@@ -477,6 +530,17 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
         countfield.applyStyle();
         racecountpanel.add(" ", countfield);
         subpanel.add(" height=100 ", racecountpanel);
+        jswHorizontalPanel clubpanel = new jswHorizontalPanel("clubs", false, false);
+        jswLabel label03 = new jswLabel(" Clubs Racing - separated by commas");
+        label03.applyStyle(defaultStyles().getStyle("largetext"));
+        clubpanel.add(" left ", label03);
+        clubslist = new jswTextBox(this, "Clubs racing, separated by commas");
+        clubslist.setText(currentcomp.getClubString());
+        clubslist.setStyleAttribute("mywidth", 200);
+        clubslist.setStyleAttribute("myheight", 50);
+        clubslist.applyStyle();
+        clubpanel.add(" ", clubslist);
+        subpanel.add(" height=100 ", clubpanel);
         jswHorizontalPanel buttonpanel = new jswHorizontalPanel("button", false, false);
         jswButton savebutton = new jswButton(this, "save", "SAVEEDITCOMPETITION");
         buttonpanel.add(" ", savebutton);
@@ -490,70 +554,23 @@ public class competition_gui extends jswVerticalPanel implements ActionListener
 
     private jswHorizontalPanel showsaillist(jswStyles tablestyles)
     {
-
         jswHorizontalPanel editpanel = new jswHorizontalPanel("Sail List", false, false);
         jswTable datagrid = new jswTable(null, "form1", tablestyles);
-
         datagrid.addCell(new jswLabel("Sail Number"), 0, 0);
         datagrid.addCell(new jswLabel("Class"), 0, 1);
         datagrid.addCell(new jswLabel("Sailor"), 0, 2);
-
-        int nrows = currentcomp.boatlist.size();
+        int nrows = currentcomp.competitors.size();
+        Vector<Sail> saillist = currentcomp.competitors.getSailVector();
         for (int r = 0; r < nrows; r++)
         {
-            sail boat = currentcomp.boatlist.get(r);
-            datagrid.addCell(new jswLabel(boat.getSailnumber()), r + 1, 0);
+            Sail boat = saillist.get(r);
+            datagrid.addCell(new jswLabel(boat.getSailnumberStr()), r + 1, 0);
             datagrid.addCell(new jswLabel(boat.getBoatclass()), r + 1, 1);
             datagrid.addCell(new jswLabel(boat.getSailorname()), r + 1, 2);
         }
-
         editpanel.add(" FILLW FILLH ", datagrid);
         editpanel.applyStyle();
         return editpanel;
-    }
-
-
-    public int[][] makePointsMatrix()
-    {
-        TreeSet<Integer> sailors = new TreeSet<Integer>();
-        Vector<Integer> saillist = currentcomp.getSaillistInt();
-        int maxsails=saillist.size();
-        maxsailors=0;
-        int[][] matrix2 = new int[maxsails ][maxsails];
-
-            for (int i = 0; i < currentcomp.racedayfilenames.size(); i++)
-            {
-                racedaymatrix aracedaymatrix = currentcomp.getRacedayNo(i);
-                for (int c = 0; c < aracedaymatrix.GetNoRaces(); c++)
-                {
-                   int ns= aracedaymatrix.getNoSailors();
-                    for (int r = 0; r < aracedaymatrix.getNoSailors(); r++)
-                    {
-                        if(r==15)
-                        {
-                            System.out.println("voila"+r);
-                        }
-                    String value = aracedaymatrix.getRacematrix().getValue(c, r);
-                    int iv;
-                    try
-                    {
-                        iv = Integer.parseInt(value.trim());
-                        int si = saillist.indexOf(iv);
-                        if(si<0)
-                        {
-                            System.out.println("voila");
-                        }
-                        matrix2[si][r] = matrix2[si][r] + 1;
-                        sailors.add(iv);
-                    } catch (Exception ex)
-                    {
-                        iv = 0;
-                    }
-                }
-            }
-            maxsailors = sailors.size();
-        }
-        return matrix2;
     }
 
 

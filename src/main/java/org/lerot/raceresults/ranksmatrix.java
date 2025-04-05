@@ -1,70 +1,60 @@
 package org.lerot.raceresults;
 
 import org.lerot.mywidgets.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 
 public class ranksmatrix
 {
     private String boatclass;
     private String raceyear;
     private dataMatrix datamatrix;
-    private competition currentcompetition;
+    private Competition currentcompetition;
     private int maxsailors;
 
-
-
-    public ranksmatrix(competition acompetition)
+    public ranksmatrix(Competition acompetition)
     {
         setCurrentcompetition(acompetition);
-        setBoatclass(acompetition.getRaceclass());
+        setBoatclass(acompetition.getRaceclasses());
         setRaceyear(acompetition.getCompyear());
-
-        int nsailors = currentcompetition.getSaillist().size();
+        int nsailors = currentcompetition.noCompetitors;
         datamatrix = new dataMatrix(nsailors, nsailors);
         datamatrix.setSelected(true);
-        datamatrix.setRowname(currentcompetition.getSaillist());
+        datamatrix.setRowname(currentcompetition.competitors.getVector());
         datamatrix.setColname(utils.makePositionNames(nsailors));
-        datamatrix.getColname().set(0,"SAIL");
+        datamatrix.getColname().set(0, "SAIL.");
+        makeMatrix();
     }
 
     public void makeMatrix()
     {
-        SortedSet<String> boatlist;
-        boatlist = new TreeSet<String>();
-        boatlist.addAll(currentcompetition.getSaillist());
-        Vector<String> saillist = currentcompetition.getSaillist();
-        int ns = boatlist.size();
-        int maxsails= boatlist.size();
-        maxsailors=0;
+        int ns = currentcompetition.noCompetitors;
+        int maxsails = ns;
+        maxsailors = 0;
         int[][] matrix2 = new int[ns + 1][ns + 1];
         for (int r = 0; r < maxsails; r++)
         {
             int totalscore = 0;
             for (int i = 0; i < currentcompetition.racedayfilenames.size(); i++)
             {
-                racedaymatrix aracedaymatrix = currentcompetition.getRacedayNo(i);
+                Raceday aracedaymatrix = currentcompetition.getRacedayNo(i);
                 for (int c = 0; c < aracedaymatrix.GetNoRaces(); c++)
                 {
-                    String value = aracedaymatrix.compmatrix.getValue(c, r);
+                    dataMatrix compmatrix = aracedaymatrix.getRacematrix().getValueMatrix(aracedaymatrix.getRacematrix().getColname(), currentcompetition.competitors.getVector());
+                    String value = compmatrix.getValue(c, r);
                     int iv;
                     try
                     {
-                        iv = Integer.parseInt(value.trim());
-                        matrix2[iv][r] = matrix2[iv][r] + 1;
-                        if (iv > maxsailors) maxsailors = iv;
+                        if (value != null)
+                        {
+                            iv = Integer.parseInt(value.trim());
+                            matrix2[iv][r] = matrix2[iv][r] + 1;
+                            if (iv > maxsailors) maxsailors = iv;
+                        }
                     } catch (NumberFormatException ex)
                     {
                         iv = 0;
@@ -76,15 +66,13 @@ public class ranksmatrix
         Vector<String> sails = new Vector<String>();
         datamatrix.data.add(sails);
 
-        for (int r = 0; r < saillist.size(); r++)
+        for (Sail asail : currentcompetition.competitors)
         {
-            sails.add(saillist.get(r));
+            sails.add(asail.getSailnumberStr());
         }
 
-
-        for (int c = 1; c < maxsailors+1; c++)
+        for (int c = 1; c < maxsailors + 1; c++)
         {
-
             Vector<String> acol = new Vector<String>();
             int nrows = matrix2[c].length;
             for (int r = 0; r < nrows; r++)
@@ -96,8 +84,7 @@ public class ranksmatrix
         }
     }
 
-
-    public jswVerticalPanel displayresults(competition_gui parent, jswStyles tablestyles, int maxsailors)
+    public jswVerticalPanel displayresults(Competition_gui parent, jswStyles tablestyles, int maxsailors)
     {
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
         raceresults.setPadding(2, 2, 2, 4);
@@ -106,10 +93,12 @@ public class ranksmatrix
         int nrows = getNrows();
         jswHorizontalPanel racedayheader = new jswHorizontalPanel("heading", false, false);
         jswLabel dt = new jswLabel(getRacedate("/"));
-        dt.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
+        dt.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
         racedayheader.add(" minheight=30 ", dt);
         raceresults.add(" FILLW minheight=30   ", racedayheader);
-        raceresults.add("    ", datamatrix.makeresultspanel(parent.getSailVector(), tablestyles, maxsailors));
+        raceresults.add("    ", datamatrix.makeresultspanel(parent.currentcomp.competitors, tablestyles, maxsailors));
+        racedayheader.setStyleAttribute("height", 50);
+        racedayheader.applyStyle();
         raceresults.applyStyle();
         raceresults.setPadding(5, 5, 5, 5);
         return raceresults;
@@ -150,102 +139,6 @@ public class ranksmatrix
         this.datamatrix = datamatrix;
     }
 
-
-    public void printToHTML(String path)
-    {
-        try
-        {
-            File file = new File(path);
-            if (!file.exists())
-            {
-                file.createNewFile();
-            }
-            FileWriter fw = new FileWriter(file.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(" <!DOCTYPE html>\n<html>\n");
-            bw.write("<head>\n<style>");
-            bw.write(" td { text-align: center; }\n");
-            bw.write(" table, th, td { border: 1px solid; }\n");
-            bw.write("</style>\n</head>\n<body>\n");
-            datamatrix.printToHTML(bw, boatclass + " " + raceyear);
-            bw.write("\n</body>\n</html>\n");
-            bw.close();
-        } catch (Exception e)
-        {
-            System.out.println(e);
-        }
-    }
-
-    public Document readXML(String fileNameWithPath)
-    {
-        Document document;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = null;
-        datamatrix = new dataMatrix();
-        System.out.println("You chose to open this file:" + fileNameWithPath);
-        try
-        {
-            builder = factory.newDocumentBuilder();
-            document = builder.parse(new File(fileNameWithPath));
-            Element rootele = document.getDocumentElement();
-            raceyear = rootele.getAttributeNode("date").getValue();
-            boatclass = rootele.getAttributeNode("class").getValue();
-            datamatrix.loadresults(rootele);
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-        return document;
-    }
-
-    public jswVerticalPanel displaysmallresults(ActionListener al, jswStyles tablestyles)
-    {
-        jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
-        raceresults.setStyleAttribute("borderwidth", 2);
-        int ncols = getNcols();
-        int nrows = getNrows();
-        raceresults.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
-        jswHorizontalPanel racedayheader = new jswHorizontalPanel("heading", false, false);
-        jswLabel label00 = new jswLabel(" Class ");
-        label00.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" ", label00);
-        jswLabel addb = new jswLabel(getBoatclass());
-        addb.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" ", addb);
-        jswLabel label01 = new jswLabel(" Date ");
-        label01.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" middle ", label01);
-        jswLabel dt = new jswLabel(getRacedate("/"));
-        dt.applyStyle(mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" ", dt);
-        jswButton editheader = new jswButton(al, "EDIT", "edithraceday");
-        racedayheader.add(" right ", editheader);
-        raceresults.add(" FILLW FILLH middle ", racedayheader);
-        jswTable datagrid = new jswTable(null, "form1", tablestyles);
-        raceresults.add(" FILLW FILLH middle ", datagrid);
-        datagrid.addCell(new jswLabel("corner"), 0, 0);
-        for (int c = 1; c < ncols + 1; c++)
-        {
-            datagrid.addCell(new jswLabel(getColname(c - 1)), 0, c);
-        }
-        for (int r = 1; r < nrows + 1; r++)
-        {
-            datagrid.addCell(new jswLabel(getRowname(r - 1)), r, 0);
-        }
-        for (int c = 0; c < ncols; c++)
-        {
-            for (int r = 0; r < nrows; r++)
-            {
-                jswLabel alabel = new jswLabel(getDatamatrix().getValue(c, r));
-                jswCell acell = datagrid.addCell(alabel, r + 1, c + 1);
-                //alabel.addMouseListener(acell);
-            }
-        }
-        raceresults.applyStyle();
-        raceresults.setPadding(5, 5, 5, 5);
-        return raceresults;
-    }
-
     public String getValue(int c, int r)
     {
         return datamatrix.getValue(c, r);
@@ -272,17 +165,17 @@ public class ranksmatrix
     }
 
 
-    public competition getCurrentcompetition()
+    public Competition getCurrentcompetition()
     {
         return currentcompetition;
     }
 
-    public void setCurrentcompetition(competition currentcompetition)
+    public void setCurrentcompetition(Competition currentcompetition)
     {
         this.currentcompetition = currentcompetition;
     }
 
-    public void printResultsToHTML(String path, String comptitle, HashMap<String, String> boatlist, int maxsailors)
+    public void printResultsToHTML(String path, String comptitle, HashMap<String, Sail> boatlist, int maxsailors)
     {
         try
         {
@@ -308,16 +201,16 @@ public class ranksmatrix
     }
 
 
-    public void printScoresToHTML(BufferedWriter bw, String title, HashMap<String, String> boatlist, int maxsailors) throws IOException
+    public void printScoresToHTML(BufferedWriter bw, String title, HashMap<String, Sail> boatlist, int maxsailors) throws IOException
     {
         dataMatrix compmatrix = datamatrix;
-        int ncols = compmatrix.getColname().size();
+        int ncols = compmatrix.data.size();
         int nrows = compmatrix.getRowname().size();
         bw.write("<table id=\"" + compmatrix.getCssid() + "\" class=\"" + compmatrix.getCssclass() + "\">\n");
         bw.write("<tr>\n<th  colspan=" + (ncols + 2) + ">" + title + "</th>\n</tr>");
         bw.write("<tr>\n<th>Sail No</th>");
         bw.write("<th>Sailor</th>");
-        for (int c = 0; c < ncols; c++)
+        for (int c = 1; c < ncols; c++)
         {
             bw.write("<th>" + compmatrix.getColname().get(c) + "</th>");
         }
@@ -325,8 +218,8 @@ public class ranksmatrix
         for (int r = 0; r < nrows; r++)
         {
             bw.write("<tr><td>" + compmatrix.getRowname().get(r) + "</td>");
-            bw.write("<td>" + boatlist.get(compmatrix.getRowname().get(r).trim()) + "</td>");
-            for (int c = 0; c < ncols; c++)
+            bw.write("<td>" + boatlist.get(compmatrix.getRowname().get(r).trim()).getSailorname() + "</td>");
+            for (int c = 1; c < ncols; c++)
             {
                 bw.write("<td >" + compmatrix.data.get(c).get(r) + "</td>");
             }
@@ -338,5 +231,71 @@ public class ranksmatrix
     public void setColnames(Vector<String> strings)
     {
         datamatrix.setColnames(strings);
+    }
+
+    public PositionList makePositionMap()
+    {
+        PositionList posmap = new PositionList(currentcompetition);
+        int racecount = currentcompetition.getRacecount();
+        Vector<String> saillist = currentcompetition.competitors.getVector();
+        System.out.println(saillist.toString());
+        TreeMap<String, Sail> competitors = currentcompetition.competitors.getMap();
+        int totalscore = 0;
+        System.out.println("here:" + currentcompetition.noCompetitors);
+        int ncols = +datamatrix.data.size();
+        TreeMap<String, Position> positionMap = new TreeMap<String, Position>();
+        for (int r = 0; r < currentcompetition.noCompetitors; r++)
+        {
+            if (r == 5)
+            {
+                System.out.println("here:" + r + ":" + r);
+            }
+            String sn = datamatrix.data.get(0).get(r);
+            Sail asail = competitors.get(sn);
+            Position aposition = new Position();
+            int score = 0;
+            int races = 0;
+            for (int c = 1; c < ncols; c++)
+            {
+                Vector<String> col = datamatrix.data.get(c);
+                String value = col.get(r);
+                int rankcount = Integer.parseInt(datamatrix.getValue(c, r).trim());
+                if (rankcount > 0)
+                {
+                    if (racecount > 0)
+                    {
+                        if (rankcount + races < racecount)
+                        {
+                            races += rankcount;
+                            score += rankcount * (c);
+                        } else if (races < racecount)
+                        {
+                            score += (racecount - races) * (c);
+                            races = racecount;
+                        } else
+                        {
+                        }
+                    } else
+                    {
+                        races += rankcount;
+                        score += rankcount * (c);
+                    }
+                }
+            }
+
+            aposition.setSailor(asail.getSailorname());
+            aposition.setSail(asail.getSailnumberStr());
+            aposition.setRaces(races);
+            if(racecount>0)
+            {
+                int missingracepoints = (racecount - races) * maxsailors;
+                aposition.setPoints(score + missingracepoints);
+                aposition.setMissing_race_points(missingracepoints);
+            }
+            aposition.setRace_points(score);
+            posmap.add(aposition);
+        }
+
+        return posmap;
     }
 }

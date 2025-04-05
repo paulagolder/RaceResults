@@ -3,44 +3,49 @@ package org.lerot.raceresults;
 import org.lerot.mywidgets.*;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 
-public class mainrace_gui extends JFrame implements ActionListener
+public class Mainrace_gui extends JFrame implements ActionListener
 {
     public static final int COMPETITION = 0;
     public static final int RACEDAY = 1;
     public static final int SAILLIST = 2;
-    //  public static final int RACEDAY = 1;
+    public static final int CLUBLIST = 3;
     public static int mode;
-    public static mainrace_gui mframe;
-    public static competition_gui compgui;
+    public static Mainrace_gui mframe;
+    public static Competition_gui compgui;
     public static jswVerticalPanel mainpanel;
     public static String mysailinghome;
     public static String currentcompetitionfile;
-    private final Vector<sail> boatlist;
+    public static String homeclubcypher;
+    public static String homeclub;
+    public static String homeclubname;
+    public static String dotmysailing;
+    static JMenuBar mainmenubar;
+    final String clubsfile;
+    public ClubList clublist;
+    public Competition currentcompetition;
+    public SailList clubSaiLlist = null;
     String saillistfile;
     private String osversion;
     private String os;
     private String userdir;
     private String userhome;
     private String user;
-    public static String dotmysailing ;
     private String mysailingexport;
     private String desktop;
     private String propsfile;
     private boolean editheader = false;
     private jswPanel resultpanel;
-    // racedaymatrix results;
-    // competition competition;
     private boolean activecell;
-    public mainrace_gui(int w, int h)
+    private Club_gui clubgui;
+    int currentraceday;
+    private Sail_gui sailgui;
+
+    public Mainrace_gui(int w, int h)
     {
         osversion = System.getProperty("os.version");
         os = System.getProperty("os.name");
@@ -70,11 +75,27 @@ public class mainrace_gui extends JFrame implements ActionListener
             System.exit(0);
         }
         propsfile = dotmysailing + "properties.xml";
+        clubsfile = dotmysailing + "clubs.xml";
         Properties props = readProperties(propsfile);
+        clublist = new ClubList();
+        clublist.loadXML(clubsfile);
+        System.out.println("Clubs Loaded:" + clublist.toString());
         saillistfile = props.getProperty("saillist");
         currentcompetitionfile = props.getProperty("currentcompetition");
-        boatlist = sail.readSaillistXML(dotmysailing + saillistfile);
-        mainpanel = new jswVerticalPanel("mainpanel", true, false);
+        System.out.println("Competition file:" + currentcompetitionfile);
+        homeclub = props.getProperty("homeclub");
+        homeclubname = props.getProperty("homeclubname");
+        homeclubcypher = props.getProperty("homeclubcypher");
+        clubSaiLlist = new SailList();
+        clubSaiLlist.readSaillistXML(dotmysailing + saillistfile);
+        mainmenubar = mainmenu();
+        mainpanel = new jswVerticalPanel("mainpanel", false, false);
+        mainpanel.setBorder(jswStyle.makeLineBorder(Color.red, 4));
+        currentcompetition = new Competition(currentcompetitionfile, clubSaiLlist);
+        currentraceday = 0;
+        clubgui = new Club_gui(clublist);
+        sailgui = new Sail_gui(clubSaiLlist);
+        sailgui.setSelectedsail(clubSaiLlist.first());
         refreshGui();
         add(mainpanel);
         mainpanel.repaint();
@@ -94,7 +115,8 @@ public class mainrace_gui extends JFrame implements ActionListener
     public static void main(String[] args)
     {
         mode = COMPETITION;
-        mframe = new mainrace_gui(800, 400);
+        mframe = new Mainrace_gui(800, 400);
+        mframe.setJMenuBar(mainmenubar);
         mframe.addWindowListener(new WindowAdapter()
         {
             public void windowClosing(WindowEvent e)
@@ -138,7 +160,6 @@ public class mainrace_gui extends JFrame implements ActionListener
         sstyle.setBackgroundcolor("green");
         sstyle.setMyHeight(20);
         sstyle.setMyWidth(40);
-
         jswStyle h1style = defstyles.makeStyle("h1");
         h1style.putAttribute("foregroundColor", "black");
         h1style.putAttribute("fontSize", "18");
@@ -149,34 +170,24 @@ public class mainrace_gui extends JFrame implements ActionListener
     public static jswStyles table1styles()
     {
         jswStyles tablestyles = new jswStyles();
-        // tablestyles = jswStyles.getDefaultTableStyles();
         tablestyles.name = "defaulttable";
-
         jswStyle tablestyle = tablestyles.makeStyle("table");
         tablestyle.putAttribute("borderwidth", 1);
         tablestyle.putAttribute("bordercolor", "gray");
-
-        //  jswStyle rowstyle = tablestyles.makeStyle("row");
-        //  rowstyle.putAttribute("height", 100);
-
         jswStyle rowstyle0 = tablestyles.makeStyle("row_0");
         rowstyle0.putAttribute("backgroundcolor", "gray");
         rowstyle0.putAttribute("fontsize", 16);
         rowstyle0.putAttribute("fontStyle", Font.BOLD + Font.ITALIC);
         rowstyle0.putAttribute("foregroundColor", "#0e56f2");
-
         jswStyle colstyle0 = tablestyles.makeStyle("col_0");
         colstyle0.putAttribute("backgroundcolor", "blue");
         colstyle0.putAttribute("horizontalAlignment", "RIGHT");
         colstyle0.putAttribute("minwidth", 30);
         colstyle0.putAttribute("fontsize", "16");
         colstyle0.putAttribute("foregroundcolor", "gray");
-
         jswStyle colstyle = tablestyles.makeStyle("col");
         colstyle.putAttribute("horizontalAlignment", "RIGHT");
         colstyle.putAttribute("width", 30);
-        // colstyle.putAttribute("foregroundcolor", "yellow");
-
         jswStyle cellstyle = tablestyles.makeStyle("cell");
         cellstyle.putAttribute("foregroundcolor", "black");
         cellstyle.putAttribute("borderWidth", "1");
@@ -188,86 +199,60 @@ public class mainrace_gui extends JFrame implements ActionListener
     public static jswStyles smalltable1styles()
     {
         jswStyles tablestyles = new jswStyles();
-        // tablestyles = jswStyles.getDefaultTableStyles();
         tablestyles.name = "defaulttable";
-
         jswStyle tablestyle = tablestyles.makeStyle("table");
         tablestyle.putAttribute("borderwidth", 1);
         tablestyle.putAttribute("bordercolor", "black");
-
         jswStyle rowstyle0 = tablestyles.makeStyle("row_0");
         rowstyle0.putAttribute("backgroundcolor", "gray");
         rowstyle0.putAttribute("fontStyle", Font.BOLD + Font.ITALIC);
         rowstyle0.putAttribute("foregroundColor", "#0e56f2");
-
+        rowstyle0.putAttribute("height", 40);
         jswStyle rowstyle = tablestyles.makeStyle("row");
         rowstyle.putAttribute("backgroundcolor", "gray");
         rowstyle.putAttribute("fontsize", 10);
-        rowstyle.putAttribute("minheight", 40);
-        //rowstyle.putAttribute("mywidth", 100);
-
-        jswStyle colstyle0 = tablestyles.makeStyle("col_0");
-        colstyle0.putAttribute("backgroundcolor", "blue");
-        colstyle0.putAttribute("horizontalAlignment", "RIGHT");
-        colstyle0.putAttribute("width", 40);
-        colstyle0.putAttribute("fontsize", "10");
-        colstyle0.putAttribute("fontstyle", Font.BOLD + Font.ITALIC);
-        colstyle0.putAttribute("foregroundColor", "#0e56f2");
-
+        rowstyle.putAttribute("height", 20);
         jswStyle colstyle = tablestyles.makeStyle("col");
         colstyle.putAttribute("horizontalAlignment", "RIGHT");
         colstyle.putAttribute("width", 20);
-
         jswStyle cellstyle = tablestyles.makeStyle("cell");
         cellstyle.putAttribute("foregroundcolor", "black");
         cellstyle.putAttribute("borderWidth", "1");
         cellstyle.putAttribute("borderColor", "blue");
         cellstyle.putAttribute("fontsize", 10);
-
-
         return tablestyles;
     }
 
     public static jswStyles smalltable2styles()
     {
         jswStyles tablestyles = new jswStyles();
-        // tablestyles = jswStyles.getDefaultTableStyles();
         tablestyles.name = "defaulttable";
-
         jswStyle tablestyle = tablestyles.makeStyle("table");
         tablestyle.putAttribute("borderwidth", 1);
         tablestyle.putAttribute("bordercolor", "black");
-
         jswStyle rowstyle0 = tablestyles.makeStyle("row_0");
         rowstyle0.putAttribute("backgroundcolor", "gray");
         rowstyle0.putAttribute("fontStyle", Font.BOLD + Font.ITALIC);
         rowstyle0.putAttribute("foregroundColor", "#0e56f2");
-
+        rowstyle0.putAttribute("height", 40);
         jswStyle rowstyle = tablestyles.makeStyle("row");
         rowstyle.putAttribute("backgroundcolor", "gray");
         rowstyle.putAttribute("fontsize", 10);
-        rowstyle.putAttribute("minheight", 40);
-        //rowstyle.putAttribute("mywidth", 100);
-
+        rowstyle.putAttribute("height", 20);
         jswStyle colstyle0 = tablestyles.makeStyle("col_0");
         colstyle0.putAttribute("backgroundcolor", "blue");
         colstyle0.putAttribute("horizontalAlignment", "RIGHT");
         colstyle0.putAttribute("width", 40);
         colstyle0.putAttribute("fontsize", "10");
         colstyle0.putAttribute("fontstyle", Font.BOLD + Font.ITALIC);
-        colstyle0.putAttribute("foregroundColor", "#0e56f2");
-
         jswStyle colstyle = tablestyles.makeStyle("col");
         colstyle.putAttribute("horizontalAlignment", "RIGHT");
         colstyle.putAttribute("width", 20);
-
         jswStyle cellstyle = tablestyles.makeStyle("cell");
         cellstyle.putAttribute("foregroundcolor", "black");
         cellstyle.putAttribute("borderWidth", "1");
         cellstyle.putAttribute("borderColor", "blue");
         cellstyle.putAttribute("fontsize", 10);
-
-
         return tablestyles;
     }
 
@@ -276,20 +261,16 @@ public class mainrace_gui extends JFrame implements ActionListener
         jswStyles tablestyles = new jswStyles();
         tablestyles = jswStyles.getDefaultTableStyles();
         tablestyles.name = "defaulttable";
-
         jswStyle tablestyle = tablestyles.makeStyle("table");
         tablestyle.putAttribute("borderwidth", 1);
         tablestyle.putAttribute("bordercolor", "gray");
-
         jswStyle rowstyle0 = tablestyles.makeStyle("row_0");
         rowstyle0.putAttribute("backgroundcolor", "gray");
         rowstyle0.putAttribute("fontsize", 10);
-
         jswStyle rowstyle = tablestyles.makeStyle("row");
         rowstyle.putAttribute("backgroundcolor", "gray");
         rowstyle.putAttribute("fontsize", 10);
         rowstyle.putAttribute("minheight", 40);
-
         jswStyle colstyle0 = tablestyles.makeStyle("col_0");
         colstyle0.putAttribute("backgroundcolor", "blue");
         colstyle0.putAttribute("horizontalAlignment", "MIDDLE");
@@ -297,44 +278,89 @@ public class mainrace_gui extends JFrame implements ActionListener
         colstyle0.putAttribute("fontsize", "12");
         colstyle0.putAttribute("foregroundcolor", "gray");
         colstyle0.putAttribute("padding", 4);
-
         jswStyle colstyle = tablestyles.makeStyle("col");
         colstyle.putAttribute("horizontalAlignment", "RIGHT");
         colstyle.putAttribute("minwidth", 40);
-        // colstyle.putAttribute("foregroundcolor", "yellow");
-
         jswStyle cellstyle = tablestyles.makeStyle("cell");
         cellstyle.putAttribute("foregroundcolor", "black");
         cellstyle.putAttribute("borderWidth", "1");
         cellstyle.putAttribute("borderColor", "blue");
         cellstyle.putAttribute("fontsize", 10);
-
         return tablestyles;
     }
 
-    public Vector<sail> getBoatlist()
+    private JMenuBar mainmenu()
     {
-        return boatlist;
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menu = new JMenu("VIEW");
+        menuBar.add(menu);
+        JMenuItem menuItem1 = new JMenuItem("View Competition");
+        menuItem1.addActionListener(this);
+        menu.add(menuItem1);
+        JMenuItem menuItem2 = new JMenuItem("View Raceday");
+        menuItem2.addActionListener(this);
+        menu.add(menuItem2);
+        JMenuItem menuItem3 = new JMenuItem("View Sailors");
+        menuItem3.addActionListener(this);
+        menu.add(menuItem3);
+        JMenuItem menuItem4 = new JMenuItem("View Clubs");
+        menuItem4.addActionListener(this);
+        menu.add(menuItem4);
+        return menuBar;
+    }
+
+    private jswHorizontalPanel mainmenulabel()
+    {
+        jswHorizontalPanel menu = new jswHorizontalPanel("main menu", false, false);
+
+        String heading = "***";
+        switch (mode)
+        {
+            case COMPETITION:
+                heading = "Edit Competition";
+                break;
+            case RACEDAY:
+                heading = "Edit Days Racing";
+                break;
+            case CLUBLIST:
+                heading = "Edit Club List";
+                break;
+            case SAILLIST:
+                heading = "Edit Sail List";
+                break;
+        }
+        menu.add(" right ", new jswLabel(heading));
+        return menu;
+    }
+
+    public SailList getClubSaiLlist()
+    {
+        return clubSaiLlist;
     }
 
     public void refreshGui()
     {
-
         mainpanel.removeAll();
         if (mode == RACEDAY)
         {
-            mainpanel.add(" FILLH FILLW ", new raceday_gui(null));
+            Raceday aracedaymatrix = currentcompetition.getracedaymatrix(currentraceday);
+            mainpanel.add(" FILLH FILLW ", new Raceday_gui(aracedaymatrix));
         } else if (mode == COMPETITION)
         {
-            compgui = new competition_gui(currentcompetitionfile);
+            compgui = new Competition_gui(currentcompetition);
             mainpanel.add(" FILLH FILLW ", compgui);
+        } else if (mode == CLUBLIST)
+        {
+            mainpanel.add(" FILLH FILLW ", clubgui.makeClubgui());
+        } else if (mode == SAILLIST)
+        {
+            mainpanel.add(" FILLH FILLW ", sailgui.makeSailgui());
         }
-
         mainpanel.repaint();
-
+        revalidate();
     }
 
-    public java.util.Properties readProperties(String propsfile)
+    public Properties readProperties(String propsfile)
     {
         Properties prop = new Properties();
         try
@@ -357,7 +383,7 @@ public class mainrace_gui extends JFrame implements ActionListener
         return null;
     }
 
-    public void saveProperties()
+    public void saveProperties(String compfile)
     {
         try
         {
@@ -372,35 +398,43 @@ public class mainrace_gui extends JFrame implements ActionListener
             bw.write("<!DOCTYPE properties SYSTEM \"http://java.sun.com/dtd/properties.dtd\">\n");
             bw.write("<properties>\n");
             bw.write("<comment>raceresults  properties</comment>\n");
+            bw.write("<entry key=\"currentcompetition\">" + compfile + "</entry>\n");
             bw.write("<entry key=\"saillist\">RMBC_sailnumberlist.xml</entry>\n");
-            bw.write("<entry key=\"currentcompetition\">" + currentcompetitionfile + "</entry>\n");
+            bw.write("<entry key=\"homeclub\">" + homeclub + "</entry>\n");
+            bw.write("<entry key=\"homeclubname\">" + homeclubname + "</entry>\n");
+            bw.write("<entry key=\"homeclubcypher\">" + homeclubcypher + "</entry>\n");
             bw.write("</properties>\n");
             bw.close();
         } catch (Exception e)
         {
             System.out.println(e);
+            refreshGui();
         }
     }
 
     @Override
-    public void actionPerformed(ActionEvent actionEvent)
+    public void actionPerformed(ActionEvent e)
     {
-
-    }
-
-    public HashMap<String, String> makeList(String boatclass)
-    {
-        HashMap<String, String> list = new HashMap<String, String>();
-
-        for (int b = 0; b < boatlist.size(); b++)
+        String command = e.getActionCommand();
+        System.out.println(" here we are MRG : " + command);
+        if (command.equalsIgnoreCase("View Competition"))
         {
-            sail asail = boatlist.get(b);
-            if (asail.getBoatclass().equalsIgnoreCase(boatclass))
-            {
-                list.put(asail.getSailnumber(), asail.getSailorname());
-            }
+            mode = COMPETITION;
         }
-        return list;
-
+        if (command.equalsIgnoreCase("View Raceday"))
+        {
+            mode = RACEDAY;
+        }
+        if (command.startsWith("View Clubs"))
+        {
+            mode = CLUBLIST;
+        }
+        if (command.startsWith("View Sailors"))
+        {
+            mode = SAILLIST;
+        }
+        refreshGui();
     }
+
+
 }
