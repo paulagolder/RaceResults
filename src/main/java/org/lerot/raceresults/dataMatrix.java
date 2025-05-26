@@ -32,7 +32,7 @@ public class dataMatrix
         data = new Vector<Vector<String>>();
     }
 
-    public  dataMatrix(int ncols, int nrows)
+    public dataMatrix(int ncols, int nrows)
     {
         data = new Vector<Vector<String>>();
         for (int c = 0; c < ncols; c++)
@@ -53,10 +53,10 @@ public class dataMatrix
         int nrows = nsailors;
         if (nrows > saillist.size()) nrows = saillist.size();
         int max = nrows;
-        int min= nrows/2;
+        int min = nrows / 2;
         Random rn = new Random();
         ArrayList<String> root = new ArrayList<>(saillist);
-       rm.data = new Vector<Vector<String>>();
+        rm.data = new Vector<Vector<String>>();
         for (int c = 0; c < ncols; c++)
         {
             Collections.shuffle(root);
@@ -105,59 +105,80 @@ public class dataMatrix
         this.cssid = cssid;
     }
 
-    public void printToXML(BufferedWriter bw) throws IOException
+    public void printToXML(BufferedWriter bw)
     {
         int ncols = getColname().size();
-        int maxrows=0;
+        int maxrows = 0;
         for (int c = 0; c < ncols; c++)
         {
             Vector<String> cdata = data.get(c);
-            int nrows = getFilledLength(cdata);
-            if(nrows>maxrows) maxrows=nrows;
+            int nrows = getFilledLength(cdata)+2;
+            if (nrows > maxrows) maxrows = nrows;
         }
-        bw.write("<colnames>\n");
-        for (String aname : getColname())
+        int r = getRowname().size();
+        while (r < maxrows-1)
         {
-            bw.write("<cell colname=\"" + aname + "\"/>\n");
+            String label = "ROW " + (r+1);
+            getRowname().add(label);
+            r++;
         }
-        bw.write("</colnames>\n");
-        bw.write("<rownames>\n");
-        int nr= 0;
-        for (int r=0;r<maxrows;r++)
-        {
 
-            String aname = getRowname().get(r);
-            bw.write("<cell rowname =\"" + aname + "\"/>\n");
-        }
-        bw.write("</rownames>\n");
-        for (int c = 0; c < ncols; c++)
+        try
         {
-            String sel = "false";
-            if (getSelected().get(c)) sel = "true";
-            bw.write("<col name= \"" + getColname().get(c) + "\"  type=\"" + getColtype().get(c) + "\" select=\"" + sel + "\" >\n");
-            Vector<String> cdata = data.get(c);
-            int nrows = getFilledLength(cdata);
-            for (int r = 0; r < nrows; r++)
+            bw.write("<colnames>\n");
+
+            for (String aname : getColname())
             {
-                bw.write("<cell rowname=\"" + getRowname().get(r) + "\">" + cdata.get(r) + "</cell>\n");
+                bw.write("<cell colname=\"" + aname + "\"/>\n");
             }
-            bw.write("</col>\n");
+            bw.write("</colnames>\n");
+            bw.write("<rownames>\n");
+            r = 0;
+            while (r < maxrows-1)
+            {
+                String aname = getRowname().get(r);
+                bw.write("<cell rowname =\"" + aname + "\"/>\n");
+                r++;
+            }
+            bw.write("</rownames>\n");
+            Vector<String> rownames = getRowname();
+            for (int c = 0; c < ncols; c++)
+            {
+                String sel = "false";
+                if (getSelected().get(c)) sel = "true";
+                bw.write("<col name= \"" + getColname().get(c) + "\"  type=\"" + getColtype().get(c) + "\" select=\"" + sel + "\" >\n");
+                Vector<String> cdata = data.get(c);
+
+                int nrows = getFilledLength(cdata);
+                //System.out.println(" saving row count" + nrows);
+                for (r = 0; r < nrows+1; r++)
+                {
+                    //System.out.println(" saving row " + r);
+                    bw.write("<cell rowname=\"" + rownames.get(r) + "\">" + cdata.get(r) + "</cell>\n");
+
+                }
+                bw.write("</col>\n");
+            }
+        } catch (Exception e)
+        {
+            System.out.println(" problem with saving xml");
         }
     }
 
-    private int getFilledLength(Vector<String> vs)
+    int getFilledLength(Vector<String> vs)
     {
-        int max = vs.size()-1;
-        int n=max;
+        int max = vs.size() - 1;
+        int n = max;
         boolean more = false;
-        if(vs.get(max).trim().length() >0 ) more=true;
-        while(!more && n>0)
+        String mxvs = vs.get(max);
+        if (vs.get(max) != null && vs.get(max).trim().length() > 0 && !vs.get(max).trim().equalsIgnoreCase("null") ) return n;
+        while ( n > 1)
         {
-            if(vs.get(n).trim().length() >0 ) more=true;
-            else more = false;
             n--;
+            if (vs.get(n) != null && !vs.get(n).isEmpty()  ) return n;
+            if( vs.get(n).trim().equalsIgnoreCase("null")) return n;
         }
-        return n+2;
+        return n ;
     }
 
     public void printToHTML(BufferedWriter bw, String title) throws IOException
@@ -166,7 +187,7 @@ public class dataMatrix
         int nrows = getRowname().size();
         bw.write("<table id=\"" + cssid + "\" class=\"" + cssclass + "\">\n");
         bw.write("<tr>\n<th  colspan=" + (ncols + 1) + ">" + title + "</th>\n</tr>");
-        bw.write("<tr>\n<th>Sail No</th>");
+        bw.write("<tr>\n<th> </th>");
         for (int c = 0; c < ncols; c++)
         {
             bw.write("<th>" + getColname().get(c) + "</th>");
@@ -179,9 +200,9 @@ public class dataMatrix
             for (int c = 0; c < ncols; c++)
             {
                 String outvalue = data.get(c).get(r);
-                if(outvalue != null && !outvalue.equalsIgnoreCase("null")) filledcols++;
+                if (outvalue != null && !outvalue.equalsIgnoreCase("null")) filledcols++;
             }
-            if(filledcols>0)
+            if (filledcols > 0)
             {
                 bw.write("<tr><td>" + getRowname().get(r) + "</td>");
                 for (int c = 0; c < ncols; c++)
@@ -274,7 +295,14 @@ public class dataMatrix
         if (data.get(c) == null)
             return null;
         else
-            return data.get(c).get(r);
+        {
+            if (r >= data.get(c).size())
+            {
+                return " ";
+            } else
+                return data.get(c).get(r);
+        }
+
     }
 
     public int getncols()
@@ -376,17 +404,16 @@ public class dataMatrix
             col.add(rown, val);
     }
 
-    public  void putaCell(int coln, String rname, String val)
+    public void putaCell(int coln, String rname, String val)
     {
         Vector<String> col = data.get(coln);
         int rown = getRowname().indexOf(rname.trim());
-        if(rown < 0)
+        if (rown < 0)
         {
-           // System.out.println(" not found x :"+rname+":");
-        }
-        else
+            // System.out.println(" not found x :"+rname+":");
+        } else
         {
-          //  System.out.println(" adding :" + coln + ":" + rown + ":" + val + ":");
+            //  System.out.println(" adding :" + coln + ":" + rown + ":" + val + ":");
             col.set(rown, val);
         }
     }
@@ -394,7 +421,11 @@ public class dataMatrix
     public void setCell(int c, int r, String value)
     {
         Vector<String> col = data.get(c - 1);
-        col.set(r - 1, value);
+        if (r > col.size())
+        {
+            col.add(value);
+        } else
+            col.set(r - 1, value);
     }
 
     public String getCell(int c, int r)
@@ -423,13 +454,13 @@ public class dataMatrix
 
     public TreeSet<String> getValueSet()
     {
-     TreeSet<String> values = new TreeSet<String>();
+        TreeSet<String> values = new TreeSet<String>();
         for (int r = 0; r < getnrows(); r++)
         {
             for (int c = 0; c < getncols(); c++)
             {
                 String token = data.get(c).get(r);
-                if(token != null && !token.equalsIgnoreCase("null"))
+                if (token != null && !token.equalsIgnoreCase("null"))
                 {
                     values.add(token.trim());
                 }
@@ -442,24 +473,24 @@ public class dataMatrix
     {
         int ncols = colnames.size();
         int nrows = rownames.size();
-        dataMatrix vm = new dataMatrix(ncols,nrows);
+        dataMatrix vm = new dataMatrix(ncols, nrows);
         vm.setRowname(rownames);
         vm.setColname(colnames);
-     //   vm.getColname().set(2,"two");
-        vm.setColtype("String",4);
-        vm.setSelected(true,4);
+        //   vm.getColname().set(2,"two");
+        vm.setColtype("String", ncols);
+        vm.setSelected(true, ncols);
         for (int c = 0; c < data.size(); c++)
         {
             Vector<String> values = data.get(c);
             for (int r = 0; r < values.size(); r++)
             {
                 String avalue = values.get(r);
-                if(avalue != null)
+                if (avalue != null)
                 {
-                    String token =( "        " + avalue).trim();
-                  if (!token.trim().isEmpty())
+                    String token = ("        " + avalue).trim();
+                    if (!token.trim().isEmpty())
                     {
-                        vm.putaCell(c,token," "+(r+1));
+                        vm.putaCell(c, token, " " + (r + 1));
                     }
                 }
             }
@@ -470,7 +501,7 @@ public class dataMatrix
     private void setColtype(String string, int nc)
     {
         coltype = new Vector<String>();
-        for(int c=0;c<nc;c++)
+        for (int c = 0; c < nc; c++)
         {
             coltype.add(string);
         }
@@ -479,7 +510,7 @@ public class dataMatrix
     private void setSelected(Boolean b, int nc)
     {
         selected = new Vector<Boolean>();
-        for(int c=0;c<nc;c++)
+        for (int c = 0; c < nc; c++)
         {
             selected.add(b);
         }
@@ -661,7 +692,7 @@ public class dataMatrix
     public void setSelected(boolean b)
     {
         selected = new Vector<Boolean>();
-        for (int r = 0; r < data.size()+1; r++)
+        for (int r = 0; r < data.size() + 1; r++)
         {
             selected.add(b);
         }

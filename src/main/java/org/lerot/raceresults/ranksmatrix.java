@@ -52,7 +52,11 @@ public class ranksmatrix
                         if (value != null)
                         {
                             iv = Integer.parseInt(value.trim());
-                            matrix2[iv][r] = matrix2[iv][r] + 1;
+                           // if(iv<ns+1)
+                           // {
+                                System.out.println(" saving " + iv + " " + r);
+                                matrix2[iv][r] = matrix2[iv][r] + 1;
+                          //  }
                             if (iv > maxsailors) maxsailors = iv;
                         }
                     } catch (NumberFormatException ex)
@@ -62,6 +66,7 @@ public class ranksmatrix
                 }
             }
         }
+        maxsailors++;
         datamatrix.data.clear();
         Vector<String> sails = new Vector<String>();
         datamatrix.data.add(sails);
@@ -175,7 +180,7 @@ public class ranksmatrix
         this.currentcompetition = currentcompetition;
     }
 
-    public void printResultsToHTML(String path, String comptitle, HashMap<String, Sail> boatlist, int maxsailors)
+    public void printResultsToHTML(String path, String comptitle, TreeMap<SailNumber, Sail> boatlist, int maxsailors)
     {
         try
         {
@@ -201,7 +206,7 @@ public class ranksmatrix
     }
 
 
-    public void printScoresToHTML(BufferedWriter bw, String title, HashMap<String, Sail> boatlist, int maxsailors) throws IOException
+    public void printScoresToHTML(BufferedWriter bw, String title, TreeMap<SailNumber, Sail> boatlist, int maxsailors) throws IOException
     {
         dataMatrix compmatrix = datamatrix;
         int ncols = compmatrix.data.size();
@@ -244,12 +249,10 @@ public class ranksmatrix
         System.out.println("here:" + currentcompetition.noCompetitors);
         int ncols = +datamatrix.data.size();
         TreeMap<String, Position> positionMap = new TreeMap<String, Position>();
+
         for (int r = 0; r < currentcompetition.noCompetitors; r++)
         {
-            if (r == 5)
-            {
-                System.out.println("here:" + r + ":" + r);
-            }
+            int totalraces = 0;
             String sn = datamatrix.data.get(0).get(r);
             Sail asail = competitors.get(sn);
             Position aposition = new Position();
@@ -260,6 +263,7 @@ public class ranksmatrix
                 Vector<String> col = datamatrix.data.get(c);
                 String value = col.get(r);
                 int rankcount = Integer.parseInt(datamatrix.getValue(c, r).trim());
+                totalraces +=rankcount;
                 if (rankcount > 0)
                 {
                     if (racecount > 0)
@@ -285,12 +289,13 @@ public class ranksmatrix
 
             aposition.setSailor(asail.getSailorname());
             aposition.setSail(asail.getSailnumberStr());
-            aposition.setRaces(races);
+            aposition.setScoredraces(races);
             if(racecount>0)
             {
                 int missingracepoints = (racecount - races) * maxsailors;
                 aposition.setPoints(score + missingracepoints);
                 aposition.setMissing_race_points(missingracepoints);
+                aposition.setTotalraces(totalraces);
             }
             aposition.setRace_points(score);
             posmap.add(aposition);

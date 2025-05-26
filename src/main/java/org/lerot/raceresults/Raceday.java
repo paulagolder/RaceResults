@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
 
+import static org.lerot.raceresults.Mainrace_gui.homeclubname;
 import static org.lerot.raceresults.Mainrace_gui.mysailinghome;
 
 public class Raceday
@@ -21,15 +22,15 @@ public class Raceday
     //dataMatrix compmatrix;
     boolean saved = false;
     String filename;
+    Competition competition;
     private String boatclass_str;
     private String racedate_str;
     private dataMatrix racematrix;
-    Competition competition;
 
     public Raceday(Competition comp)
     {
         racematrix = new dataMatrix();
-      //  compmatrix = new dataMatrix();
+        //  compmatrix = new dataMatrix();
         competition = comp;
     }
 
@@ -39,7 +40,7 @@ public class Raceday
         setBoatclass_str(boatclass);
         setRacedate_str(racedate);
         racematrix = new dataMatrix(nraces, nparticipants);
-        for(int c=0;c<nraces;c++)
+        for (int c = 0; c < nraces; c++)
         {
             racematrix.getColname().add("Race " + ((char) (65 + c)));
             racematrix.getColtype().add("string");
@@ -92,6 +93,7 @@ public class Raceday
 
     public String getRacedate(String ch)
     {
+        if (racedate_str == null) return "";
         String date = utils.getDate(racedate_str, "dd/mm/yyyy");
         return date.replace("/", ch);
     }
@@ -109,8 +111,7 @@ public class Raceday
     public void printfileToXML(String path)
     {
         File file;
-        if (!path.startsWith("/"))
-            file = new File(mysailinghome + path);
+        if (!path.startsWith("/")) file = new File(mysailinghome + path);
         else
         {
             file = new File(path);
@@ -130,20 +131,28 @@ public class Raceday
                 System.out.println(" not created:" + file);
             }
         }
+        FileWriter fw = null;
         try
         {
-
-            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
-            bw.write("<raceresults class=\"" + boatclass_str + "\" date=\"" + racedate_str + "\">\n");
-            racematrix.printToXML(bw);
-            bw.write("</raceresults>");
-            bw.close();
-            saved = true;
-        } catch (Exception e)
+            try
+            {
+                bw.write("<raceresults class=\"" + boatclass_str + "\" date=\"" + racedate_str + "\">\n");
+                racematrix.printToXML(bw);
+                bw.write("</raceresults>");
+                bw.close();
+                saved = true;
+            } catch (Exception e)
+            {
+                System.out.println(" problem with :" + file.getAbsoluteFile());
+
+            }
+        } catch (IOException e)
         {
-            System.out.println(" problem with :" + file);
+            throw new RuntimeException(e);
         }
+
     }
 
     public void printToHTML(String path)
@@ -199,12 +208,13 @@ public class Raceday
             loadfromXML(rootele);
             //makecompmatrix();
             saved = true;
+            return document;
         } catch (Exception e)
         {
             System.out.println("Does not exist:" + fileNameWithPath);
             return null;
         }
-        return document;
+
     }
 
     public void loadfromXML(Element rootelement)
@@ -266,7 +276,7 @@ public class Raceday
                 SailNumber sn = new SailNumber(value);
                 String snstr = sn.ToString(5);
                 racematrix.putCell(cname, rname, snstr);
-               // System.out.println("hello "+cname+":"+rname+":"+value+":"+sn.ToString(5));
+                // System.out.println("hello "+cname+":"+rname+":"+value+":"+sn.ToString(5));
             }
         }
     }
@@ -355,7 +365,8 @@ public class Raceday
 
     public String getRank(int r)
     {
-        return racematrix.getRowname().get(r);
+        if (r >= racematrix.getRowname().size()) return "Rank- " + (r + 1);
+        else return racematrix.getRowname().get(r);
     }
 
     public Vector<String> getValuevector()
@@ -375,12 +386,31 @@ public class Raceday
 
     public void addRace()
     {
-
-            int nc = racematrix.getColname().size();
-            int nr =racematrix.getRowname().size();
-            String colname = "Race "+((char) (65 + nc));
-
-        racematrix.addColumn(colname,nr);
+        int nc = racematrix.getColname().size();
+        int nr = racematrix.getRowname().size();
+        String colname = "Race " + ((char) (65 + nc));
+        racematrix.addColumn(colname, nr);
     }
 
+    public void setCell(int nc, int nr, String cd)
+    {
+        System.out.println("  set cell :"+cd);
+
+        String[] sailid = SailNumber.parse(cd);
+        if(sailid[1].isEmpty())
+        {
+            Sail gsail = competition.allSails.getSail(cd, boatclass_str, homeclubname);
+            getRacematrix().setCell(nc, nr, gsail.getSailnumberStr());
+        }
+        else
+        {
+
+            getRacematrix().setCell(nc, nr, sailid[0] +" "+sailid[1].trim());
+        }
+
+
+
+
+
+    }
 }

@@ -61,19 +61,21 @@ public class PositionList
         datagrid.addCell(new jswLabel("Sail"), 0, 0);
         datagrid.addCell(new jswLabel("Sailor"), 0, 1);
         datagrid.addCell(new jswLabel("Races"), 0, 2);
-        datagrid.addCell(new jswLabel("Points"), 0, 3);
-        datagrid.addCell(new jswLabel("<html>Race<br/>Points</html>"), 0, 4);
-        datagrid.addCell(new jswLabel("<html>Missing<br/>RacePoints</html>"), 0, 5);
+        datagrid.addCell(new jswLabel("<html>Scored<br/>Races</html>"), 0, 3);
+        datagrid.addCell(new jswLabel("Points"), 0, 4);
+        datagrid.addCell(new jswLabel("<html>Race<br/>Points</html>"), 0, 5);
+        datagrid.addCell(new jswLabel("<html>Missing Race<br/>Points</html>"), 0, 6);
         int r = 0;
         for (Map.Entry<String, Position> anentry : list.entrySet())
         {
             Position aposition = anentry.getValue();
             datagrid.addCell(new jswLabel(aposition.getSail()), r + 1, 0);
             datagrid.addCell(new jswLabel(aposition.getSailor()), r + 1, 1);
-            datagrid.addCell(new jswLabel(aposition.getRaces()), r + 1, 2);
-            datagrid.addCell(new jswLabel(aposition.getPoints()), r + 1, 3);
-            datagrid.addCell(new jswLabel(aposition.getRace_points()), r + 1, 4);
-            datagrid.addCell(new jswLabel(aposition.getMissing_race_points()), r + 1, 5);
+            datagrid.addCell(new jswLabel(aposition.getTotalraces()), r + 1, 2);
+            datagrid.addCell(new jswLabel(aposition.getScoredraces()), r + 1, 3);
+            datagrid.addCell(new jswLabel(aposition.getPoints()), r + 1, 4);
+            datagrid.addCell(new jswLabel(aposition.getRace_points()), r + 1, 5);
+            datagrid.addCell(new jswLabel(aposition.getMissing_race_points()), r + 1, 6);
             r++;
         }
         return datagrid;
@@ -96,19 +98,73 @@ public class PositionList
             bw.write(" table, th, td { border: 1px solid; }\n");
             bw.write("</style>\n</head>\n<body>\n");
             bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
-            bw.write("<tr><td>Sail</td><td>sailor</td><td>No Races</td><td>Points</td><td>Race</br>Points</td><td>Missing<br>racepoints</td></tr>");
-            for(Map.Entry<String, Position> entry: list.entrySet())
+            if(currentcomp.getRacecount()>0)
             {
-                Position posn = entry.getValue();
-                bw.write(posn.toHTML());
+                bw.write("<tr><td>Sail</td><td>sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Points</td><td>Race</br>Points</td><td>Missing race<br>points</td></tr>");
+                for(Map.Entry<String, Position> entry: list.entrySet())
+                {
+                    Position posn = entry.getValue();
+                    bw.write(posn.toHTML());
+                }
             }
-            bw.write("\n</body>\n</html>\n");
+            else {
+                bw.write("<tr><td>Sail</td><td>sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Race</br>Points</td></tr>");
+                for(Map.Entry<String, Position> entry: list.entrySet())
+                {
+                    Position posn = entry.getValue();
+                    bw.write(posn.toHTML_short());
+                }
+            }
+
+            bw.write("\n</table>\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
         {
             System.out.println(e);
         }
     }
+
+    public void printLeagueTableToHTML(String path, String comptitle)
+    {
+        try
+        {
+            File file = new File(path);
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(" <!DOCTYPE html>\n<html>\n");
+            bw.write("<head>\n<style>");
+            bw.write(" td { text-align: center; }\n");
+            bw.write(" table, th, td { border: 1px solid; }\n");
+            bw.write("</style>\n</head>\n<body>\n");
+            bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
+            if(currentcomp.getRacecount()>0)
+            {
+                bw.write("<tr><td>Sail</td><td>Sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Points</td></tr>");
+                for(Map.Entry<String, Position> entry: list.entrySet())
+                {
+                    Position posn = entry.getValue();
+                    if(posn.getScoredraces()>= currentcomp.getRacecount())
+                    {
+                        bw.write(posn.toHTML_short());
+                    }
+                }
+            }
+            else {
+                bw.write("<tr><td>No no of races target</td></tr>");
+            }
+
+            bw.write("\n</table>\n</body>\n</html>\n");
+            bw.close();
+        } catch (Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+
 
     public String getCssid()
     {

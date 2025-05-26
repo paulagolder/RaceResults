@@ -17,6 +17,10 @@ public class Sail implements Comparable<Sail>
         surname = asurname;
         club = aclub;
     }
+    public String toString()
+    {
+        return sailnumber.ToString(6)+":"+boatclass+":"+getSailorname()+":"+club;
+    }
 
     public Sail(String asailnumber, String asailorname, String aboatclass, String aclub)
     {
@@ -42,7 +46,26 @@ public class Sail implements Comparable<Sail>
         if (r != 0) return r;
         else
         {
-            return this.club.compareTo(anothersail.getClub());
+            int rsn = getSailorname().compareTo(anothersail.getSailorname());
+            if( rsn != 0)
+            {
+                return rsn;
+            }
+            int rcn = getBoatclass().compareTo(anothersail.getBoatclass());
+            if( rcn != 0)
+            {
+                return rcn;
+            }
+            int rcbn = getClub().compareTo(anothersail.getClub());
+            if(  rcbn!=0)
+            {
+                //System.out.println(" matching sails a:"+this.toString()+" = "+anothersail.toString());
+                return rcbn;
+            }
+            else
+            {
+               return 0;
+            }
         }
     }
 

@@ -36,15 +36,14 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
     {
         super("Sail Gui", false, false);
         allsaillist = sl;
-        File homefile = new File(mysailinghome);
-        allsaillist.loadallsailfiles("saillist.xml", homefile);
+
         allsaillist.makefilters();
     }
 
     public jswVerticalPanel makeSailgui()
     {
         allsaillist.makefilters();
-        saillist = allsaillist.select(classfilter, clubfilter);
+        saillist = allsaillist.makeList(classfilter, clubfilter);
         makeheadermenu();
         jswVerticalPanel saillistpanel = new jswVerticalPanel("Sail List", false, false);
         saillistpanel.setStyleAttribute("backgroundcolor", "white");
@@ -136,7 +135,7 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
     public void actionPerformed(ActionEvent e)
     {
         String command = e.getActionCommand();
-        System.out.println(" here we are sl " + command);
+        //System.out.println(" here we are sl " + command);
         if (command.startsWith("sailoption"))
         {
             String foundsail = sailoptions.getSelectedoption();
@@ -169,11 +168,21 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
             selectedsail = asail;
         } else if (command.startsWith("savesail"))
         {
-            saillist.remove(getSelectedsail());
-            allsaillist.remove(selectedsail);
-            Sail asail = new Sail(sailnofield.getText(), sailornamefield.getText(), classfield.getText(), clubfield.getText());
-            saillist.add(asail);
-            allsaillist.add(asail);
+            String boatclass= classfield.getText();
+            String club = clubfield.getText();
+            Sail asail = new Sail(sailnofield.getText(), sailornamefield.getText(), boatclass, club);
+            if(boatclass.equalsIgnoreCase(classfilter) && club.equalsIgnoreCase(clubfilter))
+            {
+                saillist.remove(getSelectedsail());
+                allsaillist.remove(selectedsail);
+                saillist.add(asail);
+                allsaillist.add(asail);
+            }
+            else
+            {
+
+                allsaillist.add(asail);
+            }
             selectedsail = asail;
         } else if (command.startsWith("deletesail"))
         {
@@ -188,7 +197,7 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
                 saveSailist(dotmysailing + mframe.saillistfile, homeclub);
                 for(String aclub : allsaillist.clubsfilterlist)
                 {
-                    saveSailist(mysailinghome + aclub+"_sailist.xml", aclub);
+                    saveSailist(mysailinghome + aclub+"_saillist.xml", aclub);
                 }
             } catch (Exception e2)
             {

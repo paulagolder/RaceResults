@@ -14,6 +14,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
     public static final int RACEDAY = 1;
     public static final int SAILLIST = 2;
     public static final int CLUBLIST = 3;
+    private static final int CLASSLIST =4;
     public static int mode;
     public static Mainrace_gui mframe;
     public static Competition_gui compgui;
@@ -27,6 +28,8 @@ public class Mainrace_gui extends JFrame implements ActionListener
     static JMenuBar mainmenubar;
     final String clubsfile;
     public ClubList clublist;
+    public String Boatclassfile;
+    public BoatclassList classlist;
     public Competition currentcompetition;
     public SailList clubSaiLlist = null;
     String saillistfile;
@@ -42,6 +45,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
     private jswPanel resultpanel;
     private boolean activecell;
     private Club_gui clubgui;
+    private Boatclass_gui boatclassgui;
     int currentraceday;
     private Sail_gui sailgui;
 
@@ -76,7 +80,10 @@ public class Mainrace_gui extends JFrame implements ActionListener
         }
         propsfile = dotmysailing + "properties.xml";
         clubsfile = dotmysailing + "clubs.xml";
+        Boatclassfile = dotmysailing + "boatclasses.xml";
         Properties props = readProperties(propsfile);
+        classlist = new BoatclassList();
+        classlist.loadXML(Boatclassfile);
         clublist = new ClubList();
         clublist.loadXML(clubsfile);
         System.out.println("Clubs Loaded:" + clublist.toString());
@@ -88,12 +95,15 @@ public class Mainrace_gui extends JFrame implements ActionListener
         homeclubcypher = props.getProperty("homeclubcypher");
         clubSaiLlist = new SailList();
         clubSaiLlist.readSaillistXML(dotmysailing + saillistfile);
+        File homefile = new File(mysailinghome);
+        clubSaiLlist.loadallsailfiles("saillist.xml", homefile);
         mainmenubar = mainmenu();
         mainpanel = new jswVerticalPanel("mainpanel", false, false);
         mainpanel.setBorder(jswStyle.makeLineBorder(Color.red, 4));
         currentcompetition = new Competition(currentcompetitionfile, clubSaiLlist);
         currentraceday = 0;
         clubgui = new Club_gui(clublist);
+        boatclassgui = new Boatclass_gui(classlist);
         sailgui = new Sail_gui(clubSaiLlist);
         sailgui.setSelectedsail(clubSaiLlist.first());
         refreshGui();
@@ -306,6 +316,9 @@ public class Mainrace_gui extends JFrame implements ActionListener
         JMenuItem menuItem4 = new JMenuItem("View Clubs");
         menuItem4.addActionListener(this);
         menu.add(menuItem4);
+        JMenuItem menuItem5 = new JMenuItem("View Boatclasses");
+        menuItem5.addActionListener(this);
+        menu.add(menuItem5);
         return menuBar;
     }
 
@@ -324,6 +337,9 @@ public class Mainrace_gui extends JFrame implements ActionListener
                 break;
             case CLUBLIST:
                 heading = "Edit Club List";
+                break;
+            case CLASSLIST:
+                heading = "Edit Class List";
                 break;
             case SAILLIST:
                 heading = "Edit Sail List";
@@ -349,7 +365,10 @@ public class Mainrace_gui extends JFrame implements ActionListener
         {
             compgui = new Competition_gui(currentcompetition);
             mainpanel.add(" FILLH FILLW ", compgui);
-        } else if (mode == CLUBLIST)
+        }else if (mode == CLASSLIST)
+        {
+            mainpanel.add(" FILLH FILLW ", boatclassgui.makeBoatclassgui());
+        }  else if (mode == CLUBLIST)
         {
             mainpanel.add(" FILLH FILLW ", clubgui.makeClubgui());
         } else if (mode == SAILLIST)
@@ -399,7 +418,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
             bw.write("<properties>\n");
             bw.write("<comment>raceresults  properties</comment>\n");
             bw.write("<entry key=\"currentcompetition\">" + compfile + "</entry>\n");
-            bw.write("<entry key=\"saillist\">RMBC_sailnumberlist.xml</entry>\n");
+            bw.write("<entry key=\"saillist\">RMBC_saillist.xml</entry>\n");
             bw.write("<entry key=\"homeclub\">" + homeclub + "</entry>\n");
             bw.write("<entry key=\"homeclubname\">" + homeclubname + "</entry>\n");
             bw.write("<entry key=\"homeclubcypher\">" + homeclubcypher + "</entry>\n");
@@ -416,7 +435,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
     public void actionPerformed(ActionEvent e)
     {
         String command = e.getActionCommand();
-        System.out.println(" here we are MRG : " + command);
+     //   System.out.println(" here we are MRG : " + command);
         if (command.equalsIgnoreCase("View Competition"))
         {
             mode = COMPETITION;
@@ -429,8 +448,14 @@ public class Mainrace_gui extends JFrame implements ActionListener
         {
             mode = CLUBLIST;
         }
+        if (command.startsWith("View Boatclasses"))
+        {
+            mode = CLASSLIST;
+        }
         if (command.startsWith("View Sailors"))
         {
+            File homefile = new File(mysailinghome);
+            clubSaiLlist.loadallsailfiles("saillist.xml", homefile);
             mode = SAILLIST;
         }
         refreshGui();

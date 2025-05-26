@@ -13,10 +13,11 @@ import java.util.*;
 
 import static org.lerot.raceresults.Mainrace_gui.homeclub;
 
+
 public class SailList extends TreeSet<Sail>
 {
 
-  public String[] clubsfilterlist;
+   public String[] clubsfilterlist;
    public  String[] classesfilterlist;
 
     public SailList()
@@ -24,32 +25,6 @@ public class SailList extends TreeSet<Sail>
 
     }
 
-    public static SailList load(Element rootele)
-    {
-        SailList competitors = new SailList();
-        NodeList sails = rootele.getElementsByTagName("sail");
-        int nl = sails.getLength();
-        for (int i = 0; i < sails.getLength(); i++)
-        {
-            Element acell = (Element) sails.item(i);
-            String sailnumber = acell.getAttribute("sailnumber");
-            String sailorname = acell.getAttribute("sailorname");
-            String boatclass = acell.getAttribute("boatclass");
-            String club = acell.getAttribute("club");
-            Sail asail = new Sail(sailnumber, sailorname, boatclass, club);
-            competitors.add(asail);
-        }
-        return competitors;
-    }
-
-   /* public Sail findsail(String sailnumber, String boatclass, String club)
-    {
-        for (Sail asail : this)
-        {
-            if (asail.matches(sailnumber, boatclass, club)) return asail;
-        }
-        return null;
-    }*/
 
     public Vector<String> getVector(String boatclass, String clubs)
     {
@@ -85,21 +60,38 @@ public class SailList extends TreeSet<Sail>
         return sailvector;
     }
 
-    public HashMap<String, Sail> makeList(String boatclass, String clublist)
+    public TreeMap<SailNumber, Sail> makeTreeList(String boatclass, String clublist)
     {
-        HashMap<String, Sail> list = new HashMap<String, Sail>();
+        TreeMap<SailNumber, Sail> list = new TreeMap<SailNumber, Sail>();
         for (Sail asail : this)
         {
             if (asail.getBoatclass().equalsIgnoreCase(boatclass))
             {
                 if (clublist.contains(asail.getClub()))
                 {
-                    list.put(asail.getSailnumberStr(), asail);
+                    list.put(asail.getSailnumber(), asail);
                 }
             }
         }
         return list;
     }
+
+    public SailList makeList(String boatclass, String clublist)
+    {
+        SailList list = new SailList();
+        for (Sail asail : this)
+        {
+            if (asail.getBoatclass().equalsIgnoreCase(boatclass))
+            {
+                if (clublist.contains(asail.getClub()))
+                {
+                    list.add( asail);
+                }
+            }
+        }
+        return list;
+    }
+
 
     public Vector<Sail> getSailVector()
     {
@@ -142,7 +134,7 @@ public class SailList extends TreeSet<Sail>
         return intvector;
     }
 
-    public Sail getSail(String avalue)
+    public Sail getSail(String avalue, String boatclasses, String clubs)
     {
         String sailstr = avalue.trim();
         int sailno = SailNumber.getInt(sailstr);
@@ -153,7 +145,7 @@ public class SailList extends TreeSet<Sail>
         {
             String asailstr = asail.getSailnumberStr().trim();
             int asailno = SailNumber.getInt(asailstr);
-            if (sailno == asailno)
+            if (sailno == asailno && boatclasses.contains(asail.getBoatclass()) && clubs.contains(asail.getClub()))
             {
                 sailfound = asail;
                 nfound++;
@@ -162,34 +154,10 @@ public class SailList extends TreeSet<Sail>
         if (nfound == 1) return sailfound;
         else
         {
-            nfound = 0;
-            for (Sail asail : this)
-            {
-                String asailstr = asail.getSailnumberStr().trim();
-                int asailno = SailNumber.getInt(asailstr);
-                if (sailstr.equalsIgnoreCase(asailstr))
-                {
-                    sailfound = asail;
-                    nfound++;
-                }
-            }
-            if (nfound == 1) return sailfound;
-            else return null;
+            return null;
         }
     }
 
-    public SailList select(String raceclass,String raceclub)
-    {
-        SailList list = new SailList();
-        for (Sail asail : this)
-        {
-            if (asail.getBoatclass().equalsIgnoreCase(raceclass) && asail.getClub().equalsIgnoreCase(raceclub))
-            {
-                list.add(asail);
-            }
-        }
-        return list;
-    }
 
     public String totext()
     {
@@ -215,6 +183,7 @@ public class SailList extends TreeSet<Sail>
 
     public void readSaillistXML(String fileNameWithPath)
     {
+        System.out.println(" Loading :"+fileNameWithPath);
         Document document;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = null;
@@ -250,6 +219,13 @@ public class SailList extends TreeSet<Sail>
         {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean add(Sail addedsail)
+    {
+        //System.out.println(("+++++++++++++"+addedsail.toString()));
+        return super.add(addedsail);
     }
 
     public void makefilters()
@@ -296,13 +272,15 @@ public class SailList extends TreeSet<Sail>
                 snl2.put(sailnumber, snlmap);
             }
         }
-        out += SailTableToString(snl2, "Sail Numbers of  NON members of " + homeclub);
-
+        out += "</br></br></br>";
+        out += SailTableToString(snl2, "Sail Numbers of  NON members who sail at Manor Park " );
+        out += "</br></br></br>";
+        out += SailTableToStringAnon(snl2, "Sail Numbers of  NON members who sail at Manor Park " );
         return out;
     }
     private String NameTableToString(TreeMap<String, HashMap<String, String>> snl, String title)
     {
-        String out = "<table>\n";
+        String out = "<table class=\"namelist\">\n";
         out += " <tr><th colspan=\"4\">"+title + "</th></tr>\n";
         out += "<tr><th></th>";
         for (String aclass : classesfilterlist)
@@ -329,9 +307,10 @@ public class SailList extends TreeSet<Sail>
         out += "</table>\n";
         return out;
     }
+
     public String SailTableToString(TreeMap<SailNumber, HashMap<String, String>> snl, String title)
     {
-        String out = "<table>\n";
+        String out = "<table class=\"saillist\" >\n";
         out += " <tr><th colspan=\"4\">"+title + "</th></tr>\n";
         out += "<tr><th></th>";
         for (String aclass : classesfilterlist)
@@ -344,13 +323,44 @@ public class SailList extends TreeSet<Sail>
         {
 
             SailNumber asailnumber = anentry.getKey();
-            out += "<tr><td text-align=\"right\">" + asailnumber.ToString(5) + "</td>";
+            out += "<tr><td>" + asailnumber.ToString(5) + "</td>";
             HashMap<String, String> classlist = anentry.getValue();
             for (String aclass : classesfilterlist)
             {
                 String asailor = classlist.get(aclass);
                 if (asailor != null)
                     out += "<td>" + asailor + "</td>";
+                else
+                    out += "<td></td>";
+            }
+            out += "</tr>\n";
+        }
+        out += "</table>\n";
+        return out;
+    }
+
+    public String SailTableToStringAnon(TreeMap<SailNumber, HashMap<String, String>> snl, String title)
+    {
+        String out = "<table class=\"xsaillist\" >\n";
+        out += " <tr><th colspan=\"4\">"+title + "</th></tr>\n";
+        out += "<tr>";
+        for (String aclass : classesfilterlist)
+        {
+            out += "<th>" + aclass + "</th>";
+        }
+        out += "</tr>\n";
+
+        for (Map.Entry<SailNumber, HashMap<String, String>> anentry : snl.entrySet())
+        {
+            SailNumber asailnumber = anentry.getKey();
+            out += "<tr>";
+              //  "<td>" + asailnumber.ToString(5) + "</td>";
+            HashMap<String, String> classlist = anentry.getValue();
+            for (String aclass : classesfilterlist)
+            {
+                String asailor = classlist.get(aclass);
+                if (asailor != null)
+                    out += "<td>" +  asailnumber.ToString(5) + "</td>";
                 else
                     out += "<td></td>";
             }
@@ -376,22 +386,6 @@ public class SailList extends TreeSet<Sail>
             }
         }
         String out = NameTableToString(snl, "Sail Numbers of members of " + homeclub);
-   /*     TreeMap<SailNumber, HashMap<String, String>> snl2 = new TreeMap<>();
-        for (Sail asail : this)
-        {
-            if (!asail.getClub().equalsIgnoreCase(homeclub))
-            {
-                SailNumber sailnumber = asail.getSailnumber();
-                snl2.computeIfAbsent(sailnumber, k -> new HashMap<String, String>());
-                HashMap<String, String> snlmap = snl2.get(sailnumber);
-                String boatclass = asail.getBoatclass();
-                String sailorname = asail.getSailorname();
-                snlmap.put(boatclass, sailorname);
-                snl2.put(sailnumber, snlmap);
-            }
-        }
-        out += SailTableToString(snl2, "Sail Numbers of  NON members of " + homeclub);
-*/
         return out;
     }
 
@@ -426,14 +420,16 @@ public class SailList extends TreeSet<Sail>
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(" <!DOCTYPE html>\n<html>\n");
-            bw.write("<head>\n<style>");
-            bw.write(" td { text-align: left; padding:5px; padding-left:10px; padding-right:10px; }\n");
-            bw.write(" td:first-child {text-align: right;}\n");
-            bw.write(" table, th, td { border: 1px solid; }\n");
+            bw.write("<head>\n<style>\n");
+            bw.write("table.saillist { border: 3px solid; border-collapse: collapse }\n");
+            bw.write("table.saillist  th { border: 3px solid; }\n");
+            bw.write("table.saillist  td { text-align: left; padding:5px; padding-left:10px; padding-right:10px; border: 3px solid;  }\n");
+            bw.write("table.saillist td:first-child {text-align: right;}\n");
+            bw.write("table.xsaillist { border: 3px solid; border-collapse: collapse }\n");
+            bw.write("table.xsaillist  th { border: 3px solid; }\n");
+            bw.write("table.xsaillist  td { text-align: center; padding:5px; padding-left:10px; padding-right:10px; border: 3px solid;  }\n");
             bw.write("</style>\n</head>\n<body>\n");
-
             bw.write(this.printBySailNumberToHTML());
-
             bw.write("\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
@@ -455,13 +451,12 @@ public class SailList extends TreeSet<Sail>
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(" <!DOCTYPE html>\n<html>\n");
             bw.write("<head>\n<style>");
-            bw.write(" td { text-align: right; padding:5px; padding-left:10px; padding-right:10px; }\n");
-            bw.write(" td:first-child {text-align: left;}\n");
-            bw.write(" table, th, td { border: 1px solid; }\n");
+            bw.write("table.namelist { border: 3px solid; border-collapse: collapse }\n");
+            bw.write("table.namelist  th { border: 3px solid; }\n");
+            bw.write("table.namelist  td { text-align: right; padding:5px; padding-left:10px; padding-right:10px; border: 3px solid;  }\n");
+            bw.write("table.namelist td:first-child {text-align: left ;}\n");
             bw.write("</style>\n</head>\n<body>\n");
-
             bw.write(this.sailorTableToString());
-
             bw.write("\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
@@ -469,5 +464,6 @@ public class SailList extends TreeSet<Sail>
             System.out.println(e);
         }
     }
+
 }
 

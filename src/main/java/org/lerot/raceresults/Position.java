@@ -4,10 +4,21 @@ public class Position
 {
     private String sail;
     private String sailor;
-    private int races;
+    private int scoredraces;
+    private int totalraces;
     private int points;
     private int race_points;
     private int missing_race_points;
+
+    public int getTotalraces()
+    {
+        return totalraces;
+    }
+
+    public void setTotalraces(int totalraces)
+    {
+        this.totalraces = totalraces;
+    }
 
     public Position()
     {
@@ -17,7 +28,7 @@ public class Position
     {
         this.setSail(sail);
         this.setSailor(sailor);
-        this.setRaces(races);
+        this.setScoredraces(races);
         this.setPoints(points);
         this.setRace_points(race_points);
         this.setMissing_race_points(missing_race_points);
@@ -43,14 +54,14 @@ public class Position
         this.sailor = sailor;
     }
 
-    public int getRaces()
+    public int getScoredraces()
     {
-        return races;
+        return scoredraces;
     }
 
-    public void setRaces(int races)
+    public void setScoredraces(int scoredraces)
     {
-        this.races = races;
+        this.scoredraces = scoredraces;
     }
 
     public int getPoints()
@@ -85,6 +96,11 @@ public class Position
 
     public String toHTML()
     {
-       return  "<tr><td>"+this.sail+"</td><td>"+this.sailor+"</td><td>"+this.races+"</td><td>"+this.points+"</td><td>"+this.race_points+"</td><td>"+this.missing_race_points+"</td></tr>";
+       return  "<tr><td>"+this.sail+"</td><td>"+this.sailor+"</td><td>"+this.totalraces +"</td><td>"+this.scoredraces +"</td><td>"+this.points+"</td><td>"+this.race_points+"</td><td>"+this.missing_race_points+"</td></tr>";
+    }
+
+    public String toHTML_short()
+    {
+        return  "<tr><td>"+this.sail+"</td><td>"+this.sailor+"</td><td>"+this.totalraces +"</td><td>"+this.scoredraces +"</td><td>"+this.race_points+"</td></tr>";
     }
 }

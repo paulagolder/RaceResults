@@ -96,21 +96,22 @@ public class Club_gui  extends jswVerticalPanel implements ActionListener
     public void actionPerformed(ActionEvent e)
     {
         String command = e.getActionCommand();
-        System.out.println(" here we are cl " + command );
+        //System.out.println(" here we are cl " + command );
         if (command.startsWith("cluboptions"))
         {
-            jswOptionset optionset = (jswOptionset) e.getSource();
-            selectedclubkey =  optionset.getSelectedoption();
-            System.out.println( optionset.getSelectedoption());
+            String foundclub = cluboptions.getSelectedoption();
+            System.out.println(cluboptions.getSelectedoption());
             for (Map.Entry<String,Club> anentry :clublist.entrySet())
             {
-                Club aclub = anentry.getValue();
-                if(aclub.getKey().equals(selectedclubkey))
+                System.out.println(anentry.getKey());
+                if (foundclub.equalsIgnoreCase(anentry.getKey()))
                 {
-                   cluboptions.setSelected(selectedclubkey);
-                   selectedclub = aclub;
+                    selectedclub = anentry.getValue();
+                    selectedclubkey = anentry.getKey();
                 }
             }
+            System.out.println(selectedclub);
+
         }
         if (command.startsWith("newclub"))
         {

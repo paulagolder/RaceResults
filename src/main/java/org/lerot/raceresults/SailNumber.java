@@ -23,6 +23,14 @@ public class SailNumber implements Comparable<SailNumber>
         }
     }
 
+    public static String[] parse(String cd)
+    {
+        String[] strlist = new String[2];
+        strlist[0] = " "+SailNumber.getInt(cd);
+        strlist[1] = cd.replaceAll("[0-9]*","");
+        return strlist;
+    }
+
     @Override
     public int compareTo(SailNumber othersailnumber)
     {
@@ -56,7 +64,12 @@ public class SailNumber implements Comparable<SailNumber>
     public String ToString(int sz)
     {
         Integer nc = SailNumber.getInt(sailnumber);
-        if (nc < 10)
+
+        if (nc < 0)
+        {
+            String out = "          " ;
+            return out.substring(out.length() - sz);
+        } else if (nc < 10)
         {
             String out = "     0" + nc;
             return out.substring(out.length() - sz);
