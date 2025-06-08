@@ -18,15 +18,15 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
 {
     public Competition currentcomp;
     jswHorizontalPanel editpanel = null;
-    private jswVerticalPanel headermenu;
-    private jswHorizontalPanel compheader;
-    private jswHorizontalPanel scorespanel;
-    private ranksmatrix pointsmatrix = null;
+    //private jswVerticalPanel headermenu;
+    jswHorizontalPanel compheader;
+    jswHorizontalPanel scorespanel;
+    ranksmatrix pointsmatrix = null;
     private jswTextBox classfield;
     private jswTextBox yearfield;
     private jswTextBox countfield;
     private jswTextBox namefield;
-    private jswMenuBar menubar;
+    //private jswMenuBar menubar;
     private int maxsailors;
     private jswTextBox clubslist;
 
@@ -36,12 +36,25 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         super("mainpanel", true, false);
         makeheadermenu();
         currentcomp = acurrentcomp;
-        System.out.println("%%% " + currentcomp.toString());
         applyStyle(jswStyle.getDefaultStyle());
         setBorder(jswStyle.makeLineBorder(Color.red, 4));
         refreshcompetition_gui();
         compheader.setVisible(true);
         scorespanel.setVisible(true);
+        revalidate();
+        repaint();
+    }
+
+    public Competition_gui()
+    {
+        super("mainpanel", true, false);
+        makeheadermenu();
+        currentcomp = null;
+        applyStyle(jswStyle.getDefaultStyle());
+        setBorder(jswStyle.makeLineBorder(Color.red, 4));
+        //refreshcompetition_gui();
+        //compheader.setVisible(true);
+        //scorespanel.setVisible(true);
         revalidate();
         repaint();
     }
@@ -105,7 +118,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         return currentcomp.getRanklist();
     }
 
-    private void makeheadermenu()
+    public void makeheadermenu()
     {
         if (mainmenubar.getMenuCount() > 2)
         {
@@ -171,18 +184,18 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         amenu.add(amenuItem5);
     }
 
-
-
     public jswHorizontalPanel displayheader()
     {
         jswHorizontalPanel racedayheader = new jswHorizontalPanel("RaceHeader", true, false);
+        if(!currentcomp.saved)
+            racedayheader.setStyleAttribute("backgroundcolor", "pink");
         jswLabel addcn = new jswLabel(currentcomp.getCompetitionname());
         addcn.applyStyle(defaultStyles().getStyle("largetext"));
         racedayheader.add(" ", addcn);
         jswLabel label00 = new jswLabel(" Class ");
         label00.applyStyle(defaultStyles().getStyle("largetext"));
         racedayheader.add(" left ", label00);
-        jswLabel addb = new jswLabel(currentcomp.getRaceclasses());
+        jswLabel addb = new jswLabel(currentcomp.compclasslist.toString());
         addb.applyStyle(defaultStyles().getStyle("largetext"));
         racedayheader.add(" ", addb);
         jswLabel label01 = new jswLabel(" Year ");
@@ -201,12 +214,11 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         return racedayheader;
     }
 
-
     public void actionPerformed(ActionEvent e)
     {
         if (currentcomp.competitors.isEmpty())
         {
-            currentcomp.competitors = (mframe.clubSaiLlist.makeList(currentcomp.getRaceclasses(),currentcomp.getClubString()));
+            currentcomp.competitors = (mframe.clubSailList.makeList(currentcomp.compclasslist.toString(),currentcomp.getClubString()));
         }
         String cmd = e.getActionCommand();
        // System.out.println(" here we are y " + cmd);
@@ -243,7 +255,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             currentcomp.setCompyear(yearfield.getText());
             currentcomp.setRacecount(Integer.parseInt(countfield.getText()));
             currentcomp.setRaceclasses(classfield.getText());
-            currentcomp.setClubString(clubslist.getText());
+            currentcomp.setRaceclubs(clubslist.getText());
             command = "Save Competition";
         }
         if (command.equalsIgnoreCase("canceleditcompetition"))
@@ -307,7 +319,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this html file: " + selfile);
-                TreeMap<SailNumber, Sail> sailorlist = mframe.getClubSaiLlist().makeTreeList(currentcomp.getRaceclasses(), currentcomp.getClubString());
+                TreeMap<String, Sail> sailorlist = mframe.getClubSailList().makeTreeList(currentcomp.compclasslist.toString(), currentcomp.getClubString());
                 pointsmatrix.printResultsToHTML(selfile, currentcomp.getCompetitionname(), sailorlist, maxsailors);
             }
             refreshcompetition_gui();
@@ -414,10 +426,12 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
                 String selfile = chooser.getSelectedFile().getPath();
-                System.out.println("You chose to open this file: " + selfile);
-                currentcomp = new Competition(selfile, mframe.clubSaiLlist);
+                System.out.println("*You chose to open this file: " + selfile);
+                pointsmatrix = null;
+                currentcomp = new Competition(selfile, mframe.clubSailList);
                 currentcompetitionfile = selfile;
             }
+
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
@@ -433,7 +447,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             currentcomp.getRacedaymatrixlist().clear();
             pointsmatrix = null;
             currentcomp.generateranklist(currentcomp.noCompetitors);
-            currentcomp.addEmptyRacedayMatrix(4, 16);
+            //currentcomp.addEmptyRacedayMatrix(4, 16);
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
@@ -463,13 +477,14 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             int nc = 4;
             int nr = currentcomp.competitors.size();
             if(nr==0) nr=10;
-            String boatclass = currentcomp.getRaceclasses();
-            String racedate = "32/13/" + currentcomp.getCompyear();
+            String boatclass = currentcomp.compclasslist.toString();
+            String racedate = "31/12/" + currentcomp.getCompyear();
             Raceday racedayresults = new Raceday(currentcomp, boatclass, racedate, nc, nr);
             racedayresults.filename = "raceday_" + boatclass + "_" + racedate + ".xml";
             currentcomp.getRacedaymatrixlist().add(racedayresults);
             currentcomp.racedayfilenames.add(racedayresults.filename);
             racedayresults.saved = false;
+            currentcomp.saved = false;
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
@@ -479,7 +494,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             int nc = 4;
             int nsailors = 15;
             int nr = currentcomp.competitors.size();
-            String boatclass = currentcomp.getRaceclasses();
+            String boatclass = currentcomp.compclasslist.toString();
             String racedate = "12/12/" + currentcomp.getCompyear();
             Vector<String> saillist = currentcomp.competitors.getVector(boatclass, currentcomp.getClubString());
             Raceday racedayresults = new Raceday(boatclass, racedate, nc, nsailors, saillist);
@@ -521,7 +536,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         label00.applyStyle(defaultStyles().getStyle("largetext"));
         classpanel.add(" left ", label00);
         classfield = new jswTextBox(this, "Race Class");
-        classfield.setText(currentcomp.getRaceclasses());
+        classfield.setText(currentcomp.compclasslist.toString());
         classfield.setStyleAttribute("mywidth", 100);
         classfield.setStyleAttribute("myheight", 50);
         classfield.applyStyle();
@@ -570,27 +585,6 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         editpanel.applyStyle();
         return editpanel;
     }
-
-   /* private jswHorizontalPanel showsaillist(jswStyles tablestyles)
-    {
-        jswHorizontalPanel editpanel = new jswHorizontalPanel("Sail List", false, false);
-        jswTable datagrid = new jswTable(null, "form1", tablestyles);
-        datagrid.addCell(new jswLabel("Sail Number"), 0, 0);
-        datagrid.addCell(new jswLabel("Class"), 0, 1);
-        datagrid.addCell(new jswLabel("Sailor"), 0, 2);
-        int nrows = currentcomp.competitors.size();
-        Vector<Sail> saillist = currentcomp.competitors.getSailVector();
-        for (int r = 0; r < nrows; r++)
-        {
-            Sail boat = saillist.get(r);
-            datagrid.addCell(new jswLabel(boat.getSailnumberStr()), r + 1, 0);
-            datagrid.addCell(new jswLabel(boat.getBoatclass()), r + 1, 1);
-            datagrid.addCell(new jswLabel(boat.getSailorname()), r + 1, 2);
-        }
-        editpanel.add(" FILLW FILLH ", datagrid);
-        editpanel.applyStyle();
-        return editpanel;
-    }*/
 
 
 }

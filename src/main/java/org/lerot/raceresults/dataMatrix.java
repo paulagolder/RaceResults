@@ -148,14 +148,11 @@ public class dataMatrix
                 if (getSelected().get(c)) sel = "true";
                 bw.write("<col name= \"" + getColname().get(c) + "\"  type=\"" + getColtype().get(c) + "\" select=\"" + sel + "\" >\n");
                 Vector<String> cdata = data.get(c);
-
                 int nrows = getFilledLength(cdata);
-                //System.out.println(" saving row count" + nrows);
                 for (r = 0; r < nrows+1; r++)
                 {
                     //System.out.println(" saving row " + r);
                     bw.write("<cell rowname=\"" + rownames.get(r) + "\">" + cdata.get(r) + "</cell>\n");
-
                 }
                 bw.write("</col>\n");
             }
@@ -175,49 +172,13 @@ public class dataMatrix
         while ( n > 1)
         {
             n--;
+           // if (vs.get(n) == null) return n;
             if (vs.get(n) != null && !vs.get(n).isEmpty()  ) return n;
-            if( vs.get(n).trim().equalsIgnoreCase("null")) return n;
+           // if( vs.get(n).trim().equalsIgnoreCase("null")) return n;
         }
         return n ;
     }
 
-    public void printToHTML(BufferedWriter bw, String title) throws IOException
-    {
-        int ncols = getColname().size();
-        int nrows = getRowname().size();
-        bw.write("<table id=\"" + cssid + "\" class=\"" + cssclass + "\">\n");
-        bw.write("<tr>\n<th  colspan=" + (ncols + 1) + ">" + title + "</th>\n</tr>");
-        bw.write("<tr>\n<th> </th>");
-        for (int c = 0; c < ncols; c++)
-        {
-            bw.write("<th>" + getColname().get(c) + "</th>");
-        }
-        bw.write("</tr>\n");
-        for (int r = 0; r < nrows; r++)
-        {
-
-            int filledcols = 0;
-            for (int c = 0; c < ncols; c++)
-            {
-                String outvalue = data.get(c).get(r);
-                if (outvalue != null && !outvalue.equalsIgnoreCase("null")) filledcols++;
-            }
-            if (filledcols > 0)
-            {
-                bw.write("<tr><td>" + getRowname().get(r) + "</td>");
-                for (int c = 0; c < ncols; c++)
-                {
-                    String outvalue = data.get(c).get(r);
-                    if (outvalue == null) outvalue = " ";
-                    if (outvalue.equalsIgnoreCase("null")) outvalue = "";
-                    bw.write("<td >" + outvalue + "</td>");
-                }
-                bw.write("</tr>\n");
-            }
-
-        }
-        bw.write("</table>\n");
-    }
 
     public Document readXML(String fileNameWithPath)
     {
@@ -407,7 +368,7 @@ public class dataMatrix
     public void putaCell(int coln, String rname, String val)
     {
         Vector<String> col = data.get(coln);
-        int rown = getRowname().indexOf(rname.trim());
+        int rown = getRowname().indexOf(rname);
         if (rown < 0)
         {
             // System.out.println(" not found x :"+rname+":");
@@ -469,7 +430,7 @@ public class dataMatrix
         return values;
     }
 
-    public dataMatrix getValueMatrix(Vector<String> colnames, Vector<String> rownames)
+  /*  public dataMatrix getValueMatrix(Vector<String> colnames, Vector<String> rownames)
     {
         int ncols = colnames.size();
         int nrows = rownames.size();
@@ -487,18 +448,29 @@ public class dataMatrix
                 String avalue = values.get(r);
                 if (avalue != null)
                 {
-                    String token = ("        " + avalue).trim();
-                    if (!token.trim().isEmpty())
+                    avalue = getValue(c, r);
+
+                    if(!avalue.trim().isEmpty() )
                     {
-                        vm.putaCell(c, token, " " + (r + 1));
+             //           Sail asail = Sail.parse(avalue.trim(),compclasslist.getDefaulKey(),compclublist.getDefaulKey());
+                        if (asail != null)
+                        {
+
+                            String token = asail.toCypherString();
+
+                            if (!token.trim().isEmpty())
+                            {
+                                vm.putaCell(c, token, " " + (r + 1));
+                            }
+                        }
                     }
                 }
             }
         }
         return vm;
-    }
+    }*/
 
-    private void setColtype(String string, int nc)
+    void setColtype(String string, int nc)
     {
         coltype = new Vector<String>();
         for (int c = 0; c < nc; c++)
@@ -507,7 +479,7 @@ public class dataMatrix
         }
     }
 
-    private void setSelected(Boolean b, int nc)
+    void setSelected(Boolean b, int nc)
     {
         selected = new Vector<Boolean>();
         for (int c = 0; c < nc; c++)
@@ -594,11 +566,12 @@ public class dataMatrix
         jswTable datagrid = new jswTable(null, "positions", tablestyles);
         int ncols = getColname().size();
         int nrows = getRowname().size();
+        int nsel = getSelected().size();
         int nc = 0;
         int maxranks = data.size();
         for (int c = 0; c < maxranks; c++)
         {
-            if (getSelected().get(c))
+           // if (getSelected().get(c))
             {
                 String value = getColname().get(c);
                 datagrid.addCell(new jswLabel(value), 0, nc);
@@ -698,4 +671,13 @@ public class dataMatrix
         }
     }
 
+    public int size()
+    {
+        return data.size();
+    }
+
+    public Vector<String> getColumn(int c)
+    {
+        return data.get(c);
+    }
 }

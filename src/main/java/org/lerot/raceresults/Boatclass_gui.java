@@ -28,7 +28,7 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
     public Boatclass_gui(BoatclassList cl)
     {
         super("Class Gui",false,false);
-        makeheadermenu();
+        //makeheadermenu();
         classlist = cl;
     }
 
@@ -58,7 +58,7 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
             datagrid.addCell(new jswLabel("key"), 0, 1);
             datagrid.addCell(new jswLabel("fullname"), 0, 2);
             datagrid.addCell(new jswLabel("cypher"), 0, 3);
-            selectedclass =  classlist.getClubVector().get(0);
+            selectedclass =  classlist.getClassVector().get(0);
             int r= 0;
             classoptions = new jswOptionset(this,"cluboptions",true,false,false);
             for (Map.Entry<String,Boatclass> anentry : classlist.entrySet())

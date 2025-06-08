@@ -7,9 +7,12 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
+
+import static org.lerot.raceresults.Mainrace_gui.mframe;
 
 public class BoatclassList extends TreeMap<String, Boatclass>
 {
@@ -29,6 +32,9 @@ public class BoatclassList extends TreeMap<String, Boatclass>
         }
         return out;
     }
+    
+
+    
     public String toString()
     {
         String out = "";
@@ -45,7 +51,7 @@ public class BoatclassList extends TreeMap<String, Boatclass>
         return out;
     }
 
-    public Vector<Boatclass> getClubVector()
+    public Vector<Boatclass> getClassVector()
     {
         Vector<Boatclass> clubvector = new Vector<Boatclass>();
         for (  Map.Entry<String, Boatclass> anentry : this.entrySet())
@@ -100,5 +106,47 @@ public class BoatclassList extends TreeMap<String, Boatclass>
         return out.toString();
     }
 
+
+    public void load(String text)
+    {
+        this.clear();
+        String[] classes = text.toUpperCase().split(",");
+        for(String aclass :classes)
+        {
+            String aclasskey = aclass.trim().toLowerCase(Locale.ROOT);
+            Boatclass foundclass = mframe.classlist.get(aclasskey);
+            if(foundclass != null)
+            {
+                this.put(aclasskey,foundclass);
+            }
+        }
+    }
+
+    public void makeClassList(String text)
+    {
+        this.clear();
+        String[] classes = text.toUpperCase().split(",");
+        for(String aclass :classes)
+        {
+            String aclasskey = aclass.trim().toLowerCase(Locale.ROOT);
+            Boatclass foundclass = mframe.classlist.get(aclasskey);
+            if(foundclass != null)
+            {
+                this.put(aclasskey,foundclass);
+            }
+        }
+
+    }
+
+
+    public String getDefaulKey()
+    {
+        return this.firstKey();
+    }
+
+    public Boatclass getDefault()
+    {
+        return this.firstEntry().getValue();
+    }
 
 }

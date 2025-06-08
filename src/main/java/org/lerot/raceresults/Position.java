@@ -2,8 +2,7 @@ package org.lerot.raceresults;
 
 public class Position
 {
-    private String sail;
-    private String sailor;
+    private Sail sail;
     private int scoredraces;
     private int totalraces;
     private int points;
@@ -24,34 +23,23 @@ public class Position
     {
     }
 
-    public Position(String sail, String sailor, int races, int points, int race_points, int missing_race_points)
+    public Position(Sail asail,  int races, int points, int race_points, int missing_race_points)
     {
-        this.setSail(sail);
-        this.setSailor(sailor);
+        this.setSail(asail);
         this.setScoredraces(races);
         this.setPoints(points);
         this.setRace_points(race_points);
         this.setMissing_race_points(missing_race_points);
     }
 
-    public String getSail()
+    public Sail getSail()
     {
         return sail;
     }
 
-    public void setSail(String sail)
+    public void setSail(Sail sail)
     {
         this.sail = sail;
-    }
-
-    public String getSailor()
-    {
-        return sailor;
-    }
-
-    public void setSailor(String sailor)
-    {
-        this.sailor = sailor;
     }
 
     public int getScoredraces()
@@ -96,11 +84,11 @@ public class Position
 
     public String toHTML()
     {
-       return  "<tr><td>"+this.sail+"</td><td>"+this.sailor+"</td><td>"+this.totalraces +"</td><td>"+this.scoredraces +"</td><td>"+this.points+"</td><td>"+this.race_points+"</td><td>"+this.missing_race_points+"</td></tr>";
+       return  "<tr><td>"+this.sail.getSailnumberStr()+"</td><td>"+this.sail.getSailorname()+"</td><td>"+this.totalraces +"</td><td>"+this.scoredraces +"</td><td>"+this.points+"</td><td>"+this.race_points+"</td><td>"+this.missing_race_points+"</td></tr>";
     }
 
     public String toHTML_short()
     {
-        return  "<tr><td>"+this.sail+"</td><td>"+this.sailor+"</td><td>"+this.totalraces +"</td><td>"+this.scoredraces +"</td><td>"+this.race_points+"</td></tr>";
+        return  "<tr><td>"+this.sail.getSailnumberStr()+"</td><td>"+this.sail.getSailorname()+"</td><td>"+this.totalraces +"</td><td>"+this.scoredraces +"</td><td>"+this.race_points+"</td></tr>";
     }
 }

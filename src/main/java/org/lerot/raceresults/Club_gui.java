@@ -29,7 +29,7 @@ public class Club_gui  extends jswVerticalPanel implements ActionListener
     public Club_gui(ClubList cl)
     {
         super("Club Gui",false,false);
-        makeheadermenu();
+       // makeheadermenu();
         clublist = cl;
     }
 

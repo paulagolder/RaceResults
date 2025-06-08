@@ -31,6 +31,8 @@ public class SailNumber implements Comparable<SailNumber>
         return strlist;
     }
 
+    //A regular expression like "[ A-Za-z] " specifies to match any single uppercase or lowercase letter. The regular expression "[A-Z][a-z]*"
+
     @Override
     public int compareTo(SailNumber othersailnumber)
     {
@@ -87,6 +89,11 @@ public class SailNumber implements Comparable<SailNumber>
     public boolean matches(SailNumber sn)
     {
         return SailNumber.getInt(this.sailnumber) == SailNumber.getInt(sn.sailnumber);
+    }
+
+    public boolean matches(int sn)
+    {
+        return SailNumber.getInt(this.sailnumber) == sn;
     }
 
     public boolean matches(String str)

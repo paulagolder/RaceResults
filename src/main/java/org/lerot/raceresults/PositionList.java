@@ -15,7 +15,7 @@ import static org.lerot.raceresults.Mainrace_gui.smalltable1styles;
 
 public class PositionList
 {
-    LinkedHashMap<String, Position> list;
+    LinkedHashMap<String , Position> list;
     Competition currentcomp;
     private String cssid = "datamatrix";
     private String cssclass = "datamatrix";
@@ -28,7 +28,7 @@ public class PositionList
 
     public void add(Position aposition)
     {
-        String key = aposition.getSail();
+       String key = aposition.getSail().toCypherString();
         list.put(key, aposition);
     }
 
@@ -41,14 +41,17 @@ public class PositionList
         int nrows = list.size();
         scores.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
         jswHorizontalPanel scoresheader = new jswHorizontalPanel("heading", false, false);
-        jswLabel addb = new jswLabel(currentcomp.getRaceclasses());
+        jswLabel addb = new jswLabel(currentcomp.compclasslist.toString());
         addb.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
         scoresheader.add(" ", addb);
+
         jswLabel dt = new jswLabel(currentcomp.getCompyear());
         dt.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
         scoresheader.add(" ", dt);
         ActionListener al = null;
         scores.add("  ", scoresheader);
+        scoresheader.setStyleAttribute("minheight", 25);
+        scoresheader.applyStyle();
         scores.add("  ", makedatapanel(smalltable1styles()));
         scores.applyStyle();
         scores.setPadding(10, 10, 10, 10);
@@ -69,8 +72,8 @@ public class PositionList
         for (Map.Entry<String, Position> anentry : list.entrySet())
         {
             Position aposition = anentry.getValue();
-            datagrid.addCell(new jswLabel(aposition.getSail()), r + 1, 0);
-            datagrid.addCell(new jswLabel(aposition.getSailor()), r + 1, 1);
+            datagrid.addCell(new jswLabel(aposition.getSail().toCypherString()), r + 1, 0);
+            datagrid.addCell(new jswLabel(aposition.getSail().getSailorname()), r + 1, 1);
             datagrid.addCell(new jswLabel(aposition.getTotalraces()), r + 1, 2);
             datagrid.addCell(new jswLabel(aposition.getScoredraces()), r + 1, 3);
             datagrid.addCell(new jswLabel(aposition.getPoints()), r + 1, 4);

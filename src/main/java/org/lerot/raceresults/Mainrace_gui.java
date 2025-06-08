@@ -3,6 +3,7 @@ package org.lerot.raceresults;
 import org.lerot.mywidgets.*;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -15,6 +16,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
     public static final int SAILLIST = 2;
     public static final int CLUBLIST = 3;
     private static final int CLASSLIST =4;
+    private static final int START =5;
     public static int mode;
     public static Mainrace_gui mframe;
     public static Competition_gui compgui;
@@ -31,7 +33,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
     public String Boatclassfile;
     public BoatclassList classlist;
     public Competition currentcompetition;
-    public SailList clubSaiLlist = null;
+    public SailList clubSailList = null;
     String saillistfile;
     private String osversion;
     private String os;
@@ -93,19 +95,21 @@ public class Mainrace_gui extends JFrame implements ActionListener
         homeclub = props.getProperty("homeclub");
         homeclubname = props.getProperty("homeclubname");
         homeclubcypher = props.getProperty("homeclubcypher");
-        clubSaiLlist = new SailList();
-        clubSaiLlist.readSaillistXML(dotmysailing + saillistfile);
+        clubSailList = new SailList();
+        clubSailList.readSaillistXML(dotmysailing + saillistfile);
         File homefile = new File(mysailinghome);
-        clubSaiLlist.loadallsailfiles("saillist.xml", homefile);
+        clubSailList.loadallsailfiles("saillist.xml", homefile);
         mainmenubar = mainmenu();
         mainpanel = new jswVerticalPanel("mainpanel", false, false);
         mainpanel.setBorder(jswStyle.makeLineBorder(Color.red, 4));
-        currentcompetition = new Competition(currentcompetitionfile, clubSaiLlist);
-        currentraceday = 0;
+     //   currentcompetition = new Competition(currentcompetitionfile, clubSaiLlist);
+        compgui = new Competition_gui();
+        currentcompetition = null;
+                currentraceday = 0;
         clubgui = new Club_gui(clublist);
         boatclassgui = new Boatclass_gui(classlist);
-        sailgui = new Sail_gui(clubSaiLlist);
-        sailgui.setSelectedsail(clubSaiLlist.first());
+        sailgui = new Sail_gui(clubSailList);
+        sailgui.setSelectedsail(clubSailList.first());
         refreshGui();
         add(mainpanel);
         mainpanel.repaint();
@@ -124,7 +128,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
 
     public static void main(String[] args)
     {
-        mode = COMPETITION;
+        mode = START;
         mframe = new Mainrace_gui(800, 400);
         mframe.setJMenuBar(mainmenubar);
         mframe.addWindowListener(new WindowAdapter()
@@ -138,6 +142,11 @@ public class Mainrace_gui extends JFrame implements ActionListener
         mframe.setMinimumSize(new Dimension(800, 400));
         mframe.pack();
         mframe.setVisible(true);
+        JMenu fmenu = new JMenu("File");
+        mainmenubar.add(fmenu);
+        JMenuItem fmenuItem1 = new JMenuItem("Load Competition");
+        fmenuItem1.addActionListener(mframe);
+        fmenu.add(fmenuItem1);
     }
 
     public static jswStyles defaultStyles()
@@ -304,6 +313,9 @@ public class Mainrace_gui extends JFrame implements ActionListener
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("VIEW");
         menuBar.add(menu);
+        JMenuItem menuItem0 = new JMenuItem("Load Competition");
+        menuItem0.addActionListener(this);
+        menu.add(menuItem0);
         JMenuItem menuItem1 = new JMenuItem("View Competition");
         menuItem1.addActionListener(this);
         menu.add(menuItem1);
@@ -349,9 +361,9 @@ public class Mainrace_gui extends JFrame implements ActionListener
         return menu;
     }
 
-    public SailList getClubSaiLlist()
+    public SailList getClubSailList()
     {
-        return clubSaiLlist;
+        return clubSailList;
     }
 
     public void refreshGui()
@@ -359,13 +371,20 @@ public class Mainrace_gui extends JFrame implements ActionListener
         mainpanel.removeAll();
         if (mode == RACEDAY)
         {
-            Raceday aracedaymatrix = currentcompetition.getracedaymatrix(currentraceday);
-            mainpanel.add(" FILLH FILLW ", new Raceday_gui(aracedaymatrix));
+            Raceday araceday = currentcompetition.getracedaymatrix(currentraceday);
+            araceday.competition=currentcompetition;
+            mainpanel.add(" FILLH FILLW ", new Raceday_gui(araceday));
         } else if (mode == COMPETITION)
         {
-            compgui = new Competition_gui(currentcompetition);
-            mainpanel.add(" FILLH FILLW ", compgui);
-        }else if (mode == CLASSLIST)
+          // if(currentcompetition != null)
+            {
+                mainpanel.removeAll();
+                compgui = new Competition_gui(currentcompetition);
+                mainpanel.add(" FILLH FILLW ", compgui);
+
+            }
+        }
+        else if (mode == CLASSLIST)
         {
             mainpanel.add(" FILLH FILLW ", boatclassgui.makeBoatclassgui());
         }  else if (mode == CLUBLIST)
@@ -436,6 +455,39 @@ public class Mainrace_gui extends JFrame implements ActionListener
     {
         String command = e.getActionCommand();
      //   System.out.println(" here we are MRG : " + command);
+       /* if (command.equalsIgnoreCase("Load Competition"))
+        {
+            mode = COMPETITION;
+            System.out.println( " wow ");
+            currentcompetition = new Competition(currentcompetitionfile, clubSaiLlist);
+            compgui = new Competition_gui(currentcompetition);
+            mainpanel.add(" FILLH FILLW ", compgui);
+        }*/
+
+        if (command.equalsIgnoreCase("Load Competition"))
+        {
+            final File directorylock = new File(mysailinghome);
+            JFileChooser chooser = new JFileChooser(directorylock);
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
+            chooser.setFileFilter(filter);
+            String outfile = mysailinghome + currentcompetitionfile;
+            chooser.setSelectedFile(new File(outfile));
+            int returnVal = chooser.showOpenDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION)
+            {
+                String selfile = chooser.getSelectedFile().getPath();
+                System.out.println("**You chose to open this file: " + selfile);
+                compgui.pointsmatrix = null;
+                compgui.currentcomp = new Competition(selfile, mframe.clubSailList);
+                currentcompetitionfile = selfile;
+                currentcompetition = compgui.currentcomp;
+            }
+            mode = COMPETITION;
+            compgui.refreshcompetition_gui();
+            compgui.compheader.setVisible(true);
+            compgui.scorespanel.setVisible(true);
+            compgui. editpanel.setVisible(false);
+        }
         if (command.equalsIgnoreCase("View Competition"))
         {
             mode = COMPETITION;
@@ -455,7 +507,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
         if (command.startsWith("View Sailors"))
         {
             File homefile = new File(mysailinghome);
-            clubSaiLlist.loadallsailfiles("saillist.xml", homefile);
+            clubSailList.loadallsailfiles("saillist.xml", homefile);
             mode = SAILLIST;
         }
         refreshGui();

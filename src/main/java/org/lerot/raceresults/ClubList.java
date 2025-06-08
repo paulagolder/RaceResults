@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import static org.lerot.raceresults.Mainrace_gui.mframe;
+
 public class ClubList extends TreeMap<String, Club>
 {
 
@@ -29,6 +31,7 @@ public class ClubList extends TreeMap<String, Club>
         }
         return out;
     }
+
     public String toString()
     {
         String out = "";
@@ -54,6 +57,16 @@ public class ClubList extends TreeMap<String, Club>
             clubvector.add(aclub);
         }
         return clubvector;
+    }
+
+    public String getDefaulKey()
+    {
+        return this.firstKey();
+    }
+
+    public Club getDefaul()
+    {
+        return this.firstEntry().getValue();
     }
     
     
@@ -98,6 +111,22 @@ public class ClubList extends TreeMap<String, Club>
         }
         out.append("</clubs>\n");
         return out.toString();
+    }
+
+     public void makeClubList(String text)
+    {
+        this.clear();
+        String[] clubs = text.toUpperCase().split(",");
+        for(String aclub :clubs)
+        {
+            String aclubkey = aclub.trim();
+            Club foundclub = mframe.clublist.get(aclubkey);
+            if(foundclub != null)
+            {
+                this.put(aclubkey,foundclub);
+            }
+        }
+
     }
 
 

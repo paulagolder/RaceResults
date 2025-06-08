@@ -19,7 +19,7 @@ public class ranksmatrix
     public ranksmatrix(Competition acompetition)
     {
         setCurrentcompetition(acompetition);
-        setBoatclass(acompetition.getRaceclasses());
+        setBoatclass(acompetition.compclasslist.toString());
         setRaceyear(acompetition.getCompyear());
         int nsailors = currentcompetition.noCompetitors;
         datamatrix = new dataMatrix(nsailors, nsailors);
@@ -36,32 +36,37 @@ public class ranksmatrix
         int maxsails = ns;
         maxsailors = 0;
         int[][] matrix2 = new int[ns + 1][ns + 1];
-        for (int r = 0; r < maxsails; r++)
+
+        int totalscore = 0;
+        for (int i = 0; i < currentcompetition.racedayfilenames.size(); i++)
         {
-            int totalscore = 0;
-            for (int i = 0; i < currentcompetition.racedayfilenames.size(); i++)
+            Raceday aracedaymatrix = currentcompetition.getRacedayNo(i);
+            dataMatrix compmatrix = aracedaymatrix.getValueMatrix(aracedaymatrix.getRacematrix(),aracedaymatrix.getRacematrix().getColname(), currentcompetition.competitors.getVector());
+            for (int r = 0; r < maxsails; r++)
             {
-                Raceday aracedaymatrix = currentcompetition.getRacedayNo(i);
                 for (int c = 0; c < aracedaymatrix.GetNoRaces(); c++)
                 {
-                    dataMatrix compmatrix = aracedaymatrix.getRacematrix().getValueMatrix(aracedaymatrix.getRacematrix().getColname(), currentcompetition.competitors.getVector());
-                    String value = compmatrix.getValue(c, r);
-                    int iv;
-                    try
+                    Boolean included = compmatrix.getSelected().get(c);
+                    if(included)
                     {
-                        if (value != null)
+                        String value = compmatrix.getValue(c, r);
+                        int iv;
+                        try
                         {
-                            iv = Integer.parseInt(value.trim());
-                           // if(iv<ns+1)
-                           // {
+                            if (value != null)
+                            {
+                                iv = Integer.parseInt(value.trim()) - 1;
+                                // if(iv<ns+1)
+                                // {
                                 System.out.println(" saving " + iv + " " + r);
                                 matrix2[iv][r] = matrix2[iv][r] + 1;
-                          //  }
-                            if (iv > maxsailors) maxsailors = iv;
+                                //  }
+                                if (iv > maxsailors) maxsailors = iv;
+                            }
+                        } catch (NumberFormatException ex)
+                        {
+                            iv = 0;
                         }
-                    } catch (NumberFormatException ex)
-                    {
-                        iv = 0;
                     }
                 }
             }
@@ -73,20 +78,21 @@ public class ranksmatrix
 
         for (Sail asail : currentcompetition.competitors)
         {
-            sails.add(asail.getSailnumberStr());
+            sails.add(asail.toCypherString());
         }
 
         for (int c = 1; c < maxsailors + 1; c++)
         {
             Vector<String> acol = new Vector<String>();
-            int nrows = matrix2[c].length;
+            int nrows = matrix2[c - 1].length;
             for (int r = 0; r < nrows; r++)
             {
-                int value = matrix2[c][r];
+                int value = matrix2[c - 1][r];
                 acol.add(" " + value);
             }
             datamatrix.data.add(acol);
         }
+        dataMatrix dmx = datamatrix;
     }
 
     public jswVerticalPanel displayresults(Competition_gui parent, jswStyles tablestyles, int maxsailors)
@@ -169,7 +175,6 @@ public class ranksmatrix
         return datamatrix.getRowname().get(r);
     }
 
-
     public Competition getCurrentcompetition()
     {
         return currentcompetition;
@@ -180,7 +185,7 @@ public class ranksmatrix
         this.currentcompetition = currentcompetition;
     }
 
-    public void printResultsToHTML(String path, String comptitle, TreeMap<SailNumber, Sail> boatlist, int maxsailors)
+    public void printResultsToHTML(String path, String comptitle, TreeMap<String, Sail> boatlist, int maxsailors)
     {
         try
         {
@@ -205,8 +210,7 @@ public class ranksmatrix
         }
     }
 
-
-    public void printScoresToHTML(BufferedWriter bw, String title, TreeMap<SailNumber, Sail> boatlist, int maxsailors) throws IOException
+    public void printScoresToHTML(BufferedWriter bw, String title, TreeMap<String, Sail> boatlist, int maxsailors) throws IOException
     {
         dataMatrix compmatrix = datamatrix;
         int ncols = compmatrix.data.size();
@@ -233,11 +237,6 @@ public class ranksmatrix
         bw.write("</table>\n");
     }
 
-    public void setColnames(Vector<String> strings)
-    {
-        datamatrix.setColnames(strings);
-    }
-
     public PositionList makePositionMap()
     {
         PositionList posmap = new PositionList(currentcompetition);
@@ -260,37 +259,40 @@ public class ranksmatrix
             int races = 0;
             for (int c = 1; c < ncols; c++)
             {
-                Vector<String> col = datamatrix.data.get(c);
-                String value = col.get(r);
-                int rankcount = Integer.parseInt(datamatrix.getValue(c, r).trim());
-                totalraces +=rankcount;
-                if (rankcount > 0)
+                boolean include = datamatrix.getSelected().get(c);
+                if(include)
                 {
-                    if (racecount > 0)
+                    Vector<String> col = datamatrix.data.get(c);
+                    String value = col.get(r);
+                    int rankcount = Integer.parseInt(datamatrix.getValue(c, r).trim());
+                    totalraces += rankcount;
+                    if (rankcount > 0)
                     {
-                        if (rankcount + races < racecount)
+                        if (racecount > 0)
+                        {
+                            if (rankcount + races < racecount)
+                            {
+                                races += rankcount;
+                                score += rankcount * (c);
+                            } else if (races < racecount)
+                            {
+                                score += (racecount - races) * (c);
+                                races = racecount;
+                            } else
+                            {
+                            }
+                        } else
                         {
                             races += rankcount;
                             score += rankcount * (c);
-                        } else if (races < racecount)
-                        {
-                            score += (racecount - races) * (c);
-                            races = racecount;
-                        } else
-                        {
                         }
-                    } else
-                    {
-                        races += rankcount;
-                        score += rankcount * (c);
                     }
                 }
             }
 
-            aposition.setSailor(asail.getSailorname());
-            aposition.setSail(asail.getSailnumberStr());
+            aposition.setSail(asail);
             aposition.setScoredraces(races);
-            if(racecount>0)
+            if (racecount > 0)
             {
                 int missingracepoints = (racecount - races) * maxsailors;
                 aposition.setPoints(score + missingracepoints);

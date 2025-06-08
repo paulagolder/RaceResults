@@ -26,6 +26,8 @@ public class Raceday
     private String boatclass_str;
     private String racedate_str;
     private dataMatrix racematrix;
+    private String cssid = "raceday";
+    private String cssclass = "raceday";
 
     public Raceday(Competition comp)
     {
@@ -62,14 +64,7 @@ public class Raceday
         racematrix.setRowname(utils.makeRownames(nsailors));
     }
 
-    public static Raceday demo(Competition comp)
-    {
-        Raceday rm = new Raceday(comp);
-        rm.boatclass_str = "DF99";
-        rm.racedate_str = "08/07/1944";
-        rm.racematrix = dataMatrix.demo(4, 15);
-        return rm;
-    }
+
 
     public String getBoatclass_str()
     {
@@ -171,7 +166,7 @@ public class Raceday
             bw.write(" td { text-align: center; }\n");
             bw.write(" table, th, td { border: 1px solid; }\n");
             bw.write("</style>\n</head>\n<body>\n");
-            racematrix.printToHTML(bw, boatclass_str + " " + racedate_str);
+            printToHTML(racematrix,bw, boatclass_str + " " + racedate_str);
             bw.write("\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
@@ -180,15 +175,80 @@ public class Raceday
         }
     }
 
+
+    public void printToHTML(dataMatrix data,BufferedWriter bw, String title) throws IOException
+    {
+        int ncols = data.getColname().size();
+        int nrows = data.getRowname().size();
+        boolean excluded=false;
+        bw.write("<table id=\"" + cssid + "\" class=\"" + cssclass + "\">\n");
+        bw.write("<tr>\n<th  colspan=" + (ncols + 1) + ">" + title + "</th>\n</tr>");
+        bw.write("<tr>\n<th> </th>");
+        for (int c = 0; c < ncols; c++)
+        {
+            bw.write("<th>" + data.getColname().get(c) + "</th>");
+        }
+        bw.write("</tr>\n");
+        bw.write("<tr>\n<th> </th>");
+        for (int c = 0; c < ncols; c++)
+        {
+            if(data.getSelected().get(c))
+            {
+                bw.write("<th></th>");
+            }else
+            {
+                bw.write("<th>X</th>");
+                excluded = true;
+            }
+        }
+        bw.write("</tr>\n");
+        for (int r = 0; r < nrows; r++)
+        {
+
+            int filledcols = 0;
+            for (int c = 0; c < ncols; c++)
+            {
+                String outvalue = data.getColumn(c).get(r);
+                if (outvalue != null && !outvalue.equalsIgnoreCase("null")) filledcols++;
+            }
+            if (filledcols > 0)
+            {
+                bw.write("<tr><td>" + data.getRowname().get(r) + "</td>");
+                for (int c = 0; c < ncols; c++)
+                {
+                    String outvalue = data.getColumn(c).get(r);
+                    if( outvalue == null || outvalue.equalsIgnoreCase("null"))
+                    {
+                        bw.write("<td ></td>");
+                    }
+                    else
+                    {
+                        Sail asail = Sail.parse(outvalue.trim(), competition.compclasslist.getDefaulKey(), competition.compclublist.getDefaulKey());
+                        String outtext = asail.toCypherString(competition.compclublist.getDefaulKey(), competition.compclasslist.getDefaulKey());
+                        bw.write("<td >" + outtext+ "</td>");
+                    }
+
+                }
+                bw.write("</tr>\n");
+            }
+
+        }
+        bw.write("<tr>\n<th  colspan=" + (ncols + 1) + ">X not included in competition </th>\n</tr>");
+        bw.write("</table>\n");
+    }
+
+
+
     public void printToHTML(BufferedWriter bw, String heading)
     {
-        try
+        //try
         {
-            racematrix.printToHTML(bw, heading);
-        } catch (IOException e)
+            printToHTML(bw, heading);
+        }
+        /*catch (IOException e)
         {
             throw new RuntimeException(e);
-        }
+        }*/
     }
 
     public Document readXML(String fileNameWithPath)
@@ -273,9 +333,10 @@ public class Raceday
                     racematrix.getRowname().add(rname);
                 }
                 String value = acell.getTextContent();
-                SailNumber sn = new SailNumber(value);
-                String snstr = sn.ToString(5);
-                racematrix.putCell(cname, rname, snstr);
+              //  SailNumber sn = new SailNumber(value);
+              //  String snstr = sn.ToString(5);
+                racematrix.putCell(cname, rname, value);
+
                 // System.out.println("hello "+cname+":"+rname+":"+value+":"+sn.ToString(5));
             }
         }
@@ -336,12 +397,56 @@ public class Raceday
         jswButton editheaderbutton = new jswButton(al, "EDIT", "editraceday:" + index);
         racedayheader.add(" right ", editheaderbutton);
         raceresults.add(" FILLW  ", racedayheader);
-        dataMatrix compmatrix = racematrix.getValueMatrix(racematrix.getColname(), parent.currentcomp.competitors.getVector());
+        dataMatrix compmatrix = getValueMatrix(racematrix,racematrix.getColname(), parent.currentcomp.competitors.getVector());
         raceresults.add("    ", compmatrix.makesmalldatapanel(parent.currentcomp.competitors, tablestyles));
         raceresults.applyStyle();
         raceresults.setPadding(5, 5, 5, 5);
         return raceresults;
     }
+
+
+    public dataMatrix getValueMatrix( dataMatrix data,Vector<String> colnames, Vector<String> rownames)
+    {
+        int ncols = colnames.size();
+        int nrows = rownames.size();
+        dataMatrix vm = new dataMatrix(ncols, nrows);
+        vm.setRowname(rownames);
+        vm.setColname(colnames);
+        //   vm.getColname().set(2,"two");
+        vm.setColtype("String", ncols);
+        vm.setSelected(true, ncols);
+
+        for (int c = 0; c < data.size(); c++)
+        {
+            Boolean included = data.getSelected().get(c);
+             vm.getSelected().set(c,included);
+            Vector<String> values = data.getColumn(c);
+            for (int r = 0; r < values.size(); r++)
+            {
+                String avalue = values.get(r);
+                if (avalue != null)
+                {
+                    avalue = getValue(c, r);
+
+                    if(!avalue.trim().isEmpty() )
+                    {
+                        Sail asail = Sail.parse(avalue.trim(),competition.compclasslist.getDefaulKey(),competition.compclublist.getDefaulKey());
+                        if (asail != null)
+                        {
+                            String token = asail.toCypherString();
+                            if (!token.trim().isEmpty())
+                            {
+                                vm.putaCell(c, token, " " + (r + 1));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return vm;
+    }
+
+
 
     public String getValue(int c, int r)
     {
@@ -400,7 +505,7 @@ public class Raceday
         if(sailid[1].isEmpty())
         {
             Sail gsail = competition.allSails.getSail(cd, boatclass_str, homeclubname);
-            getRacematrix().setCell(nc, nr, gsail.getSailnumberStr());
+            getRacematrix().setCell(nc, nr, gsail.toCypherString());
         }
         else
         {
