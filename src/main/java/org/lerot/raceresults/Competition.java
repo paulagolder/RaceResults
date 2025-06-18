@@ -25,6 +25,7 @@ public class Competition
     SailList allSails = new SailList();
     SailList competitors = new SailList();
     private String compyear;
+    String compdir;
     public BoatclassList compclasslist;
     private String competitionname;
     private int racecount;
@@ -51,6 +52,7 @@ public class Competition
         competitionfile = compfile;
         compclasslist = new BoatclassList();
         compclublist = new ClubList();
+        compdir = "";
         allSails = allsailslist;
         System.out.println("Loading Competition:"+compfile);
         String cfile = utils.fileexists(compfile);
@@ -128,8 +130,8 @@ public class Competition
                 try
                 {
                     Raceday raceday = new Raceday(this);
-                    filename= filename.replace("/","-");
-                    String file = fileexists(filename);
+                    //filename= filename.replace("/","-");
+                    String file = fileexists(compdir + "/" + filename);
                     if (file != null)
                     {
                         System.out.println(" Loading raceday " + filename);
@@ -247,6 +249,13 @@ public class Competition
                 compclasslist.clear();
                 compclasslist.put( "df95",mframe.classlist.get("df95"));
             }
+            if (rootele.getAttributeNode("directory") != null)
+            {
+                compdir = (rootele.getAttributeNode("directory").getValue());
+            } else
+            {
+                compdir = "";
+            }
             NodeList cells = rootele.getChildNodes();
             System.out.println(cells.getLength());
             NodeList racedaysnl = rootele.getElementsByTagName("raceday");
@@ -254,8 +263,8 @@ public class Competition
             {
                 Element acell = (Element) racedaysnl.item(i);
                 String cname = acell.getAttribute("filename");
-                cname = cname.replace(dotmysailing, "");
-                cname = cname.replace(mysailinghome, "");
+                //    cname = cname.replace(dotmysailing, "");
+                //     cname = cname.replace(mysailinghome, "");
                 racedayfilenames.add(cname);
             }
         } catch (Exception e)
@@ -354,14 +363,6 @@ public class Competition
         competitors.addAll(sl);
     }
 
- /*   public void addEmptyRacedayMatrix(int nraces, int nsailors)
-    {
-        Raceday sailday = new Raceday(this, getRaceclasses(), "01/" + (racedaymatrixlist.size() + 1) + "/" + getCompyear(), nraces, nsailors);
-        racedaymatrixlist.add(sailday);
-        sailday.filename = "raceday_" + getRaceclasses() + "_" + sailday.getRacedate("-") + ".xml";
-        racedayfilenames.add(sailday.filename);
-    }*/
-
     public void generateranklist(int nrows)
     {
         getRanklist().clear();
@@ -385,6 +386,7 @@ public class Competition
             bw.write("<competition  year=\"" + compyear +
                     "\"  name= \"" + competitionname + "\" racecount = \"" + racecount +
                     "\" clubs = \"" + compclublist.toString() +
+                    "\" directory = \"" + compdir +
                     "\" classes = \"" + compclasslist.toString()  + "\">\n");
             bw.write("<racedays>\n");
             for (int r = 0; r < racedayfilenames.size(); r++)
@@ -439,7 +441,8 @@ public class Competition
             for (int i = 0; i < racedaymatrixlist.size(); i++)
             {
                 Raceday raceday = racedaymatrixlist.get(i);
-                raceday.printToHTML(bw, raceday.getRacedate_str());
+                //raceday.printToHTML(racematrix, bw, boatclass_str + " " + racedate_str);
+                raceday.printToHTML(bw);
             }
             bw.write("\n</body>\n</html>\n");
             bw.close();
@@ -499,7 +502,6 @@ public class Competition
         return this.competitionname + " " + this.getCompyear() + " " + this.getRaceclasses() + " " + this.getRacecount() + " " + this.compclublist.toString();
     }
 
-
     public String getClubString()
     {
         return compclublist.toString();
@@ -548,7 +550,6 @@ public class Competition
             bw.write("<tr><td>Clubs :"+compclublist.toString() +"</td> <td> Date : &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;/2025 </td></tr>\n");
             bw.write("</table>");
 
-
             TreeMap<String, Sail> saillist = allSails.makeTreeList(compclasslist.toString(), compclublist.toString());
             bw.write("<table class=\"result\" >\n");
             bw.write("<tr><th>Sail</th><th>Sailor</th><th></th><th>Rank</th><th>Race A</th><th>Race B </th><th>Race C </th><th>Race D </th></tr>\n");
@@ -596,7 +597,6 @@ public class Competition
             }
         }
         competitors = newlist;
-
     }
 
     public void setRaceclubs(String text)

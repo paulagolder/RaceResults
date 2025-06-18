@@ -1,12 +1,16 @@
 package org.lerot.raceresults;
 
-import org.lerot.mywidgets.*;
+import org.lerot.mywidgets.jswHorizontalPanel;
+import org.lerot.mywidgets.jswLabel;
+import org.lerot.mywidgets.jswStyles;
+import org.lerot.mywidgets.jswVerticalPanel;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.TreeMap;
+import java.util.Vector;
 
 public class ranksmatrix
 {
@@ -58,7 +62,7 @@ public class ranksmatrix
                                 iv = Integer.parseInt(value.trim()) - 1;
                                 // if(iv<ns+1)
                                 // {
-                                System.out.println(" saving " + iv + " " + r);
+                                //        System.out.println(" saving " + iv + " " + r);
                                 matrix2[iv][r] = matrix2[iv][r] + 1;
                                 //  }
                                 if (iv > maxsailors) maxsailors = iv;
@@ -242,10 +246,10 @@ public class ranksmatrix
         PositionList posmap = new PositionList(currentcompetition);
         int racecount = currentcompetition.getRacecount();
         Vector<String> saillist = currentcompetition.competitors.getVector();
-        System.out.println(saillist.toString());
+        //   System.out.println(saillist.toString());
         TreeMap<String, Sail> competitors = currentcompetition.competitors.getMap();
         int totalscore = 0;
-        System.out.println("here:" + currentcompetition.noCompetitors);
+        //   System.out.println("here:" + currentcompetition.noCompetitors);
         int ncols = +datamatrix.data.size();
         TreeMap<String, Position> positionMap = new TreeMap<String, Position>();
 

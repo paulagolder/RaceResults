@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Vector;
 
-import static org.lerot.raceresults.Mainrace_gui.dotmysailing;
 import static org.lerot.raceresults.Mainrace_gui.mysailinghome;
 
 public class utils
@@ -39,21 +38,6 @@ public class utils
         return cmdmap;
     }
 
-   /* public static HashMap<String, Integer> parsecoords(String text)
-    {
-        HashMap<String, Integer> cmdmap = new HashMap<String, Integer>();
-        String text2 = text.replace("{", "");
-        String text3 = text2.replace("}", "");
-        String[] cmdarray = text3.split(",");
-        for (String acmd : cmdarray)
-        {
-            //System.out.println( acmd)   ;
-            String[] cmdpair = acmd.split("=");
-            cmdmap.put(cmdpair[0].trim(), Integer.parseInt(cmdpair[1].trim()));
-        }
-        //    System.out.println(cmdmap);
-        return cmdmap;
-    }*/
 
     public static String sailmaker(int j)
     {
@@ -91,14 +75,7 @@ public class utils
                 return file.toAbsolutePath().toString();
             } else
             {
-                file = Paths.get(dotmysailing + filepath);
-                if (Files.exists(file) && Files.isRegularFile(file) && Files.isReadable(file))
-                {
-                    return file.toAbsolutePath().toString();
-                } else
-                {
                     return null;
-                }
             }
 
         }

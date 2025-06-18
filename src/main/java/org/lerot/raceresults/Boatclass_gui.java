@@ -15,30 +15,30 @@ import static org.lerot.raceresults.Mainrace_gui.*;
 public class Boatclass_gui extends jswVerticalPanel implements ActionListener
 {
 
+    Boatclass selectedclass = null;
     //private final ActionListener parentlistener;
     private jswOptionset classoptions;
-    private int indexselected=0;
+    private int indexselected = 0;
     private BoatclassList classlist;
     private String selectedclasskey = "DF95";
-    Boatclass selectedclass = null;
     private jswTextBox keyfield;
     private jswTextBox fullnamefield;
     private jswTextBox cypherfield;
 
     public Boatclass_gui(BoatclassList cl)
     {
-        super("Class Gui",false,false);
+        super("Class Gui", false, false);
         //makeheadermenu();
         classlist = cl;
     }
 
     private void makeheadermenu()
     {
-        if(mainmenubar.getMenuCount()>2)
+        if (mainmenubar.getMenuCount() > 2)
         {
             mainmenubar.remove(2);
         }
-        if(mainmenubar.getMenuCount()>1)
+        if (mainmenubar.getMenuCount() > 1)
         {
             mainmenubar.remove(1);
         }
@@ -52,44 +52,43 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
     public jswVerticalPanel makeBoatclassgui()
     {
         makeheadermenu();
-            jswVerticalPanel editpanel = new jswVerticalPanel("Class List", false, false);
-            jswTable datagrid = new jswTable(null, "", Mainrace_gui.smalltable3styles());
-            datagrid.addCell(new jswLabel("Select"), 0, 0);
-            datagrid.addCell(new jswLabel("key"), 0, 1);
-            datagrid.addCell(new jswLabel("fullname"), 0, 2);
-            datagrid.addCell(new jswLabel("cypher"), 0, 3);
-            selectedclass =  classlist.getClassVector().get(0);
-            int r= 0;
-            classoptions = new jswOptionset(this,"cluboptions",true,false,false);
-            for (Map.Entry<String,Boatclass> anentry : classlist.entrySet())
+        jswVerticalPanel editpanel = new jswVerticalPanel("Class List", false, false);
+        jswTable datagrid = new jswTable(null, "", Mainrace_gui.smalltable3styles());
+        datagrid.addCell(new jswLabel("Select"), 0, 0);
+        datagrid.addCell(new jswLabel("key"), 0, 1);
+        datagrid.addCell(new jswLabel("fullname"), 0, 2);
+        datagrid.addCell(new jswLabel("cypher"), 0, 3);
+        selectedclass = classlist.getClassVector().get(0);
+        int r = 0;
+        classoptions = new jswOptionset(this, "cluboptions", true, false, false);
+        for (Map.Entry<String, Boatclass> anentry : classlist.entrySet())
+        {
+            Boatclass aclub = anentry.getValue();
+            jswOption opt1 = classoptions.addNewOption("", aclub.getKey(), true);
+            datagrid.addCell(opt1, r + 1, 0);
+            datagrid.addCell(new jswLabel(aclub.getKey()), r + 1, 1);
+            datagrid.addCell(new jswLabel(aclub.getFullName()), r + 1, 2);
+            datagrid.addCell(new jswLabel(aclub.getCypher()), r + 1, 3);
+            if (aclub.getKey().equals(selectedclasskey))
             {
-                Boatclass aclub = anentry.getValue();
-                jswOption opt1 = classoptions.addNewOption("", aclub.getKey(),true);
-                datagrid.addCell(opt1,r+1,0);
-                datagrid.addCell(new jswLabel(aclub.getKey()), r + 1, 1);
-                datagrid.addCell(new jswLabel(aclub.getFullName()), r + 1, 2);
-                datagrid.addCell(new jswLabel(aclub.getCypher()), r + 1, 3);
-
-                if(aclub.getKey().equals(selectedclasskey))
-                {
-                    opt1.setSelected();
-                    selectedclass =aclub;
-                }
-                r++;
+                opt1.setSelected();
+                selectedclass = aclub;
             }
+            r++;
+        }
 
-            editpanel.add("  ", datagrid);
-            editpanel.applyStyle();
-            editpanel.add(classForm(this, selectedclass));
-            jswHorizontalPanel buttonpanel = new jswHorizontalPanel("buttons", false, false);
-            jswButton save = new jswButton(this,"Save","saveclass");
-            jswButton delete = new jswButton(this,"Delete","deleteclass");
-            jswButton newclub = new jswButton(this,"New Class","newclass");
-            buttonpanel.add (" ",save);
-            buttonpanel.add (" ",delete);
-            buttonpanel.add (" ",newclub);
-            editpanel.add(" ",buttonpanel);
-            return editpanel;
+        editpanel.add("  ", datagrid);
+        editpanel.applyStyle();
+        editpanel.add(classForm(this, selectedclass));
+        jswHorizontalPanel buttonpanel = new jswHorizontalPanel("buttons", false, false);
+        jswButton save = new jswButton(this, "Save", "saveclass");
+        jswButton delete = new jswButton(this, "Delete", "deleteclass");
+        jswButton newclub = new jswButton(this, "New Class", "newclass");
+        buttonpanel.add(" ", save);
+        buttonpanel.add(" ", delete);
+        buttonpanel.add(" ", newclub);
+        editpanel.add(" ", buttonpanel);
+        return editpanel;
     }
 
     @Override
@@ -100,7 +99,7 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
         {
             String foundclub = classoptions.getSelectedoption();
             System.out.println(classoptions.getSelectedoption());
-            for (Map.Entry<String,Boatclass> anentry : classlist.entrySet())
+            for (Map.Entry<String, Boatclass> anentry : classlist.entrySet())
             {
                 System.out.println(anentry.getKey());
                 if (foundclub.equalsIgnoreCase(anentry.getKey()))
@@ -113,21 +112,21 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
         }
         if (command.startsWith("newclass"))
         {
-            Boatclass aclub = new Boatclass("NC","newclass","x");
-                classlist.put((aclub.getKey()),aclub);
+            Boatclass aclub = new Boatclass("NC", "newclass", "x");
+            classlist.put((aclub.getKey()), aclub);
         }
         if (command.startsWith("saveclass"))
         {
-            Boatclass aclub = new Boatclass(keyfield.getText(),fullnamefield.getText(),cypherfield.getText());
+            Boatclass aclub = new Boatclass(keyfield.getText(), fullnamefield.getText(), cypherfield.getText());
             classlist.put(aclub.getKey(), aclub);
         }
         if (command.startsWith("deleteclass"))
         {
             classlist.remove(selectedclass.getKey());
-            for (Map.Entry<String,Boatclass> anentry : classlist.entrySet())
+            for (Map.Entry<String, Boatclass> anentry : classlist.entrySet())
             {
                 Boatclass aclub = anentry.getValue();
-                if(aclub.getKey().equals(homeclub))
+                if (aclub.getKey().equals(homeclub))
                 {
                     classoptions.setSelected(selectedclasskey);
                     selectedclass = aclub;
@@ -157,7 +156,7 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
         mframe.refreshGui();
     }
 
-    public  jswVerticalPanel classForm(ActionListener al, Boatclass aclass)
+    public jswVerticalPanel classForm(ActionListener al, Boatclass aclass)
     {
         jswVerticalPanel form = new jswVerticalPanel("classform", false, false);
         jswHorizontalPanel row1 = new jswHorizontalPanel("row1", false, false);
