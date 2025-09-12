@@ -1,6 +1,5 @@
 package org.lerot.raceresults;
 
-import org.lerot.mywidgets.jswStyles;
 import org.lerot.mywidgets.*;
 
 import java.awt.event.ActionListener;

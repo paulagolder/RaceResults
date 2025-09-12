@@ -30,7 +30,8 @@ public class Competition
     private String competitionname;
     private int racecount;
     private Vector<Raceday> racedaymatrixlist;
-    private Vector<String> ranklist = new Vector<String>();
+    int maxParticipants = 0;
+    // private Vector<String> ranklist = new Vector<String>();
     ClubList compclublist ;
     private String csscompetition = "competition";
 
@@ -58,7 +59,7 @@ public class Competition
         String cfile = utils.fileexists(compfile);
         if( cfile==null)
         {
-            System.out.println("Not found comapetion file :" + compfile);
+            System.out.println("Not found competition file :" + compfile);
             System.out.println("exiting...");
             System.exit(0);
         }
@@ -150,8 +151,8 @@ public class Competition
                 }
             }
         }
-         makeCompetitorsList();
-        setRanklist(makerankvector());
+        competitors = makeCompetitorsList();
+        maxParticipants = (maxparticipants());
         noCompetitors = competitors.size();
     }
 
@@ -167,10 +168,10 @@ public class Competition
         leftcolumn.add(" FILLW middle minheight=30 ", leftheader);
         jswTable datagrid = new jswTable(null, "form1", tablestyles);
         datagrid.addCell(new jswLabel("Rank"), 0, 0);
-        int nrows = getRanklist().size();
+        int nrows = maxParticipants;
         for (int r = 0; r < nrows; r++)
         {
-            datagrid.addCell(new jswLabel(getRanklist().get(r)), r + 1, 0);
+            datagrid.addCell(new jswLabel("!!" + r), r + 1, 0);
         }
         leftcolumn.add(" FILLW ", datagrid);
         leftcolumn.setPadding(5, 5, 5, 5);
@@ -330,19 +331,17 @@ public class Competition
         return svector;
     }
 
-    private Vector<String> makerankvector()
+    private int maxparticipants()
     {
-        SortedSet<String> nvector = new TreeSet<String>();
+        int maxparticipants = 0;
         for (int i = 0; i < racedaymatrixlist.size(); i++)
         {
             Raceday araceday = racedaymatrixlist.get(i);
-            Vector<String> values = araceday.getRankvector();
-            nvector.addAll(values);
+            int np = araceday.getMaxParticiants();
+            if (maxparticipants < np) maxparticipants = np;
         }
-        Vector<String> avector = new Vector<String>();
-        avector.addAll(nvector);
-        System.out.println(nvector);
-        return avector;
+
+        return maxparticipants;
     }
 
     public Raceday getracedaymatrix(int i)
@@ -361,15 +360,6 @@ public class Competition
             sl.add(utils.sailmaker(j));
         }
         competitors.addAll(sl);
-    }
-
-    public void generateranklist(int nrows)
-    {
-        getRanklist().clear();
-        for (int r = 1; r < nrows + 1; r++)
-        {
-            getRanklist().add(" " + r);
-        }
     }
 
     public void printfileToXML(String path)
@@ -401,16 +391,6 @@ public class Competition
         {
             System.out.println(e);
         }
-    }
-
-    public Vector<String> getRanklist()
-    {
-        return ranklist;
-    }
-
-    public void setRanklist(Vector<String> ranklist)
-    {
-        this.ranklist = ranklist;
     }
 
     public void addRaceday(String filename)
@@ -571,32 +551,21 @@ public class Competition
         }
     }
 
-    public void makeCompetitorsList()
+    public SailList makeCompetitorsList()
     {
         SailList newlist = new SailList();
-        for (int i = 0; i < racedaymatrixlist.size(); i++)
+        for (Raceday araceday : racedaymatrixlist)
         {
-            Raceday racematrix = racedaymatrixlist.get(i);
-            dataMatrix mx = racematrix.getRacematrix();
-            for (int c = 0; c < mx.getncols(); c++)
+            SailList asaillist = araceday.getSailors();
+            for (Sail asail : asaillist)
             {
-                Vector<String> cdata = mx.data.get(c);
-                int nrows = mx.getFilledLength(cdata);
-                for (int r = 0; r < nrows ; r++)
+                if (asail != null)
                 {
-                    String avalue = cdata.get(r);
-                    if(avalue!=null && !avalue.trim().isEmpty() )
-                    {
-                        Sail asail = Sail.parse(avalue.trim(),compclasslist.getDefaulKey(),compclublist.getDefaulKey());
-                        if (asail != null)
-                        {
-                            if (!newlist.contains(asail)) newlist.add(asail);
-                        }
-                    }
+                    if (!newlist.contains(asail)) newlist.add(asail);
                 }
             }
         }
-        competitors = newlist;
+        return newlist;
     }
 
     public void setRaceclubs(String text)

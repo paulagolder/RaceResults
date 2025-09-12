@@ -44,11 +44,13 @@ public class ranksmatrix
         int totalscore = 0;
         for (int i = 0; i < currentcompetition.racedayfilenames.size(); i++)
         {
-            Raceday aracedaymatrix = currentcompetition.getRacedayNo(i);
-            dataMatrix compmatrix = aracedaymatrix.getValueMatrix(aracedaymatrix.getRacematrix(),aracedaymatrix.getRacematrix().getColname(), currentcompetition.competitors.getVector());
+            Raceday araceday = currentcompetition.getRacedayNo(i);
+            //    dataMatrix compmatrix = araceday.getValueMatrix(araceday.getRacematrix(),araceday.getRacematrix().getColname(), currentcompetition.competitors.getVector());
+            dataMatrix compmatrix = araceday.getRankMatrix(araceday.competition.competitors);
+
             for (int r = 0; r < maxsails; r++)
             {
-                for (int c = 0; c < aracedaymatrix.GetNoRaces(); c++)
+                for (int c = 0; c < araceday.GetNoRaces(); c++)
                 {
                     Boolean included = compmatrix.getSelected().get(c);
                     if(included)

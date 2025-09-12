@@ -72,7 +72,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         repaint();
     }
 
-    private jswHorizontalPanel displayraces()
+/*    private jswHorizontalPanel displayraces()
     {
         jswHorizontalPanel racespanel = new jswHorizontalPanel("races", false, false);
         racespanel.add("  ", currentcomp.displayrankcolumn(smalltable2styles()));
@@ -84,7 +84,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         racespanel.setStyleAttribute("backgroundcolor", "pink");
         racespanel.applyStyle();
         return racespanel;
-    }
+    }*/
 
     private jswHorizontalPanel displayscorepanels()
     {
@@ -96,7 +96,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             for (int i = 0; i < currentcomp.getRacedaymatrixlist().size(); i++)
             {
                 Raceday raceday = currentcomp.getracedaymatrix(i);
-                racespanel.add("  ", raceday.displayscoreresults(this, smalltable1styles(), i));
+                racespanel.add("  ", raceday.displayscores(this, smalltable1styles(), i));
             }
             if (pointsmatrix != null)
             {
@@ -107,11 +107,6 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             }
         }
         return racespanel;
-    }
-
-    Vector<String> getRankVector()
-    {
-        return currentcomp.getRanklist();
     }
 
     public void makeheadermenu()
@@ -447,7 +442,8 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             currentcomp.racedayfilenames.clear();
             currentcomp.getRacedaymatrixlist().clear();
             pointsmatrix = null;
-            currentcomp.generateranklist(currentcomp.noCompetitors);
+            currentcomp.maxParticipants = 0;
+            //  currentcomp.generateranklist(currentcomp.noCompetitors);
             mframe.currentcompetition = currentcomp;
             if (mainmenubar.getMenuCount() > 2)
             {
@@ -515,7 +511,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             Raceday rndraceday = new Raceday(boatclass, racedate, nc, nsailors, saillist);
             currentcomp.getRacedaymatrixlist().add(rndraceday);
             currentcomp.racedayfilenames.add(rndraceday.filename);
-            rndraceday.printfileToXML(rndraceday.filename);
+            rndraceday.printfileToXML_old(rndraceday.filename);
             rndraceday.saved = false;
             currentcomp.reloadracedays();
             refreshcompetition_gui();

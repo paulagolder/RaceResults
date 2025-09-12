@@ -498,5 +498,58 @@ public class SailList extends TreeSet<Sail>
             return null;
         }
     }
+
+    public Sail findMatch(Sail refsail)
+    {
+        SailNumber asailnumber = refsail.getSailnumber();
+        if (asailnumber == null) return null;
+        String aclasscypher = refsail.getBoatclass();
+        String aclubcypher = refsail.getClub();
+        int sailno = asailnumber.GetInt();
+        Vector<Integer> intvector = new Vector<>();
+        int nfound = 0;
+        Sail sailfound = null;
+        for (Sail asail : this)
+        {
+            String asailstr = asail.getSailnumberStr().trim();
+            int asailno = SailNumber.getInt(asailstr);
+            String boatcypher = mframe.classlist.get(asail.getBoatclass().toLowerCase()).getCypher();
+            String clubcypher = mframe.clublist.get(asail.getClub()).getCypher();
+            if (sailno == asailno && aclasscypher.equals(boatcypher)
+                    && aclubcypher.equals(clubcypher))
+            {
+                sailfound = asail;
+                nfound++;
+            }
+        }
+        if (nfound == 1) return sailfound;
+        else
+        {
+            return null;
+        }
+    }
+
+    public void addNoDuplicate(Sail newsail)
+    {
+        String newstring = newsail.toCypherString();
+        boolean found = false;
+        for (Sail asail : this)
+        {
+            if (asail.toCypherString().equalsIgnoreCase(newstring)) return;
+        }
+        add(newsail);
+    }
+
+    public int indexOf(Sail sail)
+    {
+        String newstring = sail.toCypherString();
+        int r = 0;
+        for (Sail asail : this)
+        {
+            if (asail.toCypherString().equalsIgnoreCase(newstring)) return r;
+            r++;
+        }
+        return -1;
+    }
 }
 

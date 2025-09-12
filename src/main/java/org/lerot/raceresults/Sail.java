@@ -20,24 +20,45 @@ public class Sail implements Comparable<Sail>
         club = aclub;
     }
 
+    public Sail(String sailstring)
+    {
+        String[] fields = sailstring.split(":");
+        if (fields.length < 3) return;
+        sailnumber = new SailNumber(fields[0]);
+        boatclass = fields[1].trim();
+        String name = fields[2];
+        if (name.contains("?"))
+        {
+            System.out.print("*******" + sailstring);
+        }
+        setSailorname(name);
+        club = fields[3];
+    }
+
     public static Sail  parse(String avalue, String defclass,String defclub)
     {
         if(mframe==null) return null;
         if(avalue == null || avalue.isEmpty()) return null;
-        avalue = avalue.trim();
+        avalue = avalue.trim().toLowerCase();
        // String[] parts = avalue.split(" ");
-        String patternsclcb = "(\\d)+\\s+[a-z]+\\s+[A-Z]+";
+        //  String patternsclcb = "(\\d)+\\s+[a-z]+\\s+[a-z]+";
+        String patternsclcb = "(\\d)+\\s+\\w+\\s+[a-z]+";
         boolean foundMatch = avalue.matches(patternsclcb);
         if(foundMatch)
         {
             String[] parts = avalue.trim().split( "\\s+");
             String asailnumber = parts[0];
-            String aclubcypher = parts[2];
+            String aclubcypher = parts[2].toUpperCase();
             String aclasscypher = parts[1];
+            //fix for transition of cypher codes
+            if (aclasscypher.equalsIgnoreCase("ds")) aclasscypher = "65";
+            if (aclasscypher.equalsIgnoreCase("dn")) aclasscypher = "95";
+            if (aclasscypher.equalsIgnoreCase("v")) aclasscypher = "Va";
             Sail asail = mframe.clubSailList.find(asailnumber, aclasscypher, aclubcypher);
             return asail;
         }
-        String patternscl = "(\\d)+\\s+[a-z]+";
+        //  String patternscl = "(\\d)+\\s+[a-z]+";
+        String patternscl = "(\\d)+\\s+\\w+";
         foundMatch = avalue.matches(patternscl);
         if(foundMatch)
         {
@@ -64,7 +85,7 @@ public class Sail implements Comparable<Sail>
         return null;
 
     }
-    public static Sail  parsesailcypher(String avalue)
+ /*   public static Sail  parsesailcypher(String avalue)
     {
         if(mframe==null) return null;
         avalue = avalue.trim();
@@ -83,7 +104,7 @@ public class Sail implements Comparable<Sail>
         else
             return null;
 
-    }
+    }*/
 
     //  sn , cl , cb
     public String toString()
@@ -178,12 +199,13 @@ public class Sail implements Comparable<Sail>
 
     public String getSailorname()
     {
-        return forename+" "+ surname;
+        return forename + ", " + surname;
     }
 
     public void setSailorname(String sailorname)
     {
-        String[] names = sailorname.split(" ");
+        String[] names = sailorname.split("[ ,]+");
+
         this.forename =names[0].trim();
         if(names.length==2)
           this.surname= names[1].trim();
@@ -223,6 +245,12 @@ public class Sail implements Comparable<Sail>
                 && this.club.equalsIgnoreCase(sclub))
             return true;
         else return false;
+    }
+
+    public boolean hasSailnumber()
+    {
+        if (sailnumber.isEmpty()) return false;
+        return true;
     }
 }
 
