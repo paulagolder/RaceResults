@@ -12,7 +12,6 @@ import java.io.FileWriter;
 import java.util.Vector;
 
 import static org.lerot.raceresults.Mainrace_gui.*;
-import static org.lerot.raceresults.Mainrace_gui.mainmenubar;
 
 public class Sail_gui extends jswVerticalPanel implements ActionListener
 {

@@ -1,13 +1,6 @@
 package org.lerot.raceresults;
 
 
-import org.lerot.mywidgets.jswHorizontalPanel;
-import org.lerot.mywidgets.jswLabel;
-import org.lerot.mywidgets.jswTextBox;
-import org.lerot.mywidgets.jswVerticalPanel;
-
-import java.awt.event.ActionListener;
-
 public class Club
 {
     private String key;
