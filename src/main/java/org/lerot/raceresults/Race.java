@@ -30,7 +30,8 @@ public class Race
             bw.write("<race name=\"" + name + "\" inCompetition=\"" + incompetition + "\">\n");
             for (Result aresult : resultlist)
             {
-                bw.write(aresult.printToXML(bw));
+                if (aresult != null)
+                    bw.write(aresult.printToXML(bw));
             }
             bw.write("</race>\n");
         } catch (IOException e)

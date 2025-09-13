@@ -55,17 +55,14 @@ public class Raceday
         setBoatclass_str(boatclass);
         setRacedate_str(racedate);
         filename = makefilename();
-     /*   racematrix = new dataMatrix(nraces, nparticipants);
+        racelist = new Vector<Race>();
+
         for (int c = 0; c < nraces; c++)
         {
-            racematrix.getColname().add("Race " + ((char) (65 + c)));
-            racematrix.getColtype().add("string");
-            racematrix.getSelected().add(true);
+            Race arace = new Race("Race " + ((char) (65 + c)), true);
+            racelist.add(arace);
         }
-        for (int r = 0; r < nparticipants; r++)
-        {
-            racematrix.getRowname().add("Rank" + utils.pad(r + 1));
-        }*/
+
 
     }
 
@@ -566,7 +563,7 @@ public class Raceday
 
     public jswVerticalPanel displayscores(Competition_gui parent, jswStyles tablestyles, int index)
     {
-        dataMatrix racematrix = MakeMatrix();
+        //  dataMatrix racematrix = MakeMatrix();
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
         raceresults.setStyleAttribute("borderwidth", 2);
         raceresults.setPadding(10, 10, 10, 10);
@@ -574,9 +571,9 @@ public class Raceday
         int nrows = getNoSailors() + 2;
         raceresults.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
         jswHorizontalPanel racedayheader = new jswHorizontalPanel("heading", false, false);
-        jswLabel addb = new jswLabel(getBoatclass_str());
-        addb.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" ", addb);
+        //  jswLabel addb = new jswLabel(getBoatclass_str());
+        //   addb.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
+        //   racedayheader.add(" ", addb);
         jswLabel dt = new jswLabel(getRacedate("/"));
         dt.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
         racedayheader.add(" ", dt);
@@ -732,7 +729,7 @@ public class Raceday
     public SailList getSailors()
     {
         SailList newlist = new SailList();
-
+        if (racelist == null) return newlist;
         for (Race arace : racelist)
         {
             for (Result aresult : arace.resultlist)

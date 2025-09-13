@@ -123,6 +123,15 @@ public class Sail implements Comparable<Sail>
         return sailnumber.ToString(6)+" "+classcypher+" "+clubcypher;
     }
 
+    public String toCypherString(String defclub)
+    {
+        String classcypher = " ";
+        classcypher = mframe.classlist.get(boatclass.toLowerCase()).getCypher();
+        String clubcypher = " ";
+        if (!defclub.equalsIgnoreCase(club))
+            clubcypher = mframe.clublist.get(club).getCypher();
+        return sailnumber.ToString(6) + " " + classcypher + " " + clubcypher;
+    }
 
     public String toCypherString()
     {

@@ -131,14 +131,6 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             jswLabel label00 = new jswLabel(" Class ");
             label00.applyStyle(Mainrace_gui.defaultStyles().getStyle("largetext"));
             racedayheader.add(" left ", label00);
-      /*
-            boatclass = new jswDropDownBox(this, "classlist", "select");
-            racedayheader.add(" ", boatclass);
-            boatclass.setEnabled(false);
-            boatclass.addItem("DF95");
-            boatclass.addItem("VICTORIA");
-            boatclass.setSelected(raceday.getBoatclass_str());*/
-
             raceclass = new jswTextBox(this, raceday.getBoatclass_str(), 200, "raceclassbox");
             racedayheader.add(" ", raceclass);
             jswLabel label01 = new jswLabel(" Date ");
@@ -192,9 +184,9 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         String defclasses = compgui.currentcomp.compclasslist.toString();
         moveto = null;
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
-        int ncols = raceday.GetNoRaces();
-        int nrows = raceday.getNoSailors() + 2;
-        Vector<String> rownames = utils.makeRownames(nrows);
+        //  int ncols = raceday.GetNoRaces();
+        int nrows = raceday.getNoSailors();
+
         raceresults.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
         datagrid = new jswTable(this, "form1", tablestyles);
         raceresults.add(" FILLW FILLH middle ", datagrid);
@@ -215,17 +207,22 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             jswCell acell = datagrid.addCell(no, 1, c);
             c++;
         }
-        int maxr = raceday.getMaxParticiants();
-        if (maxr < 1) maxr = 10;
-        for (int r = 1; r < maxr + 2; r++)
+        int maxr = raceday.getNoSailors() + 2;
+        if (maxr < 3)
         {
-            datagrid.addCell(new jswLabel(rownames.get(r)), r + 1, 0);
+            maxr = 10;
+
+        }
+        Vector<String> rownames = utils.makeRownames(maxr);
+        for (int r = 0; r < maxr; r++)
+        {
+            datagrid.addCell(new jswLabel(rownames.get(r)), r + 2, 0);
         }
         c = 0;
         for (Race arace : raceday.getRacelist())
         {
 
-            for (int r = 0; r < maxr + 3; r++)
+            for (int r = 0; r < maxr; r++)
             {
                 String avalue = "";
                 jswLabel alabel = null;
@@ -572,33 +569,17 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             System.out.println(" keypressed ++" + cd + "++");
             if (cd.equalsIgnoreCase("i"))
             {
-                String thiscell = currentcell.value;
-           /*     if (nr >= raceday.getNoSailors())
-                {
-                    String label = "Rank" + utils.pad(nr + 1);
-                    raceday.getRacematrix().getRowname().add(label);
-                    raceday.getRacematrix().data.get(nc - 1).add("");
-                    //raceday.getRacematrix().;
-                    datagrid.addCell(new jswLabel(label), nr + 1, 0);
-                } else
-                {*/
-                    int rn = nr;
+                // String thiscell = currentcell.value;
+
+                int rn = nr;
                 raceday.getRace(nc - 1).resultlist.add(rn - 1, null);
-              /*      while (thiscell != null && !thiscell.trim().isEmpty() && rn < raceday.getNoSailors())
-                    {
-                        String nextcell = raceday.getRacematrix().getCell(nc, rn + 1);
-                        raceday.getRacematrix().setCell(nc, rn + 1, thiscell);
-                        thiscell = nextcell;
-                        rn++;
-                    }
-                    raceday.getRacematrix().setCell(nc, nr, "?");*/
-                }
+
             } else if (cd.equalsIgnoreCase("d"))
             {
                 int rn = nr;
                 raceday.getRace(nc - 1).resultlist.remove(rn - 1);
             } else return;
-        // } else return;
+        } else return;
         raceday.saved = false;
         racedayheader.removeAll();
         racedayheader.add(" FILLW ", displayheader());

@@ -7,7 +7,6 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -213,10 +212,6 @@ public class Competition
         return leftcolumn;
     }
 
-    public jswPanel displayresults(jswStyles jswStyles)
-    {
-        return (new jswVerticalPanel("test", true, true));
-    }
 
     public void readCompetitionXML(String fileNameWithPath)
     {
@@ -274,10 +269,6 @@ public class Competition
         }
     }
 
-    public Component displayraces()
-    {
-        return null;
-    }
 
     public Vector<Raceday> getRacedaymatrixlist()
     {
