@@ -26,10 +26,12 @@ public class Raceday
     String infilename;
     Competition competition;
     private String boatclass_str;
+    String[] boatclasses;
     private String racedate_str;
     private Vector<Race> racelist;
     private String cssid = "raceday";
     private String cssclass = "raceday";
+    String[] boatcyphers;
 
     public Raceday(Competition comp)
     {
@@ -144,7 +146,11 @@ public class Raceday
 
     public void setBoatclass_str(String boatclass_str)
     {
-        this.boatclass_str = boatclass_str;
+        //this.boatclass_str = boatclass_str;
+        boatclasses = mframe.classlist.makeKeyList(boatclass_str);
+        boatcyphers = mframe.classlist.makeCypherList(boatclass_str);
+        this.boatclass_str = String.join(",", boatclasses);
+
     }
 
     public String getRacedate_str()
@@ -432,7 +438,13 @@ public class Raceday
                             bw.write("<td >" + aresult.flag + "</td>");
                         } else
                         {
-                            String outtext = asail.toCypherString(competition.compclublist.getDefaulKey(), competition.compclasslist.getDefaulKey());
+                            String outtext;
+                            if (boatclasses.length > 1)
+                                outtext = asail.toFormattedCypherString(competition.compclublist.getDefaulKey(), "**");
+                            else
+                            {
+                                outtext = asail.toCypherString(competition.compclublist.getDefaulKey(), boatclasses[0]);
+                            }
                             bw.write("<td >" + outtext + "</td>");
                         }
                     }
@@ -462,7 +474,7 @@ public class Raceday
             document = builder.parse(new File(fileNameWithPath));
             Element rootele = document.getDocumentElement();
             racedate_str = rootele.getAttributeNode("date").getValue();
-            boatclass_str = rootele.getAttributeNode("class").getValue();
+            setBoatclass_str(rootele.getAttributeNode("class").getValue());
             infilename = fileNameWithPath;
             outfilename = infilename;
             loadfromXML_selmodel(rootele);

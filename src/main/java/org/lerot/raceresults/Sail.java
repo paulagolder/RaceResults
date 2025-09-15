@@ -4,14 +4,14 @@ import static org.lerot.raceresults.Mainrace_gui.mframe;
 
 public class Sail implements Comparable<Sail>
 {
-    private  SailNumber sailnumber;
+    private SailNumber sailnumber;
     private String boatclass;
-   // private String sailorname;
+    // private String sailorname;
     private String forename;
     private String surname;
     private String club;
 
-    public Sail(String asailnumber,String aforename,  String asurname, String aboatclass, String aclub)
+    public Sail(String asailnumber, String aforename, String asurname, String aboatclass, String aclub)
     {
         sailnumber = new SailNumber(asailnumber);
         boatclass = aboatclass;
@@ -35,18 +35,18 @@ public class Sail implements Comparable<Sail>
         club = fields[3];
     }
 
-    public static Sail  parse(String avalue, String defclass,String defclub)
+    public static Sail parse(String avalue, String[] defclasses, String defclub)
     {
-        if(mframe==null) return null;
-        if(avalue == null || avalue.isEmpty()) return null;
+        if (mframe == null) return null;
+        if (avalue == null || avalue.isEmpty()) return null;
         avalue = avalue.trim().toLowerCase();
-       // String[] parts = avalue.split(" ");
+        // String[] parts = avalue.split(" ");
         //  String patternsclcb = "(\\d)+\\s+[a-z]+\\s+[a-z]+";
         String patternsclcb = "(\\d)+\\s+\\w+\\s+[a-z]+";
         boolean foundMatch = avalue.matches(patternsclcb);
-        if(foundMatch)
+        if (foundMatch)
         {
-            String[] parts = avalue.trim().split( "\\s+");
+            String[] parts = avalue.trim().split("\\s+");
             String asailnumber = parts[0];
             String aclubcypher = parts[2].toUpperCase();
             String aclasscypher = parts[1];
@@ -60,12 +60,12 @@ public class Sail implements Comparable<Sail>
         //  String patternscl = "(\\d)+\\s+[a-z]+";
         String patternscl = "(\\d)+\\s+\\w+";
         foundMatch = avalue.matches(patternscl);
-        if(foundMatch)
+        if (foundMatch)
         {
-            String[] parts = avalue.trim().split( "\\s+");
+            String[] parts = avalue.trim().split("\\s+");
             String asailnumber = parts[0];
-           // String aclubcypher = defclub;
-            String aclubcypher = mframe.clublist.get( defclub).getCypher();
+            // String aclubcypher = defclub;
+            String aclubcypher = mframe.clublist.get(defclub).getCypher();
             String aclasscypher = parts[1];
             Sail asail = mframe.currentcompetition.allSails.find(asailnumber, aclasscypher, aclubcypher);
             return asail;
@@ -73,14 +73,18 @@ public class Sail implements Comparable<Sail>
 
         String patternscb = "(\\d)+";
         foundMatch = avalue.matches(patternscb);
-        if(foundMatch)
+        if (foundMatch)
         {
-            String[] parts = avalue.trim().split( "\\s+");
+            String[] parts = avalue.trim().split("\\s+");
             String asailnumber = parts[0];
-            String aclubcypher = mframe.clublist.get( defclub).getCypher();
-            String aclasscypher = mframe.classlist.get(defclass.toLowerCase()).getCypher();
-            Sail asail = mframe.clubSailList.find(asailnumber, aclasscypher, aclubcypher);
-            return asail;
+            String aclubcypher = mframe.clublist.get(defclub).getCypher();
+            for (String aclasscypher : defclasses)
+            {
+                // String aclasscypher = mframe.classlist.get(defclasses.toLowerCase()).getCypher();
+                Sail asail = mframe.clubSailList.find(asailnumber, aclasscypher, aclubcypher);
+                if (asail != null) return asail;
+            }
+            return null;
         }
         return null;
 
@@ -109,7 +113,7 @@ public class Sail implements Comparable<Sail>
     //  sn , cl , cb
     public String toString()
     {
-        return sailnumber.ToString(6)+":"+boatclass+":"+getSailorname()+":"+club;
+        return sailnumber.ToString(6) + ":" + boatclass + ":" + getSailorname() + ":" + club;
     }
 
     public String toCypherString(String defclub, String defclass)
@@ -119,15 +123,15 @@ public class Sail implements Comparable<Sail>
         {
             System.out.println(" problemwith " + this.toString());
         }
-        if(!defclass.equalsIgnoreCase(boatclass))
+        if (!defclass.equalsIgnoreCase(boatclass))
             classcypher = mframe.classlist.get(boatclass.toLowerCase()).getCypher();
-        String  clubcypher = " ";
-        if(!defclub.equalsIgnoreCase(club))
-             clubcypher = mframe.clublist.get(club).getCypher();
-        return sailnumber.ToString(6)+" "+classcypher+" "+clubcypher;
+        String clubcypher = " ";
+        if (!defclub.equalsIgnoreCase(club))
+            clubcypher = mframe.clublist.get(club).getCypher();
+        return sailnumber.ToString(6) + " " + classcypher + " " + clubcypher;
     }
 
-    public String toCypherString(String defclub)
+  /*  public String toCypherString(String defclub)
     {
         String classcypher = " ";
         classcypher = mframe.classlist.get(boatclass.toLowerCase()).getCypher();
@@ -135,13 +139,30 @@ public class Sail implements Comparable<Sail>
         if (!defclub.equalsIgnoreCase(club))
             clubcypher = mframe.clublist.get(club).getCypher();
         return sailnumber.ToString(6) + " " + classcypher + " " + clubcypher;
-    }
+    }*/
 
     public String toCypherString()
     {
         String classcypher = mframe.classlist.get(boatclass.toLowerCase()).getCypher();
         String clubcypher = mframe.clublist.get(club).getCypher();
-        return sailnumber.ToString(6)+" "+classcypher+" "+clubcypher;
+        return sailnumber.ToString(6) + " " + classcypher + " " + clubcypher;
+    }
+
+
+    public String toFormattedCypherString(String defclub, String defclass)
+    {
+        String classcypher = " ";
+        if (boatclass == null)
+        {
+            System.out.println(" problemwith " + this.toString());
+        }
+        if (!defclass.equalsIgnoreCase(boatclass))
+            classcypher = mframe.classlist.get(boatclass.toLowerCase()).getCypher();
+        String clubcypher = " ";
+        if (!defclub.equalsIgnoreCase(club))
+            clubcypher = mframe.clublist.get(club).getCypher();
+
+        return sailnumber.ToString(6) + " <small><i>" + classcypher + " " + clubcypher + "</i></small>";
     }
 
     public Sail(String asailnumber, String asailorname, String aboatclass, String aclub)
@@ -169,23 +190,22 @@ public class Sail implements Comparable<Sail>
         else
         {
             int rsn = getSailorname().compareTo(anothersail.getSailorname());
-            if( rsn != 0)
+            if (rsn != 0)
             {
                 return rsn;
             }
             int rcn = getBoatclass().compareTo(anothersail.getBoatclass());
-            if( rcn != 0)
+            if (rcn != 0)
             {
                 return rcn;
             }
             int rcbn = getClub().compareTo(anothersail.getClub());
-            if(  rcbn!=0)
+            if (rcbn != 0)
             {
                 return rcbn;
-            }
-            else
+            } else
             {
-               return 0;
+                return 0;
             }
         }
     }
@@ -200,6 +220,7 @@ public class Sail implements Comparable<Sail>
     {
         return sailnumber;
     }
+
     public String getBoatclass()
     {
         return boatclass;
@@ -219,11 +240,11 @@ public class Sail implements Comparable<Sail>
     {
         String[] names = sailorname.split("[ ,]+");
 
-        this.forename =names[0].trim();
-        if(names.length==2)
-          this.surname= names[1].trim();
+        this.forename = names[0].trim();
+        if (names.length == 2)
+            this.surname = names[1].trim();
         else
-            this.surname= "?";
+            this.surname = "?";
     }
 
     public String toXML()
@@ -243,7 +264,7 @@ public class Sail implements Comparable<Sail>
 
     public boolean matches(Sail selectedsail)
     {
-        if(sailnumber.matches(selectedsail.sailnumber)
+        if (sailnumber.matches(selectedsail.sailnumber)
                 && selectedsail.getSailorname().equalsIgnoreCase(getSailorname())
                 && selectedsail.boatclass.equalsIgnoreCase(boatclass)
                 && selectedsail.club.equalsIgnoreCase((club)))
@@ -253,7 +274,7 @@ public class Sail implements Comparable<Sail>
 
     public boolean matches(int sailno, String sclass, String sclub)
     {
-        if(sailnumber.matches(sailno)
+        if (sailnumber.matches(sailno)
                 && this.boatclass.equalsIgnoreCase(sclass)
                 && this.club.equalsIgnoreCase(sclub))
             return true;
@@ -267,4 +288,5 @@ public class Sail implements Comparable<Sail>
         return true;
     }
 }
+
 

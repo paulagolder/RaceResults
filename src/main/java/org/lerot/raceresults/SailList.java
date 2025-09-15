@@ -135,7 +135,7 @@ public class SailList extends TreeSet<Sail>
         return intvector;
     }
 
-    public Sail getSail(String avalue, String boatclasses, String clubs)
+    public Sail getSail(String avalue, String[] boatclasses, String clubs)
     {
         String sailstr = avalue.trim();
         Sail asail = Sail.parse(sailstr, boatclasses, clubs);

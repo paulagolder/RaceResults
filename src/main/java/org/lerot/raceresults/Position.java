@@ -87,8 +87,9 @@ public class Position
        return  "<tr><td>"+this.sail.getSailnumberStr()+"</td><td>"+this.sail.getSailorname()+"</td><td>"+this.totalraces +"</td><td>"+this.scoredraces +"</td><td>"+this.points+"</td><td>"+this.race_points+"</td><td>"+this.missing_race_points+"</td></tr>";
     }
 
-    public String toHTML_short()
+    public String toHTML_short(String defclass, String defclub)
     {
-        return  "<tr><td>"+this.sail.getSailnumberStr()+"</td><td>"+this.sail.getSailorname()+"</td><td>"+this.totalraces +"</td><td>"+this.scoredraces +"</td><td>"+this.race_points+"</td></tr>";
+        String sailstr = sail.toCypherString(defclub, defclass);
+        return "<tr><td>" + sailstr + "</td><td>" + this.sail.getSailorname() + "</td><td>" + this.totalraces + "</td><td>" + this.scoredraces + "</td><td>" + this.race_points + "</td></tr>";
     }
 }

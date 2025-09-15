@@ -31,7 +31,13 @@ public class Race
             for (Result aresult : resultlist)
             {
                 if (aresult != null)
-                    bw.write(aresult.printToXML(bw));
+                {
+                    if (aresult.sail != null)
+                    {
+                        if (aresult.sail.hasSailnumber())
+                            bw.write(aresult.printToXML(bw));
+                    }
+                }
             }
             bw.write("</race>\n");
         } catch (IOException e)
@@ -39,14 +45,6 @@ public class Race
             //nothing
         }
     }
-
- /*   public void addResult(int r,  String value,String aflag )
-    {
-        Sail asail = new Sail();
-
-        Result aresult = new Result(r,value,aflag);
-        resultlist.add(aresult);
-    }*/
 
     public void addResult(int r, Sail insail, String aflag)
     {
@@ -90,7 +88,6 @@ public class Race
 
     public void setResult(int nr, String cypherstring)
     {
-
         Result aresult = new Result(nr, cypherstring);
         resultlist.set(nr, aresult);
     }
@@ -102,7 +99,5 @@ public class Race
         {
             for (int r = resultlist.size(); r < nr; r++) resultlist.add(null);
         }
-        return;
-
     }
 }

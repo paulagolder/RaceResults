@@ -64,7 +64,7 @@ public class ClubList extends TreeMap<String, Club>
         return this.firstKey();
     }
 
-    public Club getDefaul()
+    public Club getDefault()
     {
         return this.firstEntry().getValue();
     }

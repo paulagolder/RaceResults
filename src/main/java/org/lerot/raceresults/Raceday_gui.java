@@ -7,6 +7,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -245,8 +247,10 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
                             alabel.applyStyle();
                         } else
                         {
-                            String cs = foundsail.toCypherString();
-                            alabel = new jswLabel(cs);
+                            //  String cs = foundsail.toCypherString();
+                            //   alabel = new jswLabel(cs);
+                            avalue = foundsail.toCypherString();
+                            alabel = new jswLabel(avalue);
                         }
                     }
                     jswCell acell = datagrid.addCell(alabel, r + 2, c + 1);
@@ -255,10 +259,14 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
                 }
                 if (isactivecell(c + 1, r + 1))
                 {
-                    activebox = new jswTextBox(this, avalue, 60, "activecelltextbox");
+                    //avalue ="***";
+                    activebox = new jswTextBox(this, avalue, 100, "activecelltextbox");
+                    activebox.setText(avalue);
                     jswCell acell = datagrid.addCell(activebox, r + 2, c + 1);
                     activebox.addMouseListener(acell);
                     activebox.addKeyListener(this);
+                    //  activebox.setMinimumSize(new Dimension(100,40));
+                    activebox.applyStyle();
                     EventQueue.invokeLater(() -> activebox.getTextField().requestFocusInWindow());
                 }
             }
@@ -298,7 +306,8 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             {
                 if (!cd.isEmpty())
                 {
-                    Sail foundsail = compgui.currentcomp.competitors.getSail(cd, raceday.getBoatclass_str(), raceday.competition.getClubString());
+
+                    Sail foundsail = raceday.competition.competitors.getSail(cd, raceday.boatcyphers, raceday.competition.getClubString());
                     if (foundsail == null)
                     {
                         //alabel = new jswLabel(cd);
@@ -352,8 +361,10 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             JFileChooser chooser = new JFileChooser(directorylock);
             FileNameExtensionFilter filter = new FileNameExtensionFilter("html", "html");
             chooser.setFileFilter(filter);
+
             String outfile = raceday.infilename.replace(".rxml", ".html");
-            chooser.setSelectedFile(new File(outfile));
+            Path apath = Paths.get(outfile);
+            chooser.setSelectedFile(new File(apath.getFileName().toString()));
             int returnVal = chooser.showSaveDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {

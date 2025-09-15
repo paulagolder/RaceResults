@@ -317,7 +317,13 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
                 System.out.println("You chose to save to this html file: " + selfile);
                 PositionList map = pointsmatrix.makePositionMap();
                 PositionList map2 = map.rankMap();
-                map2.printResultsToHTML(selfile, "title");
+                String defclass;
+                if (currentcomp.compclasslist.size() > 1) defclass = "**";
+                else defclass = currentcomp.compclasslist.getDefaulKey();
+                String defclub;
+                if (currentcomp.compclublist.size() > 1) defclub = "**";
+                else defclub = currentcomp.compclublist.firstKey();
+                map2.printResultsToHTML(selfile, defclass, defclub);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
@@ -339,7 +345,14 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
                 System.out.println("You chose to save to this html file: " + selfile);
                 PositionList map = pointsmatrix.makePositionMap();
                 PositionList map2 = map.rankMap();
-                map2.printLeagueTableToHTML(selfile, "title");
+                String defclass;
+                if (currentcomp.compclasslist.size() > 1) defclass = "**";
+                else defclass = currentcomp.compclasslist.getDefaulKey();
+                String defclub;
+                if (currentcomp.compclublist.size() > 1) defclub = "**";
+                else defclub = currentcomp.compclublist.firstKey();
+                //   map2.printResultsToHTML(selfile, defclass,defclub);
+                map2.printLeagueTableToHTML(selfile, defclass, defclub);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
@@ -351,7 +364,6 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             String selfile = currentcomp.competitionfile;
             System.out.println("You chose to save to this competition xml file: " + selfile);
             currentcomp.saveCompetitionToXML(selfile);
-
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
@@ -362,7 +374,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             String outfile = "competition_" + currentcomp.getRaceclasses() + "_" + currentcomp.getCompyear() + ".xml";
             final File directorylock = new File(Mainrace_gui.mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Competitions", "cxml");
             chooser.setFileFilter(filter);
             chooser.setSelectedFile(new File(outfile));
             int returnVal = chooser.showSaveDialog(this);
@@ -393,7 +405,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             mframe.mode = COMPETITION;
             final File directorylock = new File(mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Competitions", "cxml");
             chooser.setFileFilter(filter);
             String outfile = mysailinghome + currentcompetitionfile;
             chooser.setSelectedFile(new File(outfile));

@@ -83,7 +83,7 @@ public class PositionList
         return datagrid;
     }
 
-    public void printResultsToHTML(String path, String comptitle)
+    public void printResultsToHTML(String path, String defclass, String defclub)
     {
         try
         {
@@ -114,7 +114,7 @@ public class PositionList
                 for(Map.Entry<String, Position> entry: list.entrySet())
                 {
                     Position posn = entry.getValue();
-                    bw.write(posn.toHTML_short());
+                    bw.write(posn.toHTML_short(defclass, defclub));
                 }
             }
 
@@ -126,7 +126,7 @@ public class PositionList
         }
     }
 
-    public void printLeagueTableToHTML(String path, String comptitle)
+    public void printLeagueTableToHTML(String path, String defclass, String defclub)
     {
         try
         {
@@ -151,7 +151,7 @@ public class PositionList
                     Position posn = entry.getValue();
                     if (posn.getScoredraces() >= currentcomp.getTargetracecount())
                     {
-                        bw.write(posn.toHTML_short());
+                        bw.write(posn.toHTML_short(defclass, defclub));
                     }
                 }
             }

@@ -32,7 +32,36 @@ public class BoatclassList extends TreeMap<String, Boatclass>
         }
         return out;
     }
-    
+
+    public String[] makeKeyList(String instring)
+    {
+        Vector<String> keylist = new Vector();
+        String[] list = instring.split(",");
+        for (String atoken : list)
+        {
+            Boatclass aclass = get(atoken.toLowerCase().trim());
+            if (aclass != null)
+            {
+                keylist.add(aclass.getKey());
+            }
+        }
+        return keylist.toArray(new String[0]);
+    }
+
+    public String[] makeCypherList(String instring)
+    {
+        Vector<String> keylist = new Vector();
+        String[] list = instring.split(",");
+        for (String atoken : list)
+        {
+            Boatclass aclass = get(atoken.toLowerCase().trim());
+            if (aclass != null)
+            {
+                keylist.add(aclass.getCypher());
+            }
+        }
+        return keylist.toArray(new String[0]);
+    }
 
     
     public String toString()
