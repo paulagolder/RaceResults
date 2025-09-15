@@ -212,7 +212,9 @@ public class ranksmatrix
             bw.close();
         } catch (Exception e)
         {
+            e.printStackTrace();
             System.out.println(e);
+
         }
     }
 
@@ -232,11 +234,16 @@ public class ranksmatrix
         bw.write("</tr>\n");
         for (int r = 0; r < nrows; r++)
         {
-            bw.write("<tr><td>" + compmatrix.getRowname().get(r) + "</td>");
-            bw.write("<td>" + boatlist.get(compmatrix.getRowname().get(r).trim()).getSailorname() + "</td>");
-            for (int c = 1; c < ncols; c++)
+            String asailcypher = compmatrix.getRowname().get(r);
+            bw.write("<tr><td>" + asailcypher + "</td>");
+            Sail aboat = boatlist.get(asailcypher);
+            if (aboat != null)
             {
-                bw.write("<td >" + compmatrix.data.get(c).get(r) + "</td>");
+                bw.write("<td>" + aboat.getSailorname() + "</td>");
+                for (int c = 1; c < ncols; c++)
+                {
+                    bw.write("<td >" + compmatrix.data.get(c).get(r) + "</td>");
+                }
             }
             bw.write("</tr>\n");
         }
@@ -246,7 +253,7 @@ public class ranksmatrix
     public PositionList makePositionMap()
     {
         PositionList posmap = new PositionList(currentcompetition);
-        int racecount = currentcompetition.getRacecount();
+        int racecount = currentcompetition.getTargetracecount();
         Vector<String> saillist = currentcompetition.competitors.getVector();
         //   System.out.println(saillist.toString());
         TreeMap<String, Sail> competitors = currentcompetition.competitors.getMap();

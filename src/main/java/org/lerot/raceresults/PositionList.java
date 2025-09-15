@@ -100,7 +100,7 @@ public class PositionList
             bw.write(" table, th, td { border: 1px solid; }\n");
             bw.write("</style>\n</head>\n<body>\n");
             bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
-            if(currentcomp.getRacecount()>0)
+            if (currentcomp.getTargetracecount() > 0)
             {
                 bw.write("<tr><td>Sail</td><td>sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Points</td><td>Race</br>Points</td><td>Missing race<br>points</td></tr>");
                 for(Map.Entry<String, Position> entry: list.entrySet())
@@ -143,13 +143,13 @@ public class PositionList
             bw.write(" table, th, td { border: 1px solid; }\n");
             bw.write("</style>\n</head>\n<body>\n");
             bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
-            if(currentcomp.getRacecount()>0)
+            if (currentcomp.getTargetracecount() > 0)
             {
                 bw.write("<tr><td>Sail</td><td>Sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Points</td></tr>");
                 for(Map.Entry<String, Position> entry: list.entrySet())
                 {
                     Position posn = entry.getValue();
-                    if(posn.getScoredraces()>= currentcomp.getRacecount())
+                    if (posn.getScoredraces() >= currentcomp.getTargetracecount())
                     {
                         bw.write(posn.toHTML_short());
                     }

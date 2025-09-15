@@ -19,14 +19,13 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
     private final HashMap<String, Integer> activecell;
     jswTable datagrid;
     boolean editheader;
+    dataMatrix racematrix = null;
     private jswVerticalPanel raceresults = null;
     private Raceday raceday;
     private HashMap<String, Integer> moveto;
     private jswTextBox racedate;
     private jswTextBox raceclass;
-    // private jswDropDownBox boatclass;
     private jswTextBox activebox;
-    private Competition competition;
     private cell currentcell;
     private int keycount;
 
@@ -39,7 +38,6 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         activecell.put("c", -1);
         applyStyle(jswStyle.getDefaultStyle());
         setBorder(jswStyle.makeLineBorder(Color.red, 4));
-        //editheader = true;
         if (araceday == null)
         {
             add(" FILLW   minheight=90 ", makeheader());
@@ -50,6 +48,7 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         } else
         {
             raceday = araceday;
+            racematrix = raceday.MakeMatrix();
             add(" FILLW   minheight=90 ", makeheader());
             racedayheader = new jswHorizontalPanel("header", false, false);
             racedayheader.add(" FILLW ", displayheader());
@@ -107,9 +106,6 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         JMenuItem amenuItemd = new JMenuItem("Delete Raceday");
         amenuItemd.addActionListener(this);
         amenu.add(amenuItemd);
-       /* JMenuItem amenuItem1 = new JMenuItem("Make New Raceday");
-        amenuItem1.addActionListener(this);
-        amenu.add(amenuItem1);*/
         JMenuItem amenuItem2 = new JMenuItem("Add Race");
         amenuItem2.addActionListener(this);
         amenu.add(amenuItem2);
@@ -132,6 +128,7 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             label00.applyStyle(Mainrace_gui.defaultStyles().getStyle("largetext"));
             racedayheader.add(" left ", label00);
             raceclass = new jswTextBox(this, raceday.getBoatclass_str(), 200, "raceclassbox");
+            raceclass.setText(raceday.getBoatclass_str());
             racedayheader.add(" ", raceclass);
             jswLabel label01 = new jswLabel(" Date ");
             label01.applyStyle(Mainrace_gui.defaultStyles().getStyle("largetext"));
@@ -274,11 +271,6 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
     }
 
 
-    public void jswActionPerformed(jswActionEvent e)
-    {
-        System.out.println(" here we are x 3:" + e);
-    }
-
     @Override
     public void actionPerformed(ActionEvent e)
     {
@@ -310,13 +302,13 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
                     if (foundsail == null)
                     {
                         //alabel = new jswLabel(cd);
-                        //  raceday.getRacematrix().setCell(nc, nr, cd);
+                        // racematrix.setCell(nc, nr, cd);
                         raceday.getRace(nc - 1).extendrace(nr + 1);
                         raceday.getRace(nc - 1).setResult(nr - 1, cd + "*");
                     } else
                     {
 
-                        //    raceday.getRacematrix().setCell(nc, nr, foundsail.toCypherString());
+                        //   racematrix.setCell(nc, nr, foundsail.toCypherString());
                         raceday.getRace(nc - 1).extendrace(nr + 1);
                         raceday.getRace(nc - 1).setResult(nr - 1, foundsail.toCypherString());
                     }
@@ -344,26 +336,23 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             racedayheader.add(" FILLW  ", displayheader());
             jswPanel apanel = displayresults(table1styles());
             raceresults.add(" FILLW FILLH ", apanel);
+            raceday.saved = false;
         } else if (command.equalsIgnoreCase("removeraceday"))
         {
-            int nraceday = compgui.currentcomp.racedayfilenames.indexOf(raceday.filename);
-            compgui.currentcomp.racedayfilenames.removeElementAt(nraceday);
-            compgui.currentcomp.getRacedaymatrixlist().removeElementAt(nraceday);
+            raceday.competition.removeRaceday(raceday.infilename);
             String compfile = compgui.currentcomp.competitionfile;
-            String savefile = utils.fileexists(compfile);
-            compgui.currentcomp.printfileToXML(savefile);
-            compgui.currentcomp.loadCompetition(compfile);
+            compgui.currentcomp.readCompetitionFromXML(compfile);
             mframe.mode = COMPETITION;
             mframe.refreshGui();
             revalidate();
         } else if (command.equalsIgnoreCase("Export Raceday to HTML"))
         {
             activecell.put("r", -1);
-            String outfile = "raceday_" + raceday.getBoatclass_str() + "_" + raceday.getRacedate("-") + ".html";
-            final File directorylock = new File(Mainrace_gui.mysailinghome);
+            final File directorylock = new File(raceday.competition.outputdir);
             JFileChooser chooser = new JFileChooser(directorylock);
             FileNameExtensionFilter filter = new FileNameExtensionFilter("html", "html");
             chooser.setFileFilter(filter);
+            String outfile = raceday.infilename.replace(".rxml", ".html");
             chooser.setSelectedFile(new File(outfile));
             int returnVal = chooser.showSaveDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION)
@@ -375,26 +364,26 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         } else if (command.equalsIgnoreCase("Save Raceday"))
         {
             activecell.put("r", -1);
-            final File directorylock = new File(Mainrace_gui.mysailinghome + raceday.competition.compdir);
+            final File directorylock = new File(raceday.competition.racedir);
             JFileChooser chooser = new JFileChooser(directorylock);
-            //  String filename = "raceday_" + raceday.getBoatclass_str() + "_" + raceday.getRacedate("-") + ".xml";
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Racedays", "rxml");
             chooser.setFileFilter(filter);
-            String outfile = raceday.filename;
-            chooser.setSelectedFile(new File(outfile));
+            String outfilename = raceday.outfilename;
+            chooser.setSelectedFile(new File(outfilename));
             int returnVal = chooser.showSaveDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
-                String selfile = chooser.getSelectedFile().getPath();
-                //   String selfileb = selfile.replace(".rxml","_new.rxml");
+                File outfile = chooser.getSelectedFile();
+                String selfile = outfile.getPath();
                 System.out.println("You chose to save to this file: " + selfile);
-                raceday.setfilename(selfile);
-                int maxsailors = raceday.getNoSailors();
-                raceday.getRacematrix().setRowname(utils.makeRownames(maxsailors));
-                //   raceday.printfileToXML_old(selfile);
-                raceday.printfileToXML_new(selfile);
+                raceday.outfilename = selfile;
+                raceday.saveToXML_new(selfile);
+                if (raceday.filenameHasChanged())
+                {
+                    raceday.competition.saved = false;
+                    raceday.competition.saveCompetition();
+                }
                 raceday.saved = true;
-                compgui.currentcomp.saveCompetition();
             }
             racedayheader.removeAll();
             racedayheader.add(" FILLW ", displayheader());
@@ -403,20 +392,19 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             raceresults.add(" FILLW FILLH ", apanel);
         } else if (command.equalsIgnoreCase("Reload Raceday"))
         {
-            final File directorylock = new File(Mainrace_gui.mysailinghome + competition.compdir);
+            final File directorylock = new File(raceday.competition.racedir);
             JFileChooser chooser = new JFileChooser(directorylock);
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("xml", "xml");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("racedays", "rxml");
             chooser.setFileFilter(filter);
-            String outfile = raceday.filename;
-            System.out.println("++" + outfile);
-            chooser.setSelectedFile(new File(outfile));
+            String infile = raceday.infilename;
+            System.out.println("Reloading" + infile);
+            chooser.setSelectedFile(new File(infile));
             int returnVal = chooser.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
                 activecell.put("r", -1);
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to open this file: " + selfile);
-                raceday.setfilename(selfile);
                 raceday.readXML(selfile);
                 racedayheader.removeAll();
                 racedayheader.add(" FILLW ", displayheader());
@@ -442,7 +430,7 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             raceday.setRacedate_str(racedate.getText());
             raceday.setBoatclass_str(raceclass.getText());
             editheader = false;
-            raceday.filename = raceday.makefilename();
+            raceday.outfilename = raceday.makefilename();
             raceday.saved = false;
             raceresults.removeAll();
             racedayheader.removeAll();
@@ -458,7 +446,7 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             int r = Integer.parseInt(cmdmap.get("row"));
             String value = cmdmap.get("cellcontent");
             currentcell = new cell(c, r - 1, value);
-            raceday.getRacematrix().setCell(c, r - 1, value);
+            racematrix.setCell(c, r - 1, value);
             activecell.put("r", r - 1);
             activecell.put("c", c);
             raceresults.removeAll();
@@ -471,8 +459,8 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             String[] colstr = command.split(":");
             int col = Integer.parseInt(colstr[1]);
             System.out.println("edited cell qcol =" + col);
-            Boolean sel = raceday.getRacematrix().getSelected().get(col - 1);
-            raceday.getRacematrix().getSelected().set(col - 1, !sel);
+            Boolean sel = racematrix.getSelected().get(col - 1);
+            racematrix.getSelected().set(col - 1, !sel);
         } else if (command.equalsIgnoreCase("viewcompetition"))
         {
             mframe.mode = COMPETITION;
@@ -502,22 +490,22 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
                 int rn = nr;
                 while (thiscell != null && !thiscell.trim().isEmpty())
                 {
-                    String nextcell = raceday.getRacematrix().getCell(nc, rn + 1);
-                    raceday.getRacematrix().setCell(nc, rn + 1, thiscell);
+                    String nextcell = racematrix.getCell(nc, rn + 1);
+                    racematrix.setCell(nc, rn + 1, thiscell);
                     thiscell = nextcell;
                     rn++;
                 }
             } else if (cd.equalsIgnoreCase("d"))
             {
                 int rn = nr;
-                String nextcell = raceday.getRacematrix().getCell(nc, rn + 1);
+                String nextcell = racematrix.getCell(nc, rn + 1);
                 while (nextcell != null && !nextcell.trim().isEmpty())
                 {
-                    raceday.getRacematrix().setCell(nc, rn, nextcell);
-                    nextcell = raceday.getRacematrix().getCell(nc, rn + 2);
+                    racematrix.setCell(nc, rn, nextcell);
+                    nextcell = racematrix.getCell(nc, rn + 2);
                     rn++;
                 }
-                raceday.getRacematrix().setCell(nc, rn, " ");
+                racematrix.setCell(nc, rn, " ");
             } else
             {
                 if (!cd.isEmpty())
@@ -525,10 +513,10 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
                     try
                     {
                         int ti = Integer.parseInt(cmdmap.get("textboxvalue"));
-                        raceday.getRacematrix().setCell(nc, nr, "" + ti);
+                        racematrix.setCell(nc, nr, "" + ti);
                     } catch (NumberFormatException ex)
                     {
-                        raceday.getRacematrix().setCell(nc, nr, " ");
+                        racematrix.setCell(nc, nr, " ");
                     }
                 }
             }
@@ -562,7 +550,7 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         int nr = activecell.get("r");
         System.out.println(" keypressed =" + nc + " : " + nr + ":" + raceday.getNoSailors());
         String cd = "" + keyEvent.getKeyChar();
-        int maxcol = raceday.getRacematrix().getColumn(nc - 1).size();
+        int maxcol = racematrix.getColumn(nc - 1).size();
         keycount++;
         if (keycount < 2)
         {

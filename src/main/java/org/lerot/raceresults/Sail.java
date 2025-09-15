@@ -115,6 +115,10 @@ public class Sail implements Comparable<Sail>
     public String toCypherString(String defclub, String defclass)
     {
         String classcypher = " ";
+        if (boatclass == null)
+        {
+            System.out.println(" problemwith " + this.toString());
+        }
         if(!defclass.equalsIgnoreCase(boatclass))
             classcypher = mframe.classlist.get(boatclass.toLowerCase()).getCypher();
         String  clubcypher = " ";
@@ -258,6 +262,7 @@ public class Sail implements Comparable<Sail>
 
     public boolean hasSailnumber()
     {
+        if (sailnumber == null) return false;
         if (sailnumber.isEmpty()) return false;
         return true;
     }

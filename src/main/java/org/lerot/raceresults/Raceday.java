@@ -12,40 +12,37 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Vector;
 
 import static org.lerot.raceresults.Mainrace_gui.mframe;
-import static org.lerot.raceresults.Mainrace_gui.mysailinghome;
 
 public class Raceday
 {
-    //dataMatrix compmatrix;
+    String outfilename = "";
     boolean saved = false;
-    String filename;
+    String infilename;
     Competition competition;
     private String boatclass_str;
     private String racedate_str;
     private Vector<Race> racelist;
-    //private dataMatrix racematrix;
     private String cssid = "raceday";
     private String cssclass = "raceday";
 
     public Raceday(Competition comp)
     {
-        //  racematrix = new dataMatrix();
-        //  compmatrix = new dataMatrix();
         competition = comp;
         racelist = new Vector<Race>();
     }
 
-    public Raceday(String boatclass, String racedate, int nraces, int nsailors, Vector<String> boatlist)
+    public Raceday(Competition comp, String boatclass, String racedate)
     {
+        competition = comp;
         setBoatclass_str(boatclass);
         setRacedate_str(racedate);
-        //  racematrix = dataMatrix.randomMatrix(nraces, nsailors, boatlist);
-        //   racematrix.setColname(utils.makeColnames(nraces));
-        // racematrix.setRowname(utils.makeRownames(nsailors));
+        outfilename = makefilename();
         racelist = new Vector<Race>();
     }
 
@@ -54,16 +51,13 @@ public class Raceday
         competition = comp;
         setBoatclass_str(boatclass);
         setRacedate_str(racedate);
-        filename = makefilename();
+        outfilename = makefilename();
         racelist = new Vector<Race>();
-
         for (int c = 0; c < nraces; c++)
         {
             Race arace = new Race("Race " + ((char) (65 + c)), true);
             racelist.add(arace);
         }
-
-
     }
 
     public static Sail parse(String avalue, String defclasscypher, String defclubcypher)
@@ -71,8 +65,6 @@ public class Raceday
         if (mframe == null) return null;
         if (avalue == null || avalue.isEmpty()) return null;
         avalue = avalue.trim().toLowerCase();
-        // String[] parts = avalue.split(" ");
-        //  String patternsclcb = "(\\d)+\\s+[a-z]+\\s+[a-z]+";
         String patternsclcb = "(\\d)+\\s+\\w+\\s+[a-z]+";
         boolean foundMatch = avalue.matches(patternsclcb);
         if (foundMatch)
@@ -125,7 +117,6 @@ public class Raceday
         {
             if (arace.size() > nparticipants) nparticipants = arace.size();
         }
-
         dataMatrix racematrix = new dataMatrix(nraces, nparticipants);
         for (int c = 0; c < nraces; c++)
         {
@@ -137,9 +128,7 @@ public class Raceday
         {
             racematrix.getRowname().add("Rank" + utils.pad(r + 1));
         }
-
         return racematrix;
-
     }
 
 
@@ -150,7 +139,7 @@ public class Raceday
 
     public String makefilename()
     {
-        return "RACEDAY_" + getBoatclass_str_tidy() + "_" + racedate_str.replace("/", "-") + ".rxml";
+        return "RACEDAY_" + getBoatclass_str_tidy() + "_" + utils.getSortDate(racedate_str) + ".rxml";
     }
 
     public void setBoatclass_str(String boatclass_str)
@@ -181,18 +170,8 @@ public class Raceday
         bc = bc.replace(",", "_");
         return bc;
     }
-
- /*   public void setRacematrix(dataMatrix racematrix)
-    {
-        this.racematrix = racematrix;
-    }*/
-
-    public dataMatrix getRacematrix()
-    {
-        return MakeMatrix();
-    }
-
-    public void printfileToXML_old(String path)
+    
+  /*  public void printfileToXML_old(String path)
     {
         File file;
         if (!path.startsWith("/")) file = new File(mysailinghome + path);
@@ -270,14 +249,35 @@ public class Raceday
             throw new RuntimeException(e);
         }
 
+    }*/
+
+
+    public boolean filenameHasChanged()
+    {
+        if (infilename.equalsIgnoreCase(outfilename)) return false;
+        Path pathToAFile = Paths.get(infilename);
+        String shortinname = pathToAFile.getFileName().toString();
+        int fn = competition.racedayfilenames.indexOf(shortinname);
+        if (fn < 0)
+        {
+            System.out.println("not found : " + infilename);
+            return false;
+        } else
+        {
+            Path pathToAFile2 = Paths.get(outfilename);
+            String shortoutname = pathToAFile2.getFileName().toString();
+            competition.racedayfilenames.set(fn, shortoutname);
+            competition.saved = false;
+            return true;
+        }
     }
 
-    public void printfileToXML_new(String path)
+    public void saveToXML_new(String path)
     {
         File file;
-        System.out.println(" new printing to  :" + mysailinghome + path);
+        System.out.println(" Saving raceday to  :" + path);
 
-        if (!path.startsWith("/")) file = new File(mysailinghome + path);
+        if (!path.startsWith("/")) file = new File(path);
         else
         {
             file = new File(path);
@@ -357,12 +357,17 @@ public class Raceday
     {
         try
         {
-
             printToHTML(bw, boatclass_str + " " + racedate_str);
-
         } catch (Exception e)
         {
             System.out.println(e);
+            try
+            {
+                bw.close();
+            } catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -422,7 +427,7 @@ public class Raceday
                     {
                         //  Sail asail = Sail.parse(aresult.trim(), competition.compclasslist.getDefaulKey(), competition.compclublist.getDefaulKey());
                         Sail asail = aresult.sail;
-                        if (asail == null)
+                        if (asail == null || !asail.hasSailnumber())
                         {
                             bw.write("<td >" + aresult.flag + "</td>");
                         } else
@@ -449,17 +454,18 @@ public class Raceday
         Document document;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = null;
-        //racematrix = new dataMatrix();
         System.out.println("Importing:" + fileNameWithPath);
         try
         {
+
             builder = factory.newDocumentBuilder();
             document = builder.parse(new File(fileNameWithPath));
             Element rootele = document.getDocumentElement();
             racedate_str = rootele.getAttributeNode("date").getValue();
             boatclass_str = rootele.getAttributeNode("class").getValue();
+            infilename = fileNameWithPath;
+            outfilename = infilename;
             loadfromXML_selmodel(rootele);
-            //makecompmatrix();
             saved = true;
             return document;
         } catch (Exception e)
@@ -546,7 +552,7 @@ public class Raceday
                 String rname = acell.getAttribute("rowname");
 
                 String value = acell.getTextContent();
-                Sail insail = parse(value, "p" +
+                Sail insail = parse(value,
                         "95", "R");
                 if (insail != null)
                     arace.addResult(r, insail, value);
@@ -599,7 +605,7 @@ public class Raceday
         return raceresults;
     }
 
-    public jswVerticalPanel displayscoreresults(Competition_gui parent, jswStyles tablestyles, int index)
+   /* public jswVerticalPanel displayscoreresults(Competition_gui parent, jswStyles tablestyles, int index)
     {
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
         raceresults.setPadding(2, 2, 2, 4);
@@ -624,7 +630,7 @@ public class Raceday
         raceresults.applyStyle();
         raceresults.setPadding(5, 5, 5, 5);
         return raceresults;
-    }
+    }*/
 
 
     /*   public dataMatrix getValueMatrix(dataMatrix data, Vector<String> colnames, Vector<String> rownames)
@@ -763,10 +769,10 @@ public class Raceday
         return racenames;
     }
 
-    public void setfilename(String selfile)
+  /*  public void setfilename(String selfile)
     {
-        filename = selfile;
-    }
+        infilename = selfile;
+    }*/
 
     public Race getRace(int i)
     {

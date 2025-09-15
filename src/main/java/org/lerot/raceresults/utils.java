@@ -60,6 +60,21 @@ public class utils
         }
     }
 
+
+    public static String getSortDate(String date)
+    {
+        try
+        {
+            Date ddate = new SimpleDateFormat("dd/mm/yyyy").parse(date);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYYmmdd");
+            String fdate = simpleDateFormat.format(ddate);
+            return fdate;
+        } catch (ParseException e)
+        {
+            return date;
+        }
+    }
+
     public static String fileexists(String filepath)
     {
         Path file = Paths.get(filepath);

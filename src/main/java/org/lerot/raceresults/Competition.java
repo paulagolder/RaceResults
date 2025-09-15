@@ -10,13 +10,20 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
-import static org.lerot.raceresults.Mainrace_gui.*;
+import static org.lerot.raceresults.Mainrace_gui.homeclub;
+import static org.lerot.raceresults.Mainrace_gui.mframe;
 import static org.lerot.raceresults.utils.fileexists;
 
 public class Competition
 {
+    public String outputdir = "";
+    public String racedir = "";
     public int noCompetitors;
     public boolean saved;
     String competitionfile;
@@ -27,11 +34,10 @@ public class Competition
     String compdir;
     public BoatclassList compclasslist;
     private String competitionname;
-    private int racecount;
-    private Vector<Raceday> racedaymatrixlist;
+    ClubList compclublist;
+    private int targetracecount;
     int maxParticipants = 0;
-    // private Vector<String> ranklist = new Vector<String>();
-    ClubList compclublist ;
+    private Vector<Raceday> racedaylist;
     private String csscompetition = "competition";
 
 
@@ -39,7 +45,7 @@ public class Competition
     {
         competitionname = "not loaded yet";
         racedayfilenames = new Vector<String>();
-        racedaymatrixlist = new Vector<Raceday>();
+        racedaylist = new Vector<Raceday>();
         compclublist = new ClubList();
         compclasslist = new BoatclassList();
     }
@@ -48,21 +54,32 @@ public class Competition
     {
         competitionname = "not loaded yet";
         racedayfilenames = new Vector<String>();
-        racedaymatrixlist = new Vector<Raceday>();
+        racedaylist = new Vector<Raceday>();
         competitionfile = compfile;
         compclasslist = new BoatclassList();
         compclublist = new ClubList();
         compdir = "";
         allSails = allsailslist;
-        System.out.println("Loading Competition:"+compfile);
+        System.out.println("Loading Competition:" + compfile);
         String cfile = utils.fileexists(compfile);
-        if( cfile==null)
+        if (cfile == null)
         {
             System.out.println("Not found competition file :" + compfile);
             System.out.println("exiting...");
             System.exit(0);
         }
-        loadCompetition(cfile);
+        readCompetitionFromXML(cfile);
+        racedir = Mainrace_gui.mysailinghome + "/" + compdir;
+        outputdir = Mainrace_gui.mysailinghome + "/" + compdir + "/output";
+        Path path = Paths.get(outputdir);
+        try
+        {
+            Files.createDirectories(path);
+            System.out.println("Directory created: " + path);
+        } catch (IOException ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
 
     public String getCompyear()
@@ -95,67 +112,69 @@ public class Competition
         this.csscompetition = csscompetition;
     }
 
-    public int getRacecount()
+    public int getTargetracecount()
     {
-        return racecount;
+        return targetracecount;
     }
 
-    public void setRacecount(int racecount)
+    public void setTargetracecount(int targetracecount)
     {
-        this.racecount = racecount;
+        this.targetracecount = targetracecount;
     }
 
-    public void loadCompetition(String path)
+    public void readCompetitionFromXML(String path)
     {
         readCompetitionXML(path);
         if (compclublist.size() == 0)
         {
             Club aclub = new Club(homeclub, Mainrace_gui.homeclubname, Mainrace_gui.homeclubcypher);
-            compclublist.put(homeclub,aclub) ;
+            compclublist.put(homeclub, aclub);
         }
         reloadracedays();
-        saved= true;
+        saved = true;
     }
 
     public void reloadracedays()
     {
-        racedaymatrixlist.clear();
-        Vector<String> filelist =  new Vector<>( racedayfilenames);
-        racedayfilenames.clear();
-        for (int i = 0; i < filelist.size(); i++)
+        racedaylist.clear();
+        ;
+        for (String filename : racedayfilenames)
         {
-            String filename = filelist.get(i);
-            if(!racedayfilenames.contains(filename))
+            try
             {
-                try
+                Raceday raceday = new Raceday(this);
+                String file = fileexists(compdir + "/" + filename);
+                if (file != null)
                 {
-                    Raceday raceday = new Raceday(this);
-                    //filename= filename.replace("/","-");
-                    String file = fileexists(compdir + "/" + filename);
-                    if (file != null)
+                    System.out.println(" Loading raceday " + filename);
+                    Document rd = raceday.readXML(file);
+                    if (rd != null)
                     {
-                        System.out.println(" Loading raceday " + filename);
-                        Document rd = raceday.readXML(file);
-                        if (rd != null)
-                        {
-                            raceday.setfilename(filename);
-                            racedaymatrixlist.add(raceday);
-                            racedayfilenames.add(filename);
-                        }
+                        racedaylist.add(raceday);
                     }
-                } catch (Exception e)
-                {
-                    System.out.println(" Not loaded " + filename);
-
                 }
+            } catch (Exception e)
+            {
+                removeRaceday(filename);
+                this.saved = false;
+                System.out.println(" Not loaded " + filename);
             }
+
         }
         competitors = makeCompetitorsList();
         maxParticipants = (maxparticipants());
         noCompetitors = competitors.size();
     }
 
-    public jswVerticalPanel displayrankcolumn(jswStyles tablestyles)
+    void removeRaceday(String filename)
+    {
+        int nraceday = racedayfilenames.indexOf(filename);
+        racedayfilenames.removeElementAt(nraceday);
+        racedaylist.removeElementAt(nraceday);
+        saved = false;
+    }
+
+ /*   public jswVerticalPanel displayrankcolumn(jswStyles tablestyles)
     {
         jswVerticalPanel leftcolumn = new jswVerticalPanel("Rank", false, false);
         leftcolumn.setStyleAttribute("borderwidth", 2);
@@ -175,7 +194,7 @@ public class Competition
         leftcolumn.add(" FILLW ", datagrid);
         leftcolumn.setPadding(5, 5, 5, 5);
         return leftcolumn;
-    }
+    }*/
 
     public jswVerticalPanel displaysailcolumn(jswStyles tablestyles)
     {
@@ -193,18 +212,18 @@ public class Competition
         int r = 0;
         String defclub = "";
         String defclass = "";
-        if(compclasslist.size() == 1)
+        if (compclasslist.size() == 1)
         {
-            defclass= compclasslist.firstKey();
+            defclass = compclasslist.firstKey();
         }
-        if(compclublist.size()==1)
+        if (compclublist.size() == 1)
         {
             defclub = compclublist.firstKey();
-        }else
+        } else
             defclub = homeclub;
         for (Sail asail : competitors)
         {
-            datagrid.addCell(new jswLabel(asail.toCypherString(defclub,defclass)), r + 1, 0);
+            datagrid.addCell(new jswLabel(asail.toCypherString(defclub, defclass)), r + 1, 0);
             r++;
         }
         leftcolumn.add(" FILLW middle ", datagrid);
@@ -224,26 +243,24 @@ public class Competition
             document = builder.parse(new File(fileNameWithPath));
             Element rootele = document.getDocumentElement();
             compyear = rootele.getAttributeNode("year").getValue();
-            compclasslist.load( rootele.getAttributeNode("classes").getValue());
+            compclasslist.load(rootele.getAttributeNode("classes").getValue());
             competitionname = rootele.getAttributeNode("name").getValue();
-            racecount = Integer.parseInt(rootele.getAttributeNode("racecount").getValue());
-            if(rootele.getAttributeNode("clubs") != null)
+            targetracecount = Integer.parseInt(rootele.getAttributeNode("racecount").getValue());
+            if (rootele.getAttributeNode("clubs") != null)
             {
                 String clublist = rootele.getAttributeNode("clubs").getValue();
                 compclublist.makeClubList(clublist);
-            }
-            else
+            } else
             {
                 compclublist.makeClubList(homeclub);
             }
-            if(rootele.getAttributeNode("classes") != null)
+            if (rootele.getAttributeNode("classes") != null)
             {
-                setRaceclasses( rootele.getAttributeNode("classes").getValue());
-            }
-            else
+                setRaceclasses(rootele.getAttributeNode("classes").getValue());
+            } else
             {
                 compclasslist.clear();
-                compclasslist.put( "df95",mframe.classlist.get("df95"));
+                compclasslist.put("df95", mframe.classlist.get("df95"));
             }
             if (rootele.getAttributeNode("directory") != null)
             {
@@ -269,65 +286,23 @@ public class Competition
         }
     }
 
-
-    public Vector<Raceday> getRacedaymatrixlist()
+    public Vector<Raceday> getRacedaylist()
     {
-        return racedaymatrixlist;
+        return racedaylist;
     }
 
-    public void setRacedaymatrixlist(Vector<Raceday> racedaymatrixlist)
-    {
-        this.racedaymatrixlist = racedaymatrixlist;
-    }
 
     public Raceday getRacedayNo(int i)
     {
-        return racedaymatrixlist.get(i);
-    }
-
-    private SailList makecompetitorslist()
-    {
-        SortedSet<SailNumber> nvector = new TreeSet<SailNumber>();
-        for (int i = 0; i < racedaymatrixlist.size(); i++)
-        {
-            Raceday araceday = racedaymatrixlist.get(i);
-            TreeSet<String> values = araceday.getRacematrix().getValueSet();
-            for (String value : values)
-            {
-                nvector.add(new SailNumber(value));
-            }
-        }
-        String defclub = "";
-        String defclass = "";
-        if(compclasslist.size() == 1)
-        {
-            defclass= compclasslist.firstKey();
-        }
-        if(compclublist.size()==1)
-        {
-            defclub = compclublist.firstKey();
-        }
-        SailList svector = new SailList();
-        for (SailNumber value : nvector)
-        {
-            String vs = value.sailnumber;
-            Sail asail = allSails.getSail(value.sailnumber, defclass,defclub);
-            if (asail != null)
-                svector.add(asail);
-        }
-        System.out.println(" competitor list:");
-        {
-           System.out.println( svector.totext());
-        }
-        return svector;
+        return racedaylist.get(i);
     }
 
     private int maxparticipants()
     {
         int maxparticipants = 0;
-        for (int i = 0; i < racedaymatrixlist.size(); i++)
+        for (int i = 0; i < racedaylist.size(); i++)
         {
-            Raceday araceday = racedaymatrixlist.get(i);
+            Raceday araceday = racedaylist.get(i);
             int np = araceday.getMaxParticiants();
             if (maxparticipants < np) maxparticipants = np;
         }
@@ -337,7 +312,7 @@ public class Competition
 
     public Raceday getracedaymatrix(int i)
     {
-        return racedaymatrixlist.get(i);
+        return racedaylist.get(i);
     }
 
     public void generaterandomsailnumbers(int n)
@@ -353,7 +328,7 @@ public class Competition
         competitors.addAll(sl);
     }
 
-    public void printfileToXML(String path)
+    public void saveCompetitionToXML(String path)
     {
         try
         {
@@ -365,19 +340,20 @@ public class Competition
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write("<competition  year=\"" + compyear +
-                    "\"  name= \"" + competitionname + "\" racecount = \"" + racecount +
+                    "\"  name= \"" + competitionname + "\" racecount = \"" + targetracecount +
                     "\" clubs = \"" + compclublist.toString() +
                     "\" directory = \"" + compdir +
-                    "\" classes = \"" + compclasslist.toString()  + "\">\n");
+                    "\" classes = \"" + compclasslist.toString() + "\">\n");
             bw.write("<racedays>\n");
             for (int r = 0; r < racedayfilenames.size(); r++)
             {
                 bw.write("<raceday filename=\"" + racedayfilenames.get(r) + "\" />\n");
             }
             bw.write("</racedays>\n");
-            bw.write(competitors.toXML(compclublist.toString(),compclasslist.toString() ));
+            bw.write(competitors.toXML(compclublist.toString(), compclasslist.toString()));
             bw.write("</competition>\n");
             bw.close();
+            saved = true;
         } catch (Exception e)
         {
             System.out.println(e);
@@ -389,7 +365,7 @@ public class Competition
         racedayfilenames.add(filename);
     }
 
-    public void printRacedaysToHTML(String selfile, String competitionname)
+    public void printRacedaysToHTML(String selfile)
     {
         try
         {
@@ -409,10 +385,8 @@ public class Competition
             bw.write("</head>\n<body id=\"" + csscompetition + "\">\n");
             bw.write("<h1> Competition " + getCompetitionname() + " " + compyear + "</h1>\n");
             bw.write("<h1> Clubs :" + compclublist.toString() + " </h1>\n");
-            for (int i = 0; i < racedaymatrixlist.size(); i++)
+            for (Raceday raceday : racedaylist)
             {
-                Raceday raceday = racedaymatrixlist.get(i);
-                //raceday.printToHTML(racematrix, bw, boatclass_str + " " + racedate_str);
                 raceday.printToHTML(bw);
             }
             bw.write("\n</body>\n</html>\n");
@@ -439,26 +413,12 @@ public class Competition
         competitors = sl;
     }
 
-    public void replacefilename(String oldfile, String newfile)
-    {
-        int fn = racedayfilenames.indexOf(oldfile);
-        if(fn <0)
-        {
-            System.out.println("not found : " + oldfile);
-        }
-        else
-        {
-            String nfile = newfile.replace(mysailinghome, "");
-            nfile = nfile.replace(dotmysailing, "");
-            racedayfilenames.set(fn, nfile);
-        }
-    }
 
     public void saveCompetition()
     {
         System.out.println("You chose to save this competition file: " + competitionfile);
-        this.printfileToXML(competitionfile);
-        if(competitionfile != null)
+        this.saveCompetitionToXML(competitionfile);
+        if (competitionfile != null)
             Mainrace_gui.mframe.saveProperties(competitionfile);
     }
 
@@ -470,7 +430,7 @@ public class Competition
 
     public String toString()
     {
-        return this.competitionname + " " + this.getCompyear() + " " + this.getRaceclasses() + " " + this.getRacecount() + " " + this.compclublist.toString();
+        return this.competitionname + " " + this.getCompyear() + " " + this.getRaceclasses() + " " + this.getTargetracecount() + " " + this.compclublist.toString();
     }
 
     public String getClubString()
@@ -517,19 +477,19 @@ public class Competition
             bw.write("</head>\n<body id=\"" + csscompetition + "\">\n");
             bw.write("<table class=\"hd\" width=\"100%\" >");
             bw.write("<tr><td><img src=\"RMBC-FC_tiny.ico\" alt=\"Logo\" class=\"logo\"></td>");
-            bw.write("<td> " +getRaceclasses()+ " Racing Results </td></tr>\n");
-            bw.write("<tr><td>Clubs :"+compclublist.toString() +"</td> <td> Date : &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;/2025 </td></tr>\n");
+            bw.write("<td> " + getRaceclasses() + " Racing Results </td></tr>\n");
+            bw.write("<tr><td>Clubs :" + compclublist.toString() + "</td> <td> Date : &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;/2025 </td></tr>\n");
             bw.write("</table>");
 
             TreeMap<String, Sail> saillist = allSails.makeTreeList(compclasslist.toString(), compclublist.toString());
             bw.write("<table class=\"result\" >\n");
             bw.write("<tr><th>Sail</th><th>Sailor</th><th></th><th>Rank</th><th>Race A</th><th>Race B </th><th>Race C </th><th>Race D </th></tr>\n");
 
-            int r= 1;
-            for (Map.Entry<String,Sail> anentry: saillist.entrySet())
+            int r = 1;
+            for (Map.Entry<String, Sail> anentry : saillist.entrySet())
             {
                 Sail asail = anentry.getValue();
-                bw.write("<tr><td>"+anentry.getKey()+"</td><td>"+asail.getSailorname()+"</td><td> </td><td>Rank "+r+"</td><td> </td><td> </td><td> </td><td> </td></tr>\n");
+                bw.write("<tr><td>" + anentry.getKey() + "</td><td>" + asail.getSailorname() + "</td><td> </td><td>Rank " + r + "</td><td> </td><td> </td><td> </td><td> </td></tr>\n");
                 r++;
             }
 
@@ -545,7 +505,7 @@ public class Competition
     public SailList makeCompetitorsList()
     {
         SailList newlist = new SailList();
-        for (Raceday araceday : racedaymatrixlist)
+        for (Raceday araceday : racedaylist)
         {
             SailList asaillist = araceday.getSailors();
             for (Sail asail : asaillist)
@@ -564,3 +524,4 @@ public class Competition
         compclublist.makeClubList(text);
     }
 }
+
