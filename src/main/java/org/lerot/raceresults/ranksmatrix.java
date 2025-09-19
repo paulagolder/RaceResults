@@ -45,7 +45,6 @@ public class ranksmatrix
         for (int i = 0; i < currentcompetition.racedayfilenames.size(); i++)
         {
             Raceday araceday = currentcompetition.getRacedayNo(i);
-            //    dataMatrix compmatrix = araceday.getValueMatrix(araceday.getRacematrix(),araceday.getRacematrix().getColname(), currentcompetition.competitors.getVector());
             dataMatrix compmatrix = araceday.getRankMatrix(araceday.competition.competitors);
 
             for (int r = 0; r < maxsails; r++)
@@ -62,11 +61,7 @@ public class ranksmatrix
                             if (value != null)
                             {
                                 iv = Integer.parseInt(value.trim()) - 1;
-                                // if(iv<ns+1)
-                                // {
-                                //        System.out.println(" saving " + iv + " " + r);
                                 matrix2[iv][r] = matrix2[iv][r] + 1;
-                                //  }
                                 if (iv > maxsailors) maxsailors = iv;
                             }
                         } catch (NumberFormatException ex)

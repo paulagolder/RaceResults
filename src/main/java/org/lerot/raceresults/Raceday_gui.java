@@ -333,7 +333,7 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             repaint();
         } else if (command.equalsIgnoreCase("View Competition"))
         {
-            mframe.mode = COMPETITION;
+            maingui.mode = COMPETITION;
             mainpanel.removeAll();
             mainpanel.add(" FILLH FILLW ", compgui);
             mainpanel.repaint();
@@ -351,8 +351,8 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             raceday.competition.removeRaceday(raceday.infilename);
             String compfile = compgui.currentcomp.competitionfile;
             compgui.currentcomp.readCompetitionFromXML(compfile);
-            mframe.mode = COMPETITION;
-            mframe.refreshGui();
+            maingui.mode = COMPETITION;
+            maingui.refreshGui();
             revalidate();
         } else if (command.equalsIgnoreCase("Export Raceday to HTML"))
         {
@@ -452,7 +452,6 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         {
             editheader = false;
             System.out.println("editing cell b " + cmdmap.get("column") + ":" + cmdmap.get("row") + "=" + cmdmap.get("cellcontent"));
-            //  currentcell = new cell(Integer.parseInt(cmdmap.get("column")), Integer.parseInt(cmdmap.get("row")), cmdmap.get("cellcontent"));
             int c = Integer.parseInt(cmdmap.get("column"));
             int r = Integer.parseInt(cmdmap.get("row"));
             String value = cmdmap.get("cellcontent");
@@ -474,11 +473,10 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             racematrix.getSelected().set(col - 1, !sel);
         } else if (command.equalsIgnoreCase("viewcompetition"))
         {
-            mframe.mode = COMPETITION;
+            maingui.mode = COMPETITION;
             String selfile = mysailinghome + currentcompetitionfile;
             System.out.println("reopening: " + selfile);
             Mainrace_gui.mainpanel.removeAll();
-            // compgui = new  competition_gui(selfile);
             Mainrace_gui.mainpanel.add(" FILLH FILLW ", compgui);
             revalidate();
         } else if (cmdmap.get("jswCheckbox") != null)
@@ -543,9 +541,9 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         {
             System.out.println("command not found : " + command);
         }
-        Mainrace_gui.mframe.revalidate();
-        Mainrace_gui.mframe.repaint();
-        Mainrace_gui.mframe.pack();
+        Mainrace_gui.maingui.revalidate();
+        Mainrace_gui.maingui.repaint();
+        Mainrace_gui.maingui.pack();
     }
 
     @Override
@@ -587,9 +585,9 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         raceresults.add(" FILLW FILLH ", apanel);
         EventQueue.invokeLater(() -> activebox.getTextField().requestFocusInWindow());
         repaint();
-        Mainrace_gui.mframe.revalidate();
-        Mainrace_gui.mframe.repaint();
-        Mainrace_gui.mframe.pack();
+        Mainrace_gui.maingui.revalidate();
+        Mainrace_gui.maingui.repaint();
+        Mainrace_gui.maingui.pack();
     }
 
     @Override

@@ -192,8 +192,8 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
         {
             try
             {
-                File file = new File(dotmysailing + mframe.saillistfile);
-                saveSailist(dotmysailing + mframe.saillistfile, homeclub);
+                File file = new File(dotmysailing + maingui.saillistfile);
+                saveSailist(dotmysailing + maingui.saillistfile, homeclub);
                 for(String aclub : allsaillist.clubsfilterlist)
                 {
                     saveSailist(mysailinghome + aclub+"_saillist.xml", aclub);
@@ -233,7 +233,7 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
                 allsaillist.printBySailorToHTML(selfile);
             }
         }
-        mframe.refreshGui();
+        maingui.refreshGui();
     }
 
 

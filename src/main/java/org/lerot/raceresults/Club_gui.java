@@ -15,7 +15,6 @@ import static org.lerot.raceresults.Mainrace_gui.*;
 public class Club_gui  extends jswVerticalPanel implements ActionListener
 {
 
-    //private final ActionListener parentlistener;
     private jswOptionset cluboptions;
     private int indexselected=0;
     private ClubList clublist;
@@ -28,7 +27,6 @@ public class Club_gui  extends jswVerticalPanel implements ActionListener
     public Club_gui(ClubList cl)
     {
         super("Club Gui",false,false);
-       // makeheadermenu();
         clublist = cl;
     }
 
@@ -139,7 +137,7 @@ public class Club_gui  extends jswVerticalPanel implements ActionListener
         {
             try
             {
-                File file = new File(mframe.clubsfile);
+                File file = new File(maingui.clubsfile);
                 if (!file.exists())
                 {
                     file.createNewFile();
@@ -156,9 +154,7 @@ public class Club_gui  extends jswVerticalPanel implements ActionListener
                 System.out.println(e2);
             }
         }
-
-       
-        mframe.refreshGui();
+        maingui.refreshGui();
     }
 
     public  jswVerticalPanel clubForm(ActionListener al, Club aclub)

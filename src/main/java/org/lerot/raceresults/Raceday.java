@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import static org.lerot.raceresults.Mainrace_gui.mframe;
+import static org.lerot.raceresults.Mainrace_gui.maingui;
 
 public class Raceday
 {
@@ -64,7 +64,7 @@ public class Raceday
 
     public static Sail parse(String avalue, String defclasscypher, String defclubcypher)
     {
-        if (mframe == null) return null;
+        if (maingui == null) return null;
         if (avalue == null || avalue.isEmpty()) return null;
         avalue = avalue.trim().toLowerCase();
         String patternsclcb = "(\\d)+\\s+\\w+\\s+[a-z]+";
@@ -79,20 +79,18 @@ public class Raceday
             if (aclasscypher.equalsIgnoreCase("ds")) aclasscypher = "65";
             if (aclasscypher.equalsIgnoreCase("dn")) aclasscypher = "95";
             if (aclasscypher.equalsIgnoreCase("v")) aclasscypher = "Va";
-            Sail asail = mframe.clubSailList.find(asailnumber, aclasscypher, aclubcypher);
+            Sail asail = maingui.clubSailList.find(asailnumber, aclasscypher, aclubcypher);
             return asail;
         }
-        //  String patternscl = "(\\d)+\\s+[a-z]+";
         String patternscl = "(\\d)+\\s+\\w+";
         foundMatch = avalue.matches(patternscl);
         if (foundMatch)
         {
             String[] parts = avalue.trim().split("\\s+");
             String asailnumber = parts[0];
-            // String aclubcypher = defclub;
             String aclubcypher = defclubcypher;
             String aclasscypher = parts[1];
-            Sail asail = mframe.clubSailList.find(asailnumber, aclasscypher, aclubcypher);
+            Sail asail = maingui.clubSailList.find(asailnumber, aclasscypher, aclubcypher);
             return asail;
         }
 
@@ -104,7 +102,7 @@ public class Raceday
             String asailnumber = parts[0];
             String aclubcypher = defclubcypher;
             String aclasscypher = defclasscypher;
-            Sail asail = mframe.clubSailList.find(asailnumber, aclasscypher, aclubcypher);
+            Sail asail = maingui.clubSailList.find(asailnumber, aclasscypher, aclubcypher);
             return asail;
         }
         return null;
@@ -146,9 +144,8 @@ public class Raceday
 
     public void setBoatclass_str(String boatclass_str)
     {
-        //this.boatclass_str = boatclass_str;
-        boatclasses = mframe.classlist.makeKeyList(boatclass_str);
-        boatcyphers = mframe.classlist.makeCypherList(boatclass_str);
+        boatclasses = maingui.classlist.makeKeyList(boatclass_str);
+        boatcyphers = maingui.classlist.makeCypherList(boatclass_str);
         this.boatclass_str = String.join(",", boatclasses);
 
     }
@@ -177,87 +174,6 @@ public class Raceday
         return bc;
     }
     
-  /*  public void printfileToXML_old(String path)
-    {
-        File file;
-        if (!path.startsWith("/")) file = new File(mysailinghome + path);
-        else
-        {
-            file = new File(path);
-        }
-        if (!file.exists())
-        {
-            boolean success = false;
-            try
-            {
-                success = file.createNewFile();
-            } catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-            if (!success)
-            {
-                System.out.println(" not created:" + file);
-            }
-        }
-        FileWriter fw = null;
-        try
-        {
-            fw = new FileWriter(file.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fw);
-            try
-            {
-                bw.write("<raceresults class=\"" + boatclass_str + "\" date=\"" + racedate_str + "\">\n");
-                bw.write("<colnames>\n");
-                for (Race arace : racelist)
-                {
-                    bw.write("<cell colname=\"" + arace.getName() + "\"/>\n");
-                }
-                bw.write("</colnames>\n");
-                bw.write("<rownames>\n");
-                int nrows = this.getSailors().size();
-                Vector<String> rownames = utils.makeRownames(nrows + 1);
-                for (String rowname : rownames)
-                {
-                    bw.write("<cell rowname=\"" + rowname + "\"/>\n");
-                }
-                bw.write("</rownames>\n");
-                for (Race arace : racelist)
-                {
-                    bw.write("<col name=\"" + arace.getName() + "\" type=\"string\" select=\"" + arace.isIncompetition() + "\" >\n");
-                    int r = 0;
-                    for (Result aresult : arace.resultlist)
-                    {
-                        if (aresult != null)
-                        {
-                            if (aresult.sail != null)
-                                bw.write("<cell rowname=\"" + rownames.get(r) + "\">" + aresult.sail.toCypherString() + "</cell>\n");
-                            else
-                                bw.write("<cell rowname=\"" + rownames.get(r) + "\">" + aresult.flag + "</cell>\n");
-                            r++;
-                        }
-                    }
-                    bw.write("</col>\n");
-                }
-                //   racematrix.printToXML(bw);
-                bw.write("</raceresults>\n");
-                bw.close();
-                saved = true;
-            } catch (Exception e)
-            {
-                System.out.println(e);
-                e.printStackTrace();
-                System.out.println(" problem with :" + file.getAbsoluteFile());
-
-            }
-        } catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-    }*/
-
-
     public boolean filenameHasChanged()
     {
         if (infilename.equalsIgnoreCase(outfilename)) return false;
@@ -431,7 +347,6 @@ public class Raceday
                         bw.write("<td > </td>");
                     } else
                     {
-                        //  Sail asail = Sail.parse(aresult.trim(), competition.compclasslist.getDefaulKey(), competition.compclublist.getDefaulKey());
                         Sail asail = aresult.sail;
                         if (asail == null || !asail.hasSailnumber())
                         {
@@ -533,7 +448,6 @@ public class Raceday
                 else
                     arace.addResult(r, null, flag);
 
-                // System.out.println("hello "+cname+":"+rname+":"+value+":"+sn.ToString(5));
             }
             racelist.add(arace);
         }
@@ -571,7 +485,6 @@ public class Raceday
                 else
                     arace.addResult(r, null, value);
 
-                // System.out.println("hello "+cname+":"+rname+":"+value+":"+sn.ToString(5));
             }
             racelist.add(arace);
 
@@ -581,7 +494,6 @@ public class Raceday
 
     public jswVerticalPanel displayscores(Competition_gui parent, jswStyles tablestyles, int index)
     {
-        //  dataMatrix racematrix = MakeMatrix();
         jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
         raceresults.setStyleAttribute("borderwidth", 2);
         raceresults.setPadding(10, 10, 10, 10);
@@ -617,72 +529,6 @@ public class Raceday
         return raceresults;
     }
 
-   /* public jswVerticalPanel displayscoreresults(Competition_gui parent, jswStyles tablestyles, int index)
-    {
-        jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
-        raceresults.setPadding(2, 2, 2, 4);
-        raceresults.setStyleAttribute("borderwidth", 1);
-        int ncols = GetNoRaces();
-        int nrows = getNoSailors();
-        jswHorizontalPanel racedayheader = new jswHorizontalPanel("heading", false, false);
-        jswLabel dt = new jswLabel("ceci " + getRacedate("/"));
-        dt.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        racedayheader.add(" ", dt);
-        ActionListener al = null;
-        if (parent instanceof ActionListener)
-        {
-            al = parent;
-        }
-        jswButton editheaderbutton = new jswButton(al, "EDIT", "editraceday:" + index);
-        racedayheader.add(" right ", editheaderbutton);
-        raceresults.add(" FILLW  ", racedayheader);
-        //  dataMatrix compmatrix = getValueMatrix(racematrix, racematrix.getColname(), parent.currentcomp.competitors.getVector());
-        dataMatrix rankmatrix = getRankMatrix(parent.currentcomp.competitors);
-        raceresults.add("    ", rankmatrix.makesmalldatapanel(parent.currentcomp.competitors, tablestyles));
-        raceresults.applyStyle();
-        raceresults.setPadding(5, 5, 5, 5);
-        return raceresults;
-    }*/
-
-
-    /*   public dataMatrix getValueMatrix(dataMatrix data, Vector<String> colnames, Vector<String> rownames)
-       {
-           int ncols = colnames.size();
-           int nrows = rownames.size();
-           dataMatrix vm = new dataMatrix(ncols, nrows);
-           vm.setRowname(rownames);
-           vm.setColname(colnames);
-           vm.setColtype("String", ncols);
-           vm.setSelected(true, ncols);
-           int c = 0;
-           for (Race arace : racelist)
-           {
-               Boolean included = arace.isIncompetition();
-               vm.getSelected().set(c, included);
-               ArrayList<Result> values = arace.resultlist;
-               int r = 0;
-               for (Result aresult : values)
-               {
-                   if (aresult != null)
-                   {
-                       Sail asail = aresult.sail;
-                       if (asail != null)
-                       {
-                           String token = asail.toCypherString();
-                           if (!token.trim().isEmpty())
-                           {
-                               vm.putaCell(c, token,  (r + 1));
-                           }
-                       }
-
-                   }
-                   r++;
-               }
-               c++;
-           }
-           return vm;
-       }
-   */
     public dataMatrix getRankMatrix(SailList sails)
     {
         int ncols = GetNoRaces();
@@ -718,10 +564,8 @@ public class Raceday
                             }
                         }
                     }
-
                 }
                 pos++;
-
             }
             c++;
         }
@@ -781,11 +625,6 @@ public class Raceday
         return racenames;
     }
 
-  /*  public void setfilename(String selfile)
-    {
-        infilename = selfile;
-    }*/
-
     public Race getRace(int i)
     {
 
@@ -811,7 +650,6 @@ public class Raceday
         }
         return maxsailors;
     }
-
 
     public void addRace()
     {

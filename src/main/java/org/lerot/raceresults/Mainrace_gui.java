@@ -22,7 +22,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
     private static final int CLASSLIST = 4;
     private static final int START = 5;
     public int mode;
-    public static Mainrace_gui mframe;
+    public static Mainrace_gui maingui;
     public static Competition_gui compgui;
     public static jswVerticalPanel mainpanel;
     public static String mysailinghome;
@@ -118,8 +118,6 @@ public class Mainrace_gui extends JFrame implements ActionListener
         sailgui.setSelectedsail(clubSailList.first());
         mode = START;
         refreshGui();
-        // add(mainpanel);
-        //  mainpanel.repaint();
         revalidate();
         repaint();
         validate();
@@ -136,21 +134,21 @@ public class Mainrace_gui extends JFrame implements ActionListener
     public static void main(String[] args)
     {
 
-        mframe = new Mainrace_gui(800, 400);
-        mframe.mode = START;
-        mframe.add(mainpanel);
-        mframe.setJMenuBar(mainmenubar);
-        mframe.addWindowListener(new WindowAdapter()
+        maingui = new Mainrace_gui(800, 400);
+        maingui.mode = START;
+        maingui.add(mainpanel);
+        maingui.setJMenuBar(mainmenubar);
+        maingui.addWindowListener(new WindowAdapter()
         {
             public void windowClosing(WindowEvent e)
             {
                 System.exit(0);
             }
         });
-        mframe.setLocation(50, 50);
-        mframe.setMinimumSize(new Dimension(800, 400));
-        mframe.pack();
-        mframe.setVisible(true);
+        maingui.setLocation(50, 50);
+        maingui.setMinimumSize(new Dimension(800, 400));
+        maingui.pack();
+        maingui.setVisible(true);
 
     }
 
@@ -350,8 +348,6 @@ public class Mainrace_gui extends JFrame implements ActionListener
         return menuBar;
     }
 
-
-
     public SailList getClubSailList()
     {
         return clubSailList;
@@ -495,9 +491,9 @@ public class Mainrace_gui extends JFrame implements ActionListener
             mode = SAILLIST;
         }
         refreshGui();
-        Mainrace_gui.mframe.revalidate();
-        Mainrace_gui.mframe.repaint();
-        Mainrace_gui.mframe.pack();
+        Mainrace_gui.maingui.revalidate();
+        Mainrace_gui.maingui.repaint();
+        Mainrace_gui.maingui.pack();
     }
 
 

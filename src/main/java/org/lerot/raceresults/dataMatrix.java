@@ -429,45 +429,6 @@ public class dataMatrix
         return values;
     }
 
-  /*  public dataMatrix getValueMatrix(Vector<String> colnames, Vector<String> rownames)
-    {
-        int ncols = colnames.size();
-        int nrows = rownames.size();
-        dataMatrix vm = new dataMatrix(ncols, nrows);
-        vm.setRowname(rownames);
-        vm.setColname(colnames);
-        //   vm.getColname().set(2,"two");
-        vm.setColtype("String", ncols);
-        vm.setSelected(true, ncols);
-        for (int c = 0; c < data.size(); c++)
-        {
-            Vector<String> values = data.get(c);
-            for (int r = 0; r < values.size(); r++)
-            {
-                String avalue = values.get(r);
-                if (avalue != null)
-                {
-                    avalue = getValue(c, r);
-
-                    if(!avalue.trim().isEmpty() )
-                    {
-             //           Sail asail = Sail.parse(avalue.trim(),compclasslist.getDefaulKey(),compclublist.getDefaulKey());
-                        if (asail != null)
-                        {
-
-                            String token = asail.toCypherString();
-
-                            if (!token.trim().isEmpty())
-                            {
-                                vm.putaCell(c, token, " " + (r + 1));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return vm;
-    }*/
 
     void setColtype(String string, int nc)
     {

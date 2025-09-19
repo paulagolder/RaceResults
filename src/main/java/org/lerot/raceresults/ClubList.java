@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import static org.lerot.raceresults.Mainrace_gui.mframe;
+import static org.lerot.raceresults.Mainrace_gui.maingui;
 
 public class ClubList extends TreeMap<String, Club>
 {
@@ -120,7 +120,7 @@ public class ClubList extends TreeMap<String, Club>
         for(String aclub :clubs)
         {
             String aclubkey = aclub.trim();
-            Club foundclub = mframe.clublist.get(aclubkey);
+            Club foundclub = maingui.clublist.get(aclubkey);
             if(foundclub != null)
             {
                 this.put(aclubkey,foundclub);

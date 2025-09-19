@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import static org.lerot.raceresults.Mainrace_gui.mframe;
+import static org.lerot.raceresults.Mainrace_gui.maingui;
 
 public class BoatclassList extends TreeMap<String, Boatclass>
 {
@@ -143,7 +143,7 @@ public class BoatclassList extends TreeMap<String, Boatclass>
         for(String aclass :classes)
         {
             String aclasskey = aclass.trim().toLowerCase(Locale.ROOT);
-            Boatclass foundclass = mframe.classlist.get(aclasskey);
+            Boatclass foundclass = maingui.classlist.get(aclasskey);
             if(foundclass != null)
             {
                 this.put(aclasskey,foundclass);
@@ -158,7 +158,7 @@ public class BoatclassList extends TreeMap<String, Boatclass>
         for(String aclass :classes)
         {
             String aclasskey = aclass.trim().toLowerCase(Locale.ROOT);
-            Boatclass foundclass = mframe.classlist.get(aclasskey);
+            Boatclass foundclass = maingui.classlist.get(aclasskey);
             if(foundclass != null)
             {
                 this.put(aclasskey,foundclass);

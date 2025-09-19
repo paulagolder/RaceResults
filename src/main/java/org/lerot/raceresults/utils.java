@@ -19,22 +19,17 @@ public class utils
     {
         HashMap<String, String> cmdmap = new HashMap<String, String>();
         String text2 = text;
-        // String text2 = text.replace("{", "");
         if (text2.substring(0, 1).equals("{")) text2 = text2.substring(1);
         if (text2.substring(text2.length() - 1).equals("}")) text2 = text2.substring(0, text2.length() - 1);
-
-        // String text3 = text2.replace("}", "");
         String[] cmdarray = text2.split(",");
         for (String acmd : cmdarray)
         {
-            //System.out.println( acmd)   ;
             String[] cmdpair = acmd.split("=");
             if(cmdpair.length>1)
               cmdmap.put(cmdpair[0].trim(), cmdpair[1].trim());
             else
                 cmdmap.put(cmdpair[0].trim(), "");
         }
-        //    System.out.println(cmdmap);
         return cmdmap;
     }
 

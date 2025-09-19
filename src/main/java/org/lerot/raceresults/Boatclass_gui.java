@@ -16,7 +16,6 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
 {
 
     Boatclass selectedclass = null;
-    //private final ActionListener parentlistener;
     private jswOptionset classoptions;
     private int indexselected = 0;
     private BoatclassList classlist;
@@ -28,7 +27,6 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
     public Boatclass_gui(BoatclassList cl)
     {
         super("Class Gui", false, false);
-        //makeheadermenu();
         classlist = cl;
     }
 
@@ -137,7 +135,7 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
         {
             try
             {
-                File file = new File(mframe.Boatclassfile);
+                File file = new File(maingui.Boatclassfile);
                 if (!file.exists())
                 {
                     file.createNewFile();
@@ -153,7 +151,7 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
                 System.out.println(e2);
             }
         }
-        mframe.refreshGui();
+        maingui.refreshGui();
     }
 
     public jswVerticalPanel classForm(ActionListener al, Boatclass aclass)

@@ -12,7 +12,7 @@ import java.io.FileWriter;
 import java.util.*;
 
 import static org.lerot.raceresults.Mainrace_gui.homeclub;
-import static org.lerot.raceresults.Mainrace_gui.mframe;
+import static org.lerot.raceresults.Mainrace_gui.maingui;
 
 
 public class SailList extends TreeSet<Sail>
@@ -42,7 +42,7 @@ public class SailList extends TreeSet<Sail>
                         sailvector.add(asail.getSailnumberStr());
                     } else
                     {
-                        Club aclub = mframe.clublist.get(asail.getClub());
+                        Club aclub = maingui.clublist.get(asail.getClub());
                         sailvector.add(asail.getSailnumberStr() + aclub.getCypher());
                     }
                 }
@@ -142,23 +142,6 @@ public class SailList extends TreeSet<Sail>
         if(asail != null)
         {
             return asail;
-     /*   int sailno = SailNumber.getInt(sailstr);
-        Vector<Integer> intvector = new Vector<>();
-        int nfound = 0;
-        Sail sailfound = null;
-        for (Sail asail : this)
-        {
-            String asailstr = asail.getSailnumberStr().trim();
-            int asailno = SailNumber.getInt(asailstr);
-            Sail asail = Sail.parse(sailstr, boatclasses, clubs);
-            if (!sailno == null)
-            {
-                sailfound = asail;
-                nfound++;
-            }
-        }
-        if (nfound == 1) return sailfound;
-        */
         }
         else
         {
@@ -191,7 +174,6 @@ public class SailList extends TreeSet<Sail>
 
     public void readSaillistXML(String fileNameWithPath)
     {
-       // System.out.println(" Loading :"+fileNameWithPath);
         Document document;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = null;
@@ -232,7 +214,6 @@ public class SailList extends TreeSet<Sail>
     @Override
     public boolean add(Sail addedsail)
     {
-        //System.out.println(("+++++++++++++"+addedsail.toString()));
         return super.add(addedsail);
     }
 
@@ -483,8 +464,8 @@ public class SailList extends TreeSet<Sail>
         {
             String asailstr = asail.getSailnumberStr().trim();
             int asailno = SailNumber.getInt(asailstr);
-            String boatcypher = mframe.classlist.get(asail.getBoatclass().toLowerCase()).getCypher();
-            String clubcypher = mframe.clublist.get(asail.getClub()).getCypher();
+            String boatcypher = maingui.classlist.get(asail.getBoatclass().toLowerCase()).getCypher();
+            String clubcypher = maingui.clublist.get(asail.getClub()).getCypher();
             if (sailno == asailno && aclasscypher.equals(boatcypher)
                     && aclubcypher.equals( clubcypher))
             {
@@ -513,8 +494,8 @@ public class SailList extends TreeSet<Sail>
         {
             String asailstr = asail.getSailnumberStr().trim();
             int asailno = SailNumber.getInt(asailstr);
-            String boatcypher = mframe.classlist.get(asail.getBoatclass().toLowerCase()).getCypher();
-            String clubcypher = mframe.clublist.get(asail.getClub()).getCypher();
+            String boatcypher = maingui.classlist.get(asail.getBoatclass().toLowerCase()).getCypher();
+            String clubcypher = maingui.clublist.get(asail.getClub()).getCypher();
             if (sailno == asailno && aclasscypher.equals(boatcypher)
                     && aclubcypher.equals(clubcypher))
             {

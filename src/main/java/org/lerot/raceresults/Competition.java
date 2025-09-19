@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static org.lerot.raceresults.Mainrace_gui.homeclub;
-import static org.lerot.raceresults.Mainrace_gui.mframe;
+import static org.lerot.raceresults.Mainrace_gui.maingui;
 import static org.lerot.raceresults.utils.fileexists;
 
 public class Competition
@@ -174,27 +174,6 @@ public class Competition
         saved = false;
     }
 
- /*   public jswVerticalPanel displayrankcolumn(jswStyles tablestyles)
-    {
-        jswVerticalPanel leftcolumn = new jswVerticalPanel("Rank", false, false);
-        leftcolumn.setStyleAttribute("borderwidth", 2);
-        leftcolumn.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
-        jswHorizontalPanel leftheader = new jswHorizontalPanel("heading", false, false);
-        jswLabel label00 = new jswLabel(" Rank ");
-        label00.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
-        leftheader.add(" minheight=30 ", label00);
-        leftcolumn.add(" FILLW middle minheight=30 ", leftheader);
-        jswTable datagrid = new jswTable(null, "form1", tablestyles);
-        datagrid.addCell(new jswLabel("Rank"), 0, 0);
-        int nrows = maxParticipants;
-        for (int r = 0; r < nrows; r++)
-        {
-            datagrid.addCell(new jswLabel("!!" + r), r + 1, 0);
-        }
-        leftcolumn.add(" FILLW ", datagrid);
-        leftcolumn.setPadding(5, 5, 5, 5);
-        return leftcolumn;
-    }*/
 
     public jswVerticalPanel displaysailcolumn(jswStyles tablestyles)
     {
@@ -231,7 +210,6 @@ public class Competition
         return leftcolumn;
     }
 
-
     public void readCompetitionXML(String fileNameWithPath)
     {
         Document document;
@@ -260,7 +238,7 @@ public class Competition
             } else
             {
                 compclasslist.clear();
-                compclasslist.put("df95", mframe.classlist.get("df95"));
+                compclasslist.put("df95", maingui.classlist.get("df95"));
             }
             if (rootele.getAttributeNode("directory") != null)
             {
@@ -399,7 +377,7 @@ public class Competition
 
     public void createTestSaillist(String bclass)
     {
-        Vector<Sail> asaillist = Mainrace_gui.mframe.getClubSailList().getSailVector();
+        Vector<Sail> asaillist = Mainrace_gui.maingui.getClubSailList().getSailVector();
         Vector<String> sb = new Vector<>();
         SailList sl = new SailList();
         for (int s = 0; s < asaillist.size(); s++)
@@ -419,7 +397,7 @@ public class Competition
         System.out.println("You chose to save this competition file: " + competitionfile);
         this.saveCompetitionToXML(competitionfile);
         if (competitionfile != null)
-            Mainrace_gui.mframe.saveProperties(competitionfile);
+            Mainrace_gui.maingui.saveProperties(competitionfile);
     }
 
     public Vector<Club> getCompclublist()

@@ -194,7 +194,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
 
     public void actionPerformed(ActionEvent e)
     {
-        mframe.mode = COMPETITION;
+        maingui.mode = COMPETITION;
         String cmd = e.getActionCommand();
         HashMap<String, String> cmdmap = jswUtils.parsecsvstring(cmd);
         String cduc = cmdmap.get("command");
@@ -202,11 +202,11 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
 
         if (command.startsWith("editraceday:"))
         {
-            mframe.mode = RACEDAY;
+            maingui.mode = RACEDAY;
             String seq = command.replace("editraceday:", "");
             int intseq = Integer.parseInt(seq);
-            mframe.currentraceday = intseq;
-            mframe.refreshGui();
+            maingui.currentraceday = intseq;
+            maingui.refreshGui();
         }
         if (command.startsWith("Edit Competition"))
         {
@@ -293,7 +293,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this html file: " + selfile);
-                TreeMap<String, Sail> sailorlist = mframe.getClubSailList().makeTreeList(currentcomp.compclasslist.toString(), currentcomp.getClubString());
+                TreeMap<String, Sail> sailorlist = maingui.getClubSailList().makeTreeList(currentcomp.compclasslist.toString(), currentcomp.getClubString());
                 pointsmatrix.printResultsToHTML(selfile, currentcomp.getCompetitionname(), sailorlist, maxsailors);
             }
             refreshcompetition_gui();
@@ -383,7 +383,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this competition xml file: " + selfile);
                 currentcomp.saveCompetitionToXML(selfile);
-                Mainrace_gui.mframe.saveProperties(selfile);
+                Mainrace_gui.maingui.saveProperties(selfile);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
@@ -402,7 +402,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             editpanel.setVisible(false);
         } else if (command.equalsIgnoreCase("Load Competition"))
         {
-            mframe.mode = COMPETITION;
+            maingui.mode = COMPETITION;
             final File directorylock = new File(mysailinghome);
             JFileChooser chooser = new JFileChooser(directorylock);
             FileNameExtensionFilter filter = new FileNameExtensionFilter("Competitions", "cxml");
@@ -415,16 +415,16 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("*You chose to open this file: " + selfile);
                 pointsmatrix = null;
-                currentcomp = new Competition(selfile, mframe.clubSailList);
+                currentcomp = new Competition(selfile, maingui.clubSailList);
                 currentcompetitionfile = selfile;
-                mframe.currentcompetition = currentcomp;
+                maingui.currentcompetition = currentcomp;
             }
             currentcomp.reloadracedays();
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
-            mframe.refreshGui();
+            maingui.refreshGui();
         } else if (command.equalsIgnoreCase("New Competition"))
         {
             currentcomp = new Competition();
@@ -438,8 +438,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             currentcomp.getRacedaylist().clear();
             pointsmatrix = null;
             currentcomp.maxParticipants = 0;
-            //  currentcomp.generateranklist(currentcomp.noCompetitors);
-            mframe.currentcompetition = currentcomp;
+            maingui.currentcompetition = currentcomp;
             if (mainmenubar.getMenuCount() > 2)
             {
                 mainmenubar.remove(2);
@@ -452,7 +451,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             compheader.setVisible(false);
             scorespanel.setVisible(false);
             editpanel.setVisible(true);
-            mframe.refreshGui();
+            maingui.refreshGui();
 
         } else if (command.equalsIgnoreCase("Load Raceday"))
         {
@@ -492,10 +491,10 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
-            mframe.mode = RACEDAYEDIT;
+            maingui.mode = RACEDAYEDIT;
             int intseq = currentcomp.racedayfilenames.size() - 1;
-            mframe.currentraceday = intseq;
-            mframe.refreshGui();
+            maingui.currentraceday = intseq;
+            maingui.refreshGui();
         } else if (command.equalsIgnoreCase("Add Random Raceday"))
         {
             int nc = 4;
@@ -514,9 +513,9 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         }
 
         revalidate();
-        Mainrace_gui.mframe.revalidate();
-        Mainrace_gui.mframe.repaint();
-        Mainrace_gui.mframe.pack();
+        Mainrace_gui.maingui.revalidate();
+        Mainrace_gui.maingui.repaint();
+        Mainrace_gui.maingui.pack();
     }
 
     private jswHorizontalPanel editcompetition()
