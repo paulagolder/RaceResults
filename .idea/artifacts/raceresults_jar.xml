@@ -4,7 +4,6 @@
     <root id="archive" name="raceresults.jar">
       <element id="module-output" name="raceresults" />
       <element id="library" level="project" name="lib" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../lib/mywidgets.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

@@ -80,7 +80,7 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
             for (Sail asail : saillist)
             {
                 if (firstsail == null) firstsail = asail;
-                jswOption opt1 = sailoptions.addNewOption("", asail.getSailnumberStr(), true);
+                jswOption opt1 = sailoptions.addNewOption("", asail.getSailnumberStr());
                 opt1.setTag("" + r);
                 optlist.add(opt1);
                 datagrid.addCell(opt1, r + 1, 0);

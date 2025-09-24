@@ -62,7 +62,7 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
         for (Map.Entry<String, Boatclass> anentry : classlist.entrySet())
         {
             Boatclass aclub = anentry.getValue();
-            jswOption opt1 = classoptions.addNewOption("", aclub.getKey(), true);
+            jswOption opt1 = classoptions.addNewOption("", aclub.getKey());
             datagrid.addCell(opt1, r + 1, 0);
             datagrid.addCell(new jswLabel(aclub.getKey()), r + 1, 1);
             datagrid.addCell(new jswLabel(aclub.getFullName()), r + 1, 2);
