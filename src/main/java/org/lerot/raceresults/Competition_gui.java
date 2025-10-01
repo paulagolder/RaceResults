@@ -196,8 +196,8 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
     {
         maingui.mode = COMPETITION;
         String cmd = e.getActionCommand();
-        HashMap<String, String> cmdmap = jswUtils.parsecsvstring(cmd);
-        String cduc = cmdmap.get("command");
+      //  HashMap<String, String> cmdmap = jswUtils.parsecsvstring(cmd);
+     //   String cduc = cmdmap.get("command");
         String command = cmd;
 
         if (command.startsWith("editraceday:"))

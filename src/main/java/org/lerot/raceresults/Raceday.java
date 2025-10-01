@@ -381,7 +381,7 @@ public class Raceday
         Document document;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = null;
-        System.out.println("Importing:" + fileNameWithPath);
+      //  System.out.println("Importing:" + fileNameWithPath);
         try
         {
 
@@ -414,7 +414,7 @@ public class Raceday
             loadfromXML_oldmodel(rootelement);
         } else
         {
-            System.out.println("Loading new model");
+           // System.out.println("Loading new model");
             loadfromXML_newmodel(rootelement);
         }
 
