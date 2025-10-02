@@ -30,6 +30,7 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
     private jswTextBox activebox;
     private cell currentcell;
     private int keycount;
+    String version = "20251002";
 
     public Raceday_gui(Raceday araceday)
     {
