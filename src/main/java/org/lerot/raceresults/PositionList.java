@@ -2,6 +2,7 @@ package org.lerot.raceresults;
 
 import org.lerot.mywidgets.*;
 
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,12 +10,14 @@ import java.io.FileWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Vector;
 
 import static org.lerot.raceresults.Mainrace_gui.smalltable1styles;
 
 public class PositionList
 {
-    LinkedHashMap<String , Position> list;
+    public int maxrank = 0;
+    LinkedHashMap<String, Position> list;
     Competition currentcomp;
     private String cssid = "datamatrix";
     private String cssclass = "datamatrix";
@@ -27,7 +30,7 @@ public class PositionList
 
     public void add(Position aposition)
     {
-       String key = aposition.getSail().toCypherString();
+        String key = aposition.getSailor().getName();
         list.put(key, aposition);
     }
 
@@ -43,7 +46,6 @@ public class PositionList
         jswLabel addb = new jswLabel(currentcomp.compclasslist.toString());
         addb.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
         scoresheader.add(" ", addb);
-
         jswLabel dt = new jswLabel(currentcomp.getCompyear());
         dt.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
         scoresheader.add(" ", dt);
@@ -60,8 +62,8 @@ public class PositionList
     private jswTable makedatapanel(jswStyles tablestyles)
     {
         jswTable datagrid = new jswTable(null, "form1", tablestyles);
-        datagrid.addCell(new jswLabel("Sail"), 0, 0);
-        datagrid.addCell(new jswLabel("Sailor"), 0, 1);
+        datagrid.addCell(new jswLabel("Sailor"), 0, 0);
+        datagrid.addCell(new jswLabel("Sails"), 0, 1);
         datagrid.addCell(new jswLabel("Races"), 0, 2);
         datagrid.addCell(new jswLabel("<html>Scored<br/>Races</html>"), 0, 3);
         datagrid.addCell(new jswLabel("Points"), 0, 4);
@@ -71,8 +73,8 @@ public class PositionList
         for (Map.Entry<String, Position> anentry : list.entrySet())
         {
             Position aposition = anentry.getValue();
-            datagrid.addCell(new jswLabel(aposition.getSail().toCypherString()), r + 1, 0);
-            datagrid.addCell(new jswLabel(aposition.getSail().getSailorname()), r + 1, 1);
+            datagrid.addCell(new jswLabel(aposition.getSailor().getName()), r + 1, 0);
+            datagrid.addCell(new jswLabel(aposition.getSails()), r + 1, 1);
             datagrid.addCell(new jswLabel(aposition.getTotalraces()), r + 1, 2);
             datagrid.addCell(new jswLabel(aposition.getScoredraces()), r + 1, 3);
             datagrid.addCell(new jswLabel(aposition.getPoints()), r + 1, 4);
@@ -83,7 +85,7 @@ public class PositionList
         return datagrid;
     }
 
-    public void printResultsToHTML(String path, String defclass, String defclub)
+    public void printResultsToHTML(String path)
     {
         try
         {
@@ -103,21 +105,20 @@ public class PositionList
             if (currentcomp.getTargetracecount() > 0)
             {
                 bw.write("<tr><td>Sail</td><td>sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Points</td><td>Race</br>Points</td><td>Missing race<br>points</td></tr>");
-                for(Map.Entry<String, Position> entry: list.entrySet())
+                for (Map.Entry<String, Position> entry : list.entrySet())
                 {
                     Position posn = entry.getValue();
-                    bw.write(posn.toHTML());
+                    bw.write(posn.toHTML(maxrank));
                 }
-            }
-            else {
+            } else
+            {
                 bw.write("<tr><td>Sail</td><td>sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Race</br>Points</td></tr>");
-                for(Map.Entry<String, Position> entry: list.entrySet())
+                for (Map.Entry<String, Position> entry : list.entrySet())
                 {
                     Position posn = entry.getValue();
-                    bw.write(posn.toHTML_short(defclass, defclub));
+                    //  bw.write(posn.toHTML_short(defclass, defclub));
                 }
             }
-
             bw.write("\n</table>\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
@@ -146,19 +147,18 @@ public class PositionList
             if (currentcomp.getTargetracecount() > 0)
             {
                 bw.write("<tr><td>Sail</td><td>Sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Points</td></tr>");
-                for(Map.Entry<String, Position> entry: list.entrySet())
+                for (Map.Entry<String, Position> entry : list.entrySet())
                 {
                     Position posn = entry.getValue();
                     if (posn.getScoredraces() >= currentcomp.getTargetracecount())
                     {
-                        bw.write(posn.toHTML_short(defclass, defclub));
+                         bw.write(posn.toHTML_short(defclass, defclub));
                     }
                 }
-            }
-            else {
+            } else
+            {
                 bw.write("<tr><td>No no of races target</td></tr>");
             }
-
             bw.write("\n</table>\n</body>\n</html>\n");
             bw.close();
         } catch (Exception e)
@@ -166,7 +166,6 @@ public class PositionList
             System.out.println(e);
         }
     }
-
 
     public String getCssid()
     {
@@ -190,21 +189,114 @@ public class PositionList
 
     public PositionList rankMap()
     {
-        TreeMap<Integer,String> rmap = new TreeMap<Integer,String>();
-        int n=1;
-        for(Map.Entry<String, Position> entry: list.entrySet())
+        TreeMap<Integer, String> rmap = new TreeMap<Integer, String>();
+        int n = 1;
+        for (Map.Entry<String, Position> entry : list.entrySet())
         {
             Position posn = entry.getValue();
-            rmap.put( posn.getPoints()*1000+n, entry.getKey());
+            rmap.put(posn.getRace_points() * 1000 + n, entry.getKey());
             n++;
         }
         PositionList rposmap = new PositionList(currentcomp);
-        for(Map.Entry<Integer,String> entry: rmap.entrySet())
+        for (Map.Entry<Integer, String> entry : rmap.entrySet())
         {
             String key = entry.getValue();
             Position apos = list.get(key);
             rposmap.add(apos);
         }
         return rposmap;
+    }
+
+    public Component displayranks()
+    {
+        jswVerticalPanel ranks = new jswVerticalPanel("Ranks", false, false);
+        ranks.setStyleAttribute("borderwidth", 2);
+        ranks.setPadding(10, 10, 10, 10);
+        int ncols = 5;
+        int nrows = list.size();
+        ranks.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
+        jswHorizontalPanel scoresheader = new jswHorizontalPanel("heading", false, false);
+        jswLabel addb = new jswLabel(currentcomp.compclasslist.toString());
+        addb.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
+        scoresheader.add(" ", addb);
+        jswLabel dt = new jswLabel(currentcomp.getCompyear());
+        dt.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
+        scoresheader.add(" ", dt);
+        ActionListener al = null;
+        ranks.add("  ", scoresheader);
+        scoresheader.setStyleAttribute("minheight", 25);
+        scoresheader.applyStyle();
+        ranks.add("  ", makerankspanel(smalltable1styles()));
+        ranks.applyStyle();
+        ranks.setPadding(10, 10, 10, 10);
+        return ranks;
+    }
+
+    private jswTable makerankspanel(jswStyles tablestyles)
+    {
+        int ncols = list.size();
+        jswTable datagrid = new jswTable(null, "form1", tablestyles);
+        datagrid.addCell(new jswLabel("Sailor"), 0, 0);
+        datagrid.addCell(new jswLabel("Sails"), 0, 1);
+        datagrid.addCell(new jswLabel("Races"), 0, 2);
+        Vector<String> colnames = utils.makePositionNames(maxrank);
+
+        for (int c=0;c<maxrank;c++)
+        {
+            datagrid.addCell(new jswLabel(colnames.get(c)), 0, c+3);
+        }
+        int r = 0;
+        for (Map.Entry<String, Position> anentry : list.entrySet())
+        {
+            Position aposition = anentry.getValue();
+            datagrid.addCell(new jswLabel(aposition.getSailor().getName()), r + 1, 0);
+            datagrid.addCell(new jswLabel(aposition.getSails()), r + 1, 1);
+            datagrid.addCell(new jswLabel(aposition.getTotalraces()), r + 1, 2);
+
+            for (int c=0;c<maxrank;c++)
+            {
+                    String rankstr = "" + aposition.getRanks().get(c);
+                    datagrid.addCell(new jswLabel(rankstr), r + 1, c + 3);
+            }
+            r++;
+        }
+        return datagrid;
+    }
+
+    public void printRanksResultsToHTML(String selfile)
+    {
+        try
+        {
+            File file = new File(selfile);
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(" <!DOCTYPE html>\n<html>\n");
+            bw.write("<head>\n<style>");
+            bw.write(" td { text-align: center; }\n");
+            bw.write(" table, th, td { border: 1px solid; }\n");
+            bw.write("</style>\n</head>\n<body>\n");
+            bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
+            bw.write("<tr><td>Sailor</td><td>sails</td><td>Total<br/>Races</td>");
+            Vector<String> ranknames = utils.makePositionNames(maxrank);
+            for (String rank : ranknames)
+            {
+                bw.write("<td>" + rank + "</td>");
+            }
+            bw.write("</tr>");
+            for (Map.Entry<String, Position> entry : list.entrySet())
+            {
+                Position posn = entry.getValue();
+                bw.write(posn.toHTML(maxrank));
+            }
+            bw.write("\n</table>\n</body>\n</html>\n");
+            bw.close();
+        } catch (Exception e)
+        {
+            System.out.println(e);
+        }
     }
 }

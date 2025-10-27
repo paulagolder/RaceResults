@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.Vector;
 
 import static org.lerot.raceresults.Mainrace_gui.maingui;
@@ -28,10 +29,11 @@ public class Raceday
     private String boatclass_str;
     String[] boatclasses;
     private String racedate_str;
-    private Vector<Race> racelist;
+    public Vector<Race> racelist;
     private String cssid = "raceday";
     private String cssclass = "raceday";
     String[] boatcyphers;
+    private Vector<String> sailedbylist;
 
     public Raceday(Competition comp)
     {
@@ -320,9 +322,9 @@ public class Raceday
             }
         }
         bw.write("</tr>\n");
+        sailedbylist = new Vector<String>();
         for (int r = 0; r < nrows; r++)
         {
-
             int filledcols = 0;
             for (Race arace : racelist)
             {
@@ -333,6 +335,7 @@ public class Raceday
             if (filledcols > 0)
             {
                 bw.write("<tr><td>" + rownames.get(r) + "</td>");
+
                 for (Race arace : racelist)
                 {
                     ArrayList<Result> results = arace.resultlist;
@@ -360,6 +363,13 @@ public class Raceday
                             {
                                 outtext = asail.toCypherString(competition.compclublist.getDefaulKey(), boatclasses[0]);
                             }
+                            if(aresult.sailor!=null)
+                            {
+                                String sailorname = aresult.sailor.getName();
+                                if(!sailedbylist.contains(sailorname))  sailedbylist.add(sailorname);
+                                int i = sailedbylist.indexOf(sailorname)+1;
+                                outtext+=   " <small><i>" +i+ "</i></small>";
+                            }
                             bw.write("<td >" + outtext + "</td>");
                         }
                     }
@@ -372,6 +382,15 @@ public class Raceday
         if (excluded == true)
         {
             bw.write("<tr>\n<th  colspan=" + (ncols + 1) + ">X not included in competition </th>\n</tr>");
+        }
+        if(!sailedbylist.isEmpty())
+        {
+            int i = 1;
+            for(String asailor : sailedbylist)
+            {
+                bw.write("<tr>\n<td  colspan=" + (ncols + 1) + "> "+i + " Sailed By :"+ asailor +"</td>\n</tr>");
+                i++;
+            }
         }
         bw.write("</table>\n");
     }
@@ -441,12 +460,17 @@ public class Raceday
                 String position = aresult.getAttribute("position");
                 String sailstring = aresult.getAttribute("sail");
                 String flag = aresult.getAttribute("flag");
-
                 Sail insail = new Sail(sailstring);
-                if (insail != null)
-                    arace.addResult(r, insail, flag);
-                else
-                    arace.addResult(r, null, flag);
+                if(aresult.hasAttribute("sailor"))
+                {
+                    String sailorstring = aresult.getAttribute("sailor");
+                    Sailor asailor = new Sailor(sailorstring);
+                    arace.addResult(r, insail, flag, asailor);
+                }else
+                {
+                    if (insail != null) arace.addResult(r, insail, flag);
+                    else arace.addResult(r, null, flag);
+                }
 
             }
             racelist.add(arace);

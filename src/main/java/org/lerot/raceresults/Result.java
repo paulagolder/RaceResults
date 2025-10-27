@@ -7,6 +7,7 @@ public class Result
 
     Integer position = null;
     Sail sail;
+    Sailor sailor;
     String flag;
 
     public Result(int aposition, Sail asail, String aflag)
@@ -14,6 +15,15 @@ public class Result
         position = Integer.valueOf(aposition);
         sail = asail;
         flag = aflag;
+        sailor= null;
+    }
+
+    public Result(int aposition, Sail asail, String aflag, Sailor asailor)
+    {
+        position = Integer.valueOf(aposition);
+        sail = asail;
+        flag = aflag;
+        sailor = asailor;
     }
 
     public Result(int aposition, String cypherstring)
@@ -31,11 +41,15 @@ public class Result
             sail = null;
             flag = cypherstring;
         }
+        sailor= null;
     }
 
-    public String printToXML(BufferedWriter bw)
+    public String printToXML()
     {
-        return "<result position=\"" + position + "\" sail=\"" + this.sail + "\" flag=\"" + this.flag + "\" /> \n";
+        String out = "<result position=\"" + position + "\" sail=\"" + this.sail + "\" flag=\"" + this.flag + "\"";
+        if(sailor != null && !sailor.isEmpty()) out += " sailor=\""+sailor.toString()+"\"";
+        out+= "/> \n";
+        return out;
     }
 
 
@@ -43,6 +57,22 @@ public class Result
     {
         if (sail == null && flag.isEmpty()) return true;
         else return false;
+    }
+
+    public Sailor getSailor()
+    {
+        return sailor;
+    }
+
+    public void setSailor(Sailor sailor)
+    {
+        this.sailor = sailor;
+    }
+
+
+    public void setSailor(String sailorname)
+    {
+        this.sailor = new Sailor(sailorname);
     }
 }
 

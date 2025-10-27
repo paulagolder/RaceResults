@@ -388,10 +388,15 @@ public class dataMatrix
             col.set(r - 1, value);
     }
 
+    public void addCell(int nc, int i, String thiscell)
+    {
+    }
+
     public String getCell(int c, int r)
     {
         Vector<String> col = data.get(c - 1);
-        return col.get(r - 1);
+        if(col.size()>r)     return col.get(r - 1);
+        else return null;
     }
 
     public Vector<String> getValuevector()
@@ -529,7 +534,7 @@ public class dataMatrix
         int nsel = getSelected().size();
         int nc = 0;
         int maxranks = data.size();
-        for (int c = 0; c < maxranks; c++)
+        for (int c = 0; c < ncols; c++)
         {
            // if (getSelected().get(c))
             {
@@ -540,10 +545,9 @@ public class dataMatrix
         }
         nc = 0;
 
-        for (int c = 0; c < maxranks; c++)
+        for (int c = 0; c < ncols; c++)
         {
-            if (getSelected().get(c))
-            {
+
                 int snrows = data.get(c).size();
                 for (int r = 0; r < nrows; r++)
                 {
@@ -561,7 +565,7 @@ public class dataMatrix
                 }
                 nc++;
             }
-        }
+
         return datagrid;
     }
 
@@ -640,4 +644,6 @@ public class dataMatrix
     {
         return data.get(c);
     }
+
+
 }

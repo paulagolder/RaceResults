@@ -63,10 +63,11 @@ public class SailList extends TreeSet<Sail>
 
     public TreeMap<String, Sail> makeTreeList(String boatclass, String clublist)
     {
+        String uboatclass = boatclass.toUpperCase();
         TreeMap<String, Sail> list = new TreeMap<String, Sail>();
         for (Sail asail : this)
         {
-            if (asail.getBoatclass().equalsIgnoreCase(boatclass))
+            if (uboatclass.contains(asail.getBoatclass().toUpperCase()))
             {
                 if (clublist.contains(asail.getClub()))
                 {

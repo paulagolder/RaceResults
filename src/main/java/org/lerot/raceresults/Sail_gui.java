@@ -30,6 +30,7 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
     private jswPushButtonset classoptions;
     private String clubfilter = homeclub;
     private jswPushButtonset cluboptions;
+    private Integer selectedrow = null;
 
     public Sail_gui(SailList sl)
     {
@@ -80,7 +81,7 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
             for (Sail asail : saillist)
             {
                 if (firstsail == null) firstsail = asail;
-                jswOption opt1 = sailoptions.addNewOption("", asail.getSailnumberStr());
+                jswOption opt1 = sailoptions.addNewOption("", ""+r);
                 opt1.setTag("" + r);
                 optlist.add(opt1);
                 datagrid.addCell(opt1, r + 1, 0);
@@ -90,7 +91,7 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
                 datagrid.addCell(new jswLabel(asail.getSailorname()), r + 1, 2);
                 datagrid.addCell(new jswLabel(asail.getBoatclass()), r + 1, 3);
                 datagrid.addCell(new jswLabel(asail.getClub()), r + 1, 4);
-                if (selectedsail != null && asail.matches(selectedsail))
+                if (selectedrow != null && selectedrow == r)
                 {
                     opt1.setSelected(true);
                 }
@@ -135,11 +136,12 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
     {
         String command = e.getActionCommand();
         //System.out.println(" here we are sl " + command);
-        if (command.startsWith("sailoption"))
+        if (command.startsWith("sailoptions"))
         {
             String foundsail = sailoptions.getSelectedoption();
             System.out.println(sailoptions.getSelectedoption());
-            int rownumber = Integer.parseInt(foundsail);
+            int rownumber = Integer.parseInt(command.substring(12));
+            selectedrow= rownumber;
             int r = 0;
             for (Sail asail : saillist)
             {

@@ -1,13 +1,17 @@
 package org.lerot.raceresults;
 
+import java.util.ArrayList;
+
 public class Position
 {
-    private Sail sail;
+    private Sailor sailor;
+    private String sails;
     private int scoredraces;
     private int totalraces;
     private int points;
     private int race_points;
     private int missing_race_points;
+    private ArrayList<Integer> ranks;
 
     public int getTotalraces()
     {
@@ -19,27 +23,27 @@ public class Position
         this.totalraces = totalraces;
     }
 
-    public Position()
+
+
+    public Position(Sailor asailor )
     {
+        this.setSailor(asailor);
+        this.setScoredraces(0);
+        this.setPoints(0);
+        this.setRace_points(0);
+        this.setMissing_race_points(0);
+        ranks = null;
+        sails="";
     }
 
-    public Position(Sail asail,  int races, int points, int race_points, int missing_race_points)
+    public Sailor getSailor()
     {
-        this.setSail(asail);
-        this.setScoredraces(races);
-        this.setPoints(points);
-        this.setRace_points(race_points);
-        this.setMissing_race_points(missing_race_points);
+        return sailor;
     }
 
-    public Sail getSail()
+    public void setSailor(Sailor sailor)
     {
-        return sail;
-    }
-
-    public void setSail(Sail sail)
-    {
-        this.sail = sail;
+        this.sailor = sailor;
     }
 
     public int getScoredraces()
@@ -82,14 +86,62 @@ public class Position
         this.missing_race_points = missing_race_points;
     }
 
-    public String toHTML()
+    public String toHTML(int maxrank)
     {
-       return  "<tr><td>"+this.sail.getSailnumberStr()+"</td><td>"+this.sail.getSailorname()+"</td><td>"+this.totalraces +"</td><td>"+this.scoredraces +"</td><td>"+this.points+"</td><td>"+this.race_points+"</td><td>"+this.missing_race_points+"</td></tr>";
+        StringBuilder out = new StringBuilder("<tr><td>" + this.sailor.getName() + "</td><td>" + this.sails + "</td><td>" + this.totalraces + "</td>");
+        ArrayList<Integer> ranklist = getRanks();
+        for(int r=0;r<maxrank;r++)
+        {
+
+            out.append("<td>").append(ranklist.get(r)).append("</td>");
+        }
+        out.append("</tr>");
+        return out.toString();
     }
 
     public String toHTML_short(String defclass, String defclub)
     {
-        String sailstr = sail.toCypherString(defclub, defclass);
-        return "<tr><td>" + sailstr + "</td><td>" + this.sail.getSailorname() + "</td><td>" + this.totalraces + "</td><td>" + this.scoredraces + "</td><td>" + this.race_points + "</td></tr>";
+        StringBuilder out = new StringBuilder("<tr><td>" + this.sailor.getName() + "</td><td>" + this.sails + "</td><td>" + this.totalraces + "</td>");
+        out.append("<td>").append(this.getScoredraces()).append("</td><td>").append(this.getRace_points()).append("</td></tr>");
+        return out.toString();
+    }
+
+
+
+    public String getSails()
+    {
+        return sails;
+    }
+
+    public void setSails(String sails)
+    {
+        this.sails = sails;
+    }
+    public void addSail(String sail)
+    {
+        if(this.sails.contains(sail)) return;
+        else
+        this.sails += " " +sail;
+    }
+
+    public void setRanks(int nr)
+    {
+         ranks = new ArrayList<Integer>();
+         for(int r=0;r<nr; r++) ranks.add(0);
+    }
+
+    public ArrayList<Integer> getRanks()
+    {
+        return ranks;
+    }
+
+    public void setRanks(ArrayList<Integer> ranks)
+    {
+        this.ranks = ranks;
+    }
+
+    public void incrementTotalraces()
+    {
+        this.totalraces++;
     }
 }

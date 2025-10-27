@@ -8,7 +8,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -20,20 +19,18 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
     jswHorizontalPanel editpanel = null;
     jswHorizontalPanel compheader;
     jswHorizontalPanel scorespanel;
-    ranksmatrix pointsmatrix = null;
     private jswTextBox classfield;
     private jswTextBox yearfield;
     private jswTextBox countfield;
     private jswTextBox namefield;
-    private int maxsailors;
     private jswTextBox clubslist;
     private jswTextBox compfield;
     private jswTextBox dirfield;
+    private PositionList positions;
 
     public Competition_gui(Competition acurrentcomp)
     {
         super("mainpanel", true, false);
-
         currentcomp = acurrentcomp;
         applyStyle(jswStyle.getDefaultStyle());
         setBorder(jswStyle.makeLineBorder(Color.red, 4));
@@ -85,11 +82,10 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
                 Raceday raceday = currentcomp.getracedaymatrix(i);
                 racespanel.add("  ", raceday.displayscores(this, smalltable1styles(), i));
             }
-            if (pointsmatrix != null)
+            if (positions!= null)
             {
-                PositionList scoresorder = pointsmatrix.makePositionMap();
-                racespanel.add(" FILLW  ", scoresorder.displayresults());
-                racespanel.add(" FILLW ", pointsmatrix.displayresults(this, smalltable1styles(), maxsailors));
+                racespanel.add(" FILLW ", positions.displayresults());
+                racespanel.add(" FILLW ", positions.displayranks());
                 int a = 2;
             }
         }
@@ -106,7 +102,6 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         {
             mainmenubar.remove(1);
         }
-
         JMenu fmenu = new JMenu("File");
         mainmenubar.add(fmenu);
         JMenuItem fmenuItem1 = new JMenuItem("Load Competition");
@@ -121,21 +116,17 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         JMenuItem fmenuItem3 = new JMenuItem("Export All Racedays to HTML");
         fmenuItem3.addActionListener(this);
         fmenu.add(fmenuItem3);
-        if (pointsmatrix != null)
+        if (positions != null)
         {
             JMenuItem fmenuItem4 = new JMenuItem("Export Competition to HTML");
             fmenuItem4.addActionListener(this);
             fmenu.add(fmenuItem4);
-            JMenuItem fmenuItem5 = new JMenuItem("Export Positions to HTML");
+            JMenuItem fmenuItem5 = new JMenuItem("Export Ranks to HTML");
             fmenuItem5.addActionListener(this);
             fmenu.add(fmenuItem5);
             JMenuItem fmenuItem5a = new JMenuItem("Export League Table to HTML");
             fmenuItem5a.addActionListener(this);
             fmenu.add(fmenuItem5a);
-            //   JMenuItem fmenuItem6 = new JMenuItem("Export Results to HTML");
-            //  fmenuItem6.addActionListener(this);
-            //   fmenu.add(fmenuItem6);
-
         }
         JMenuItem fmenuItem7 = new JMenuItem("Create Result Sheet");
         fmenuItem7.addActionListener(this);
@@ -196,8 +187,6 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
     {
         maingui.mode = COMPETITION;
         String cmd = e.getActionCommand();
-      //  HashMap<String, String> cmdmap = jswUtils.parsecsvstring(cmd);
-     //   String cduc = cmdmap.get("command");
         String command = cmd;
 
         if (command.startsWith("editraceday:"))
@@ -294,16 +283,16 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this html file: " + selfile);
                 TreeMap<String, Sail> sailorlist = maingui.getClubSailList().makeTreeList(currentcomp.compclasslist.toString(), currentcomp.getClubString());
-                pointsmatrix.printResultsToHTML(selfile, currentcomp.getCompetitionname(), sailorlist, maxsailors);
+                positions.printResultsToHTML(selfile);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
         }
-        if (command.equalsIgnoreCase("Export Positions to HTML"))
+        if (command.equalsIgnoreCase("Export Ranks to HTML"))
         {
-            String outfile = "POINTS_RESULTS_" + currentcomp.getRaceclasses() + "_" + currentcomp.getCompyear() + ".html";
+            String outfile = "RANKS_RESULTS_" + currentcomp.getRaceclasses() + "_" + currentcomp.getCompyear() + ".html";
             //  final File directorylock = new File(Mainrace_gui.mysailinghome);
             final File directorylock = new File(compgui.currentcomp.outputdir);
             JFileChooser chooser = new JFileChooser(directorylock);
@@ -315,15 +304,13 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this html file: " + selfile);
-                PositionList map = pointsmatrix.makePositionMap();
-                PositionList map2 = map.rankMap();
                 String defclass;
                 if (currentcomp.compclasslist.size() > 1) defclass = "**";
                 else defclass = currentcomp.compclasslist.getDefaulKey();
                 String defclub;
                 if (currentcomp.compclublist.size() > 1) defclub = "**";
                 else defclub = currentcomp.compclublist.firstKey();
-                map2.printResultsToHTML(selfile, defclass, defclub);
+                positions.printRanksResultsToHTML(selfile);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
@@ -343,16 +330,14 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("You chose to save to this html file: " + selfile);
-                PositionList map = pointsmatrix.makePositionMap();
-                PositionList map2 = map.rankMap();
                 String defclass;
                 if (currentcomp.compclasslist.size() > 1) defclass = "**";
                 else defclass = currentcomp.compclasslist.getDefaulKey();
                 String defclub;
                 if (currentcomp.compclublist.size() > 1) defclub = "**";
                 else defclub = currentcomp.compclublist.firstKey();
-                //   map2.printResultsToHTML(selfile, defclass,defclub);
-                map2.printLeagueTableToHTML(selfile, defclass, defclub);
+                PositionList rankedpositions = positions.rankMap();
+                rankedpositions.printLeagueTableToHTML(selfile, defclass, defclub);
             }
             refreshcompetition_gui();
             compheader.setVisible(true);
@@ -394,8 +379,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
         {
             int maxsailors = currentcomp.noCompetitors;
             System.out.println("Max sailors :" + maxsailors);
-            pointsmatrix = new ranksmatrix(currentcomp);
-            //makeheadermenu();
+            positions = currentcomp.makePositionList();
             refreshcompetition_gui();
             compheader.setVisible(true);
             scorespanel.setVisible(true);
@@ -414,7 +398,6 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             {
                 String selfile = chooser.getSelectedFile().getPath();
                 System.out.println("*You chose to open this file: " + selfile);
-                pointsmatrix = null;
                 currentcomp = new Competition(selfile, maingui.clubSailList);
                 currentcompetitionfile = selfile;
                 maingui.currentcompetition = currentcomp;
@@ -436,7 +419,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             currentcomp.compdir = "df952025";
             currentcomp.racedayfilenames.clear();
             currentcomp.getRacedaylist().clear();
-            pointsmatrix = null;
+            //pointsmatrix = null;
             currentcomp.maxParticipants = 0;
             maingui.currentcompetition = currentcomp;
             if (mainmenubar.getMenuCount() > 2)

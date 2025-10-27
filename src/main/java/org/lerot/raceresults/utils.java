@@ -121,7 +121,6 @@ public class utils
     public static Vector<String> makePositionNames(int ncols)
     {
         Vector<String> collabels = new Vector<String>();
-        collabels.add(" ");
         collabels.add("1st");
         collabels.add("2nd");
         collabels.add("3rd");
