@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="raceresults:jar" />
+    </artifacts-to-build>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fac14f6c-00e2-4dee-9234-0233ca0e36c9" name="Changes" comment="update version">
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Boatclass.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Boatclass.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/BoatclassList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/BoatclassList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Boatclass_gui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Boatclass_gui.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition_gui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition_gui.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Mainrace_gui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Mainrace_gui.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Position.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Position.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/PositionList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/PositionList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Race.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Race.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday_gui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday_gui.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Result.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Result.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Sail.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Sail.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/SailList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/SailList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Sail_gui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Sail_gui.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/dataMatrix.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/lerot/raceresults/dataMatrix.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;paulagolder&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/paulagolder/RaceResults.git&quot;,
+    &quot;accountId&quot;: &quot;120f50ea-a2d3-45e3-af63-bc046c657753&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="33SSDR3hPJiqoF14UOjpf87acSM" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.RaceResults.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/paul/Development/GitHubWorkspace/raceresults",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.24023438",
+    "project.structure.side.proportion": "0.2",
+    "python.packages.toolwindow.project.migrated.to.right.top.v2": "true",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="org.lerot.raceresults" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-a203e0a19954-intellij.indexing.shared.core-IU-262.10968.63" />
+        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.10968.63" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fac14f6c-00e2-4dee-9234-0233ca0e36c9" name="Changes" comment="" />
+      <created>1759308863968</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1759308863968</updated>
+    </task>
+    <task id="LOCAL-00001" summary="reference widget library">
+      <option name="closed" value="true" />
+      <created>1759348329109</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1759348329109</updated>
+    </task>
+    <task id="LOCAL-00002" summary="update version">
+      <option name="closed" value="true" />
+      <created>1759394699859</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1759394699859</updated>
+    </task>
+    <task id="LOCAL-00003" summary="update version">
+      <option name="closed" value="true" />
+      <created>1761540983484</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1761540983484</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="reference widget library" />
+    <MESSAGE value="update version" />
+    <option name="LAST_COMMIT_MESSAGE" value="update version" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday_gui.java</url>
+          <line>527</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday_gui.java</url>
+          <line>545</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Sail_gui.java</url>
+          <line>196</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/dataMatrix.java</url>
+          <line>530</line>
+          <option name="timeStamp" value="26" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/dataMatrix.java</url>
+          <line>544</line>
+          <option name="timeStamp" value="27" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition.java</url>
+          <line>176</line>
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Position.java</url>
+          <line>154</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Position.java</url>
+          <line>137</line>
+          <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition_gui.java</url>
+          <line>369</line>
+          <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday.java</url>
+          <line>354</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Mainrace_gui.java</url>
+          <line>375</line>
+          <option name="timeStamp" value="38" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition_gui.java</url>
+          <line>523</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition.java</url>
+          <line>139</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition_gui.java</url>
+          <line>409</line>
+          <option name="timeStamp" value="43" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday.java</url>
+          <line>179</line>
+          <option name="timeStamp" value="44" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday.java</url>
+          <line>497</line>
+          <option name="timeStamp" value="47" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday.java</url>
+          <line>760</line>
+          <option name="timeStamp" value="49" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday.java</url>
+          <line>786</line>
+          <option name="timeStamp" value="50" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday_gui.java</url>
+          <line>340</line>
+          <option name="timeStamp" value="62" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday_gui.java</url>
+          <line>314</line>
+          <option name="timeStamp" value="63" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Race.java</url>
+          <line>98</line>
+          <option name="timeStamp" value="64" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Raceday_gui.java</url>
+          <line>336</line>
+          <option name="timeStamp" value="65" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition_gui.java</url>
+          <line>74</line>
+          <option name="timeStamp" value="66" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition_gui.java</url>
+          <line>93</line>
+          <option name="timeStamp" value="67" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/lerot/raceresults/Competition.java</url>
+          <line>528</line>
+          <option name="timeStamp" value="68" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
