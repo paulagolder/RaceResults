@@ -9,6 +9,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -208,10 +209,9 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             c++;
         }
         int maxr = raceday.getNoSailors() + 2;
-        if (maxr < 3)
+        if (maxr < 10)
         {
             maxr = 10;
-
         }
         Vector<String> rownames = utils.makeRownames(maxr);
         for (int r = 0; r < maxr; r++)
@@ -221,7 +221,7 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         c = 0;
         for (Race arace : raceday.getRacelist())
         {
-
+            Vector<String>  displayedsails = new Vector();
             for (int r = 0; r < maxr; r++)
             {
                 String avalue = "";
@@ -233,7 +233,6 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
                 } else
                 {
                     Result aresult = arace.getResult(r);
-
                     if (aresult == null)
                     {
                         alabel = new jswLabel("");
@@ -241,19 +240,25 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
                     {
                         Sail foundsail;
                         foundsail = arace.getResult(r).sail;
+                        boolean found= false;
+
                         if (foundsail == null || foundsail.getSailnumber() == null)
                         {
+
                             alabel = new jswLabel(arace.getResult(r).flag);
                             alabel.setStyleAttribute("foregroundcolor", "red");
                             alabel.applyStyle();
                         } else
                         {
-                            //  String cs = foundsail.toCypherString();
-                            //   alabel = new jswLabel(cs);
+                            displayedsails.add(foundsail.toCypherString());
                             avalue = foundsail.toCypherString();
                             if(aresult.sailor!=null)
                             {
                                 avalue += " #";
+                            }
+                            if(found)
+                            {
+                                avalue += "!!";
                             }
                             alabel = new jswLabel(avalue);
                         }
@@ -312,18 +317,18 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             {
                 if (!cd.isEmpty())
                 {
-
-                    Sail foundsail = raceday.competition.competitors.getSail(cd, raceday.boatcyphers, raceday.competition.getClubString());
+                    Sail foundsail = raceday.competition.competitors.getSail(cd, raceday.competition.getClassString(), raceday.competition.getClubString());
                     if (foundsail == null)
                     {
-                        //alabel = new jswLabel(cd);
-                        // racematrix.setCell(nc, nr, cd);
                         raceday.getRace(nc - 1).extendrace(nr + 1);
                         raceday.getRace(nc - 1).setResult(nr - 1, cd + "*");
                     } else
                     {
-
-                        //   racematrix.setCell(nc, nr, foundsail.toCypherString());
+                        Race arace = raceday.getRace(nc - 1);
+                        if(arace.hasResult(foundsail.toCypherString()))
+                        {
+                            System.out.println(" duplicatge ");
+                        }
                         raceday.getRace(nc - 1).extendrace(nr + 1);
                         raceday.getRace(nc - 1).setResult(nr - 1, foundsail);
                     }
@@ -346,14 +351,14 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
         } else if (command.equalsIgnoreCase("Add Race"))
         {
             raceday.addRace();
-             racematrix.addColumn(raceday.getRacelist().getLast().getName(),raceday.getRacelist().getLast().size());
+            racematrix.addColumn(raceday.getRacelist().getLast().getName(),raceday.getRacelist().getLast().size());
             raceresults.removeAll();
             racedayheader.removeAll();
             racedayheader.add(" FILLW  ", displayheader());
             jswPanel apanel = displayresults(table1styles());
             raceresults.add(" FILLW FILLH ", apanel);
             raceday.saved = false;
-        } else if (command.equalsIgnoreCase("removeraceday"))
+        } else if (command.equalsIgnoreCase("delete raceday"))
         {
             raceday.competition.removeRaceday(raceday.infilename);
             String compfile = compgui.currentcomp.competitionfile;
@@ -368,7 +373,6 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
             JFileChooser chooser = new JFileChooser(directorylock);
             FileNameExtensionFilter filter = new FileNameExtensionFilter("html", "html");
             chooser.setFileFilter(filter);
-
             String outfile = raceday.infilename.replace(".rxml", ".html");
             Path apath = Paths.get(outfile);
             chooser.setSelectedFile(new File(apath.getFileName().toString()));
@@ -511,7 +515,7 @@ public class Raceday_gui extends jswVerticalPanel implements ActionListener, Key
     {
         int nc = activecell.get("c");
         int nr = activecell.get("r");
-        System.out.println(" keypressed 2 =" + nc + " : " + nr + ":" + raceday.getNoSailors());
+        System.out.println(" keypressed 2 =" + nc + ":" + nr + ":" + raceday.getNoSailors());
         String cd = "" + keyEvent.getKeyChar();
         Race racematrix = raceday.racelist.get(nc-1);
         int racesize = racematrix.size();

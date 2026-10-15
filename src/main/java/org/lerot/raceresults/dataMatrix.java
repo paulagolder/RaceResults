@@ -645,5 +645,8 @@ public class dataMatrix
         return data.get(c);
     }
 
-
+    public void setColname(int i,String name)
+    {
+        colname.set(i,name);
+    }
 }

@@ -102,7 +102,7 @@ public class Mainrace_gui extends JFrame implements ActionListener
         homeclubname = props.getProperty("homeclubname");
         homeclubcypher = props.getProperty("homeclubcypher");
         clubSailList = new SailList();
-        clubSailList.readSaillistXML(dotmysailing + saillistfile);
+        clubSailList.readSaillistXML(mysailinghome + saillistfile);
         File homefile = new File(mysailinghome);
         clubSailList.loadallsailfiles("saillist.xml", homefile);
         mainmenubar = new JMenuBar();

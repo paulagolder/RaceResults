@@ -140,7 +140,14 @@ public class Sail_gui extends jswVerticalPanel implements ActionListener
         {
             String foundsail = sailoptions.getSelectedoption();
             System.out.println(sailoptions.getSelectedoption());
-            int rownumber = Integer.parseInt(command.substring(12));
+            int rownumber = 0;
+            try
+            {
+                 rownumber = Integer.parseInt(command.substring(12));
+            } catch (Exception e2)
+            {
+                System.out.println(" no rownumber");
+            }
             selectedrow= rownumber;
             int r = 0;
             for (Sail asail : saillist)

@@ -169,6 +169,13 @@ public class Raceday
         return date.replace("/", ch);
     }
 
+    public String getShortRacedate(String ch)
+    {
+        if (racedate_str == null) return "";
+        String date = utils.getDate(racedate_str, "dd/mm");
+        return date.replace("/", ch);
+    }
+
     public String getBoatclass_str_tidy()
     {
         String bc = boatclass_str.toLowerCase().replace(" ", "");
@@ -178,19 +185,29 @@ public class Raceday
     
     public boolean filenameHasChanged()
     {
-        if (infilename.equalsIgnoreCase(outfilename)) return false;
-        Path pathToAFile = Paths.get(infilename);
-        String shortinname = pathToAFile.getFileName().toString();
-        int fn = competition.racedayfilenames.indexOf(shortinname);
-        if (fn < 0)
+        if (infilename != null)
         {
-            System.out.println("not found : " + infilename);
-            return false;
-        } else
-        {
+            if (infilename.equalsIgnoreCase(outfilename)) return false;
+            Path pathToAFile = Paths.get(infilename);
+            String shortinname = pathToAFile.getFileName().toString();
+            int fn = competition.racedayfilenames.indexOf(shortinname);
+            if (fn < 0)
+            {
+                System.out.println("not found : " + infilename);
+                return false;
+            } else
+            {
+                Path pathToAFile2 = Paths.get(outfilename);
+                String shortoutname = pathToAFile2.getFileName().toString();
+                competition.racedayfilenames.set(fn, shortoutname);
+                competition.saved = false;
+                return true;
+            }
+        }
+        else {
             Path pathToAFile2 = Paths.get(outfilename);
             String shortoutname = pathToAFile2.getFileName().toString();
-            competition.racedayfilenames.set(fn, shortoutname);
+            competition.racedayfilenames.add(shortoutname);
             competition.saved = false;
             return true;
         }
@@ -212,6 +229,7 @@ public class Raceday
             try
             {
                 success = file.createNewFile();
+                this.infilename = path;
             } catch (IOException e)
             {
                 throw new RuntimeException(e);
@@ -335,7 +353,6 @@ public class Raceday
             if (filledcols > 0)
             {
                 bw.write("<tr><td>" + rownames.get(r) + "</td>");
-
                 for (Race arace : racelist)
                 {
                     ArrayList<Result> results = arace.resultlist;
@@ -347,7 +364,7 @@ public class Raceday
                         aresult = results.get(r);
                     if (aresult == null)
                     {
-                        bw.write("<td > </td>");
+                        bw.write("<td ></td>");
                     } else
                     {
                         Sail asail = aresult.sail;
@@ -361,7 +378,7 @@ public class Raceday
                                 outtext = asail.toFormattedCypherString(competition.compclublist.getDefaulKey(), "**");
                             else
                             {
-                                outtext = asail.toCypherString(competition.compclublist.getDefaulKey(), boatclasses[0]);
+                                outtext = asail.toCypherString(competition.compclublist.size()>1, boatclasses.length<1);
                             }
                             if(aresult.sailor!=null)
                             {
@@ -542,7 +559,9 @@ public class Raceday
             editheader.addStyle("foregroundcolor", "red");
             editheader.applyStyle();
         }
-        racedayheader.add(" right ", editheader);
+        racedayheader.add("  ", editheader);
+        jswButton summarybutton = new jswButton(al, "SHORT", "showshort:" + index);
+        racedayheader.add(" right ", summarybutton);
         raceresults.add("  ", racedayheader);
         dataMatrix rankmatrix = getRankMatrix(parent.currentcomp.competitors);
         //  raceresults.add("  ", racematrix.makedatapanel(parent.getRankVector(), tablestyles));
@@ -551,6 +570,95 @@ public class Raceday
         raceresults.setPadding(5, 5, 5, 5);
         raceresults.setPadding(10, 10, 10, 10);
         return raceresults;
+    }
+
+    public jswVerticalPanel displayshort(Competition_gui parent, jswStyles tablestyles, int index)
+    {
+        jswVerticalPanel raceresults = new jswVerticalPanel("RaceResults", false, false);
+        raceresults.setStyleAttribute("borderwidth", 2);
+        raceresults.setPadding(10, 1, 10, 1);
+        int ncols = GetNoRaces();
+        int nrows = getNoSailors() + 2;
+        raceresults.setStyleAttribute("horizontallayoutstyle", jswLayout.MIDDLE);
+        jswHorizontalPanel racedayheader = new jswHorizontalPanel("heading", false, false);
+        jswLabel dt = new jswLabel(getShortRacedate("/"));
+        dt.applyStyle(Mainrace_gui.defaultStyles().getStyle("mediumtext"));
+        racedayheader.add(" ", dt);
+        ActionListener al = null;
+        if (parent instanceof ActionListener)
+        {
+            al = parent;
+        }
+        jswButton summarybutton = new jswButton(al, "..", "showlong:" + index);
+        jswStyle sbStyle =new jswStyle("smallbutton");
+        sbStyle.putAttribute("backgroundColor", "#C0C0C0");
+        sbStyle.putAttribute("fontsize", "9");
+        sbStyle.putAttribute("foregroundColor", "black");
+        sbStyle.putAttribute("margin", "1");
+        summarybutton.applyStyle(sbStyle);
+       // summarybutton.setPadding(1);
+        racedayheader.add(" right ", summarybutton);
+        raceresults.add("  ", racedayheader);
+        dataMatrix summarymatrix = getSummaryMatrix(parent.currentcomp.competitors);
+        //  raceresults.add("  ", racematrix.makedatapanel(parent.getRankVector(), tablestyles));
+        raceresults.add("  ", summarymatrix.makesmalldatapanel(parent.currentcomp.competitors, tablestyles));
+        raceresults.applyStyle();
+      //  raceresults.setPadding(5, 5, 5, 5);
+        raceresults.setPadding(10, 1, 10, 1);
+        return raceresults;
+    }
+
+    private dataMatrix getSummaryMatrix(SailList sails)
+    {
+        int ncols = 2;
+        int nrows = sails.size();
+        Vector<Sail> sailsvector = sails.getSailVector();
+        dataMatrix vm = new dataMatrix(ncols, nrows);
+        vm.setRowname(sails.getVector());
+        Vector<String> collabels= new Vector<String>();
+        collabels.add("races");
+        collabels.add("points");
+        vm.setColname(collabels);
+        vm.setColtype("String", ncols);
+        vm.setSelected(true, ncols);
+        int c = 0;
+        int[] racecount =new int[nrows];
+        int[] racescore = new int[nrows];
+
+        for (Race arace : racelist)
+        {
+            Boolean included = arace.isIncompetition();
+           // vm.getSelected().set(c, included);
+            int pos = 1;
+            for (Result aresult : arace.resultlist)
+            {
+
+                if (aresult != null)
+                {
+                    if (aresult.sail != null && aresult.sail.getSailnumber() != null)
+                    {
+                        int r = sails.indexOf(aresult.sail);
+                        if (r >= 0)
+                        {
+                            String token = aresult.sail.toCypherString();
+                            if (!token.trim().isEmpty())
+                            {
+                               racecount[r]=racecount[r]+1;
+                               racescore[r]=racescore[r]+pos;
+                            }
+                        }
+                    }
+                }
+                pos++;
+            }
+            c++;
+        }
+        for(int r =0;r<nrows;r++)
+        {
+            vm.setCell(1, r + 1, String.valueOf(racecount[r]));
+            vm.setCell(2, r + 1, String.valueOf(racescore[r]));
+        }
+        return vm;
     }
 
     public dataMatrix getRankMatrix(SailList sails)

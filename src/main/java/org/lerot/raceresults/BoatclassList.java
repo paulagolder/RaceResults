@@ -118,20 +118,21 @@ public class BoatclassList extends TreeMap<String, Boatclass>
             String sname = acell.getAttribute("key");
             String fname = acell.getAttribute("fullname");
             String cypher = acell.getAttribute("cypher");
-            Boatclass newclub = new Boatclass(sname, fname, cypher);
+            String symbol = acell.getAttribute("symbol");
+            Boatclass newclub = new Boatclass(sname, fname, cypher,symbol);
             put(sname,newclub);
         }
     }
 
     public String toXML()
     {
-        StringBuilder out = new StringBuilder("<clubs>\n");
+        StringBuilder out = new StringBuilder("<class>\n");
         for (  Map.Entry<String, Boatclass> anentry : this.entrySet())
         {
             Boatclass aclub = anentry.getValue();
             out.append(aclub.toXML());
         }
-        out.append("</clubs>\n");
+        out.append("</class>\n");
         return out.toString();
     }
 
@@ -178,4 +179,15 @@ public class BoatclassList extends TreeMap<String, Boatclass>
         return this.firstEntry().getValue();
     }
 
+    public Boatclass find(String ckey)
+    {
+        for (  Map.Entry<String, Boatclass> anentry : this.entrySet())
+        {
+            Boatclass aclass = anentry.getValue();
+            if(aclass.getFullName().equalsIgnoreCase(ckey)) return aclass;
+            if(aclass.getCypher().equalsIgnoreCase(ckey)) return aclass;
+            if(aclass.getKey().equalsIgnoreCase(ckey)) return aclass;
+        }
+        return null;
+    }
 }

@@ -26,7 +26,6 @@ public class SailList extends TreeSet<Sail>
 
     }
 
-
     public Vector<String> getVector(String boatclass, String clubs)
     {
         Vector<String> sailvector = new Vector<String>();
@@ -136,7 +135,7 @@ public class SailList extends TreeSet<Sail>
         return intvector;
     }
 
-    public Sail getSail(String avalue, String[] boatclasses, String clubs)
+    public Sail getSail(String avalue, String boatclasses, String clubs)
     {
         String sailstr = avalue.trim();
         Sail asail = Sail.parse(sailstr, boatclasses, clubs);
@@ -254,12 +253,15 @@ public class SailList extends TreeSet<Sail>
             if (!asail.getClub().equalsIgnoreCase(homeclub))
             {
                 SailNumber sailnumber = asail.getSailnumber();
-                snl2.computeIfAbsent(sailnumber, k -> new HashMap<String, String>());
-                HashMap<String, String> snlmap = snl2.get(sailnumber);
-                String boatclass = asail.getBoatclass();
-                String sailorname = asail.getSailorname();
-                snlmap.put(boatclass, sailorname);
-                snl2.put(sailnumber, snlmap);
+                if(snl.get(sailnumber) == null)
+                {
+                    snl2.computeIfAbsent(sailnumber, k -> new HashMap<String, String>());
+                    HashMap<String, String> snlmap = snl2.get(sailnumber);
+                    String boatclass = asail.getBoatclass();
+                    String sailorname = asail.getSailorname();
+                    snlmap.put(boatclass, sailorname);
+                    snl2.put(sailnumber, snlmap);
+                }
             }
         }
         out += "</br></br></br>";

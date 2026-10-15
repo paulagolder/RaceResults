@@ -27,6 +27,7 @@ public class Competition
     public int noCompetitors;
     public boolean saved;
     public BoatclassList compclasslist;
+    Vector<String> viewlist;
     String competitionfile;
     Vector<String> racedayfilenames;
     SailList allSails = new SailList();
@@ -47,6 +48,7 @@ public class Competition
         racedaylist = new Vector<Raceday>();
         compclublist = new ClubList();
         compclasslist = new BoatclassList();
+        viewlist=new Vector<String>();
     }
 
     public Competition(String compfile, SailList allsailslist)
@@ -54,6 +56,7 @@ public class Competition
         competitionname = "not loaded yet";
         racedayfilenames = new Vector<String>();
         racedaylist = new Vector<Raceday>();
+        viewlist= new Vector<String>();
         competitionfile = compfile;
         compclasslist = new BoatclassList();
         compclublist = new ClubList();
@@ -136,6 +139,9 @@ public class Competition
     public void reloadracedays()
     {
         racedaylist.clear();
+        viewlist.clear();
+        String viewtag= "LONG";
+        if(racedayfilenames.size()>6) viewtag="SHORT";
         for (String filename : racedayfilenames)
         {
             try
@@ -149,6 +155,7 @@ public class Competition
                     if (rd != null)
                     {
                         racedaylist.add(raceday);
+                        viewlist.add(viewtag);
                     }
                 }
             } catch (Exception e)
@@ -165,7 +172,9 @@ public class Competition
 
     void removeRaceday(String filename)
     {
-        int nraceday = racedayfilenames.indexOf(filename);
+        Path path = Paths.get(filename);
+        Path lastSegment = path.getName(path.getNameCount() - 1);
+        int nraceday = racedayfilenames.indexOf(lastSegment);
         racedayfilenames.removeElementAt(nraceday);
         racedaylist.removeElementAt(nraceday);
         saved = false;
@@ -185,19 +194,12 @@ public class Competition
         datagrid.addCell(new jswLabel("SAILS"), 0, 0);
         int nrows = noCompetitors;
         int r = 0;
-        String defclub = "";
-        String defclass = "";
-        if (compclasslist.size() == 1)
-        {
-            defclass = compclasslist.firstKey();
-        }
-        if (compclublist.size() == 1)
-        {
-            defclub = compclublist.firstKey();
-        } else defclub = homeclub;
+        boolean cclub = compclublist.size() > 1;
+        boolean cclass = compclasslist.size()>1 ;
+
         for (Sail asail : competitors)
         {
-            datagrid.addCell(new jswLabel(asail.toCypherString(defclub, defclass)), r + 1, 0);
+            datagrid.addCell(new jswLabel(asail.toCypherString(cclub, cclass)), r + 1, 0);
             r++;
         }
         leftcolumn.add(" FILLW middle ", datagrid);
@@ -249,9 +251,11 @@ public class Competition
             {
                 Element acell = (Element) racedaysnl.item(i);
                 String cname = acell.getAttribute("filename");
-                //    cname = cname.replace(dotmysailing, "");
-                //     cname = cname.replace(mysailinghome, "");
-                racedayfilenames.add(cname);
+                if(!racedayfilenames.contains(cname))
+                {
+                    racedayfilenames.add(cname);
+                }
+
             }
         } catch (Exception e)
         {
@@ -286,18 +290,6 @@ public class Competition
         return racedaylist.get(i);
     }
 
-    public void generaterandomsailnumbers(int n)
-    {
-        Set sl = new HashSet<String>();
-        Random rn = new Random();
-        competitors.clear();
-        while (sl.size() < n + 1)
-        {
-            int j = rn.nextInt(90) + 10;
-            sl.add(utils.sailmaker(j));
-        }
-        competitors.addAll(sl);
-    }
 
     public void saveCompetitionToXML(String path)
     {
@@ -314,7 +306,11 @@ public class Competition
             bw.write("<racedays>\n");
             for (int r = 0; r < racedayfilenames.size(); r++)
             {
-                bw.write("<raceday filename=\"" + racedayfilenames.get(r) + "\" />\n");
+                File rdfile = new File(Mainrace_gui.mysailinghome +compdir + "/" +racedayfilenames.get(r));
+                if (rdfile.exists())
+                {
+                    bw.write("<raceday filename=\"" + racedayfilenames.get(r) + "\" />\n");
+                }
             }
             bw.write("</racedays>\n");
             bw.write(competitors.toXML(compclublist.toString(), compclasslist.toString()));
@@ -401,6 +397,13 @@ public class Competition
     {
         return compclublist.toString();
     }
+
+
+    public String getClassString()
+    {
+        return compclasslist.toString();
+    }
+
 
     public BoatclassList getRaceclasses()
     {
@@ -498,26 +501,27 @@ public class Competition
                     int iv;
                     for (Result aresult : arace.resultlist)
                     {
-
-                        int rank = aresult.position;
-                        String sailorname = aresult.sail.getSailorname();
-                        if (aresult.getSailor() != null)
+                        if (aresult != null)
                         {
-                            sailorname = aresult.getSailor().getName();
+                            int rank = aresult.position;
+                            String sailorname = aresult.sail.getSailorname();
+                            if (aresult.getSailor() != null)
+                            {
+                                sailorname = aresult.getSailor().getName();
+                            }
+                            if (!positions.list.containsKey(sailorname))
+                            {
+                                Position aposition = new Position(new Sailor(sailorname));
+                                aposition.setRanks(ns);
+                                positions.add(aposition);
+                            }
+                            Position aposition = positions.list.get(sailorname);
+                            Integer r = aposition.getRanks().get(rank);
+                            aposition.getRanks().set(rank, r + 1);
+                            aposition.addSail(aresult.sail.getSailnumber().ToString(4));
+                            aposition.incrementTotalraces();
+                            if (positions.maxrank < rank + 1) positions.maxrank = rank + 1;
                         }
-                        if (!positions.list.containsKey(sailorname))
-                        {
-                            Position aposition = new Position(new Sailor(sailorname));
-                            aposition.setRanks(ns);
-                            positions.add(aposition);
-                        }
-                        Position aposition = positions.list.get(sailorname);
-
-                        Integer r = aposition.getRanks().get(rank );
-                        aposition.getRanks().set(rank, r + 1);
-                        aposition.addSail(aresult.sail.getSailnumber().ToString(4));
-                        aposition.incrementTotalraces();
-                        if (positions.maxrank < rank + 1) positions.maxrank = rank + 1;
                     }
                 }
             }
@@ -525,10 +529,6 @@ public class Competition
         for (Map.Entry<String, Position> anentry : positions.list.entrySet())
         {
             Position position = anentry.getValue();
-            if(position.getSailor().getName().equalsIgnoreCase("Colin, Walton"))
-            {
-                System.out.println("woah");
-            }
             ArrayList<Integer> ranks = position.getRanks();
             int c = 0;
             int points = 0;

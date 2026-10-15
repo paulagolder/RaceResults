@@ -93,6 +93,17 @@ public class Race
         else return null;
     }
 
+    public boolean hasResult(String sailtag)
+    {
+        boolean found= false;
+        for (Result aresult : resultlist)
+        {
+
+            if (aresult != null && aresult.sail != null &&  aresult.sail.toCypherString().equalsIgnoreCase(sailtag)) return true;
+        }
+        return false;
+    }
+
     public void setResult(int nr, String cypherstring)
     {
         Result aresult = new Result(nr, cypherstring);

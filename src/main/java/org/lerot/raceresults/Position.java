@@ -8,6 +8,7 @@ public class Position
     private String sails;
     private int scoredraces;
     private int totalraces;
+    private float average_points;
     private int points;
     private int race_points;
     private int missing_race_points;
@@ -95,18 +96,38 @@ public class Position
 
             out.append("<td>").append(ranklist.get(r)).append("</td>");
         }
-        out.append("</tr>");
+        out.append("</tr>\n");
         return out.toString();
     }
 
     public String toHTML_short(String defclass, String defclub)
     {
-        StringBuilder out = new StringBuilder("<tr><td>" + this.sailor.getName() + "</td><td>" + this.sails + "</td><td>" + this.totalraces + "</td>");
+        StringBuilder out = new StringBuilder("<tr><td>" + this.sailor.getName() + "</td><td>" + this.sails + "</td><td>" + this.totalraces + "</td>\n");
         out.append("<td>").append(this.getScoredraces()).append("</td><td>").append(this.getRace_points()).append("</td></tr>");
         return out.toString();
     }
 
+    public String toHTML_short_scored(String defclass, String defclub)
+    {
+        StringBuilder out = new StringBuilder("<tr><td>" + this.sailor.getName() + "</td><td>" + this.sails + "</td><td>" + this.totalraces + "</td>");
+        out.append("<td>").append(this.getScoredraces()).append("</td><td>").append(this.getRace_points()).append("</td></tr>\n");
+        return out.toString();
+    }
 
+    public String toHTML_short_averaged(String defclass, String defclub)
+    {
+        StringBuilder out = new StringBuilder("<tr><td>" + this.sailor.getName() + "</td><td>" + this.sails + "</td><td>" + this.totalraces + "</td>");
+        out.append("<td>").append(this.getRace_points()).append("</td><td>").append(this.getAverage_points_formated()).append("</td></tr>\n");
+        return out.toString();
+    }
+
+
+    public String toHTML_short_v2(String defclass, String defclub)
+    {
+        StringBuilder out = new StringBuilder("<tr><td>" + this.sailor.getName() + "</td><td>" + this.sails + "</td><td>" + this.totalraces + "</td>");
+        out.append("<td>").append(this.getScoredraces()).append("</td><td>").append(this.getRace_points()).append("</td><td>").append(this.getAverage_points_formated()).append("</td></tr>\n");
+        return out.toString();
+    }
 
     public String getSails()
     {
@@ -144,4 +165,19 @@ public class Position
     {
         this.totalraces++;
     }
+
+    public float getAverage_points()
+    {
+        return (float) race_points /scoredraces;
+    }
+
+    public String getAverage_points_formated()
+    {
+        float av = (float) race_points / scoredraces;
+        String roundedValue = String.format("%.2f", av);
+        return roundedValue;
+    }
+
+
+
 }

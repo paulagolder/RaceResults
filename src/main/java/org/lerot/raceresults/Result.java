@@ -28,7 +28,7 @@ public class Result
 
     public Result(int aposition, String cypherstring)
     {
-        String[] defclasses = {"95"};
+        String defclasses = "95";
         Sail asail = Sail.parse(cypherstring, defclasses, "R");
         position = aposition;
         if (asail != null)

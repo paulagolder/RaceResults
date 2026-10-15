@@ -80,7 +80,14 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             for (int i = 0; i < currentcomp.getRacedaylist().size(); i++)
             {
                 Raceday raceday = currentcomp.getracedaymatrix(i);
-                racespanel.add("  ", raceday.displayscores(this, smalltable1styles(), i));
+                if (currentcomp.viewlist.size() > i && currentcomp.viewlist.get(i).equalsIgnoreCase("SHORT"))
+                {
+                    racespanel.add("  ", raceday.displayshort(this, smalltable1styles(), i));
+
+                }
+                else
+                    racespanel.add("  ", raceday.displayscores(this, smalltable1styles(), i));
+             
             }
             if (positions!= null)
             {
@@ -195,6 +202,30 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             String seq = command.replace("editraceday:", "");
             int intseq = Integer.parseInt(seq);
             maingui.currentraceday = intseq;
+            maingui.refreshGui();
+        }
+        if (command.startsWith("showshort:"))
+        {
+            String seq = command.replace("showshort:", "");
+            int intseq = Integer.parseInt(seq);
+            currentcomp.viewlist.set(intseq,"short");
+            refreshcompetition_gui();
+            compheader.setVisible(true);
+            scorespanel.setVisible(true);
+            editpanel.setVisible(false);
+
+            maingui.refreshGui();
+        }
+        if (command.startsWith("showlong:"))
+        {
+            String seq = command.replace("showlong:", "");
+            int intseq = Integer.parseInt(seq);
+            currentcomp.viewlist.set(intseq,"long");
+            refreshcompetition_gui();
+            compheader.setVisible(true);
+            scorespanel.setVisible(true);
+            editpanel.setVisible(false);
+
             maingui.refreshGui();
         }
         if (command.startsWith("Edit Competition"))
@@ -317,6 +348,34 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
         }
+        if (command.equalsIgnoreCase("xExport League Table to HTML"))
+        {
+            String outfile = "LEAGUE_TABLE_" + currentcomp.getRaceclasses() + "_" + currentcomp.getCompyear() + ".html";
+            final File directorylock = new File(compgui.currentcomp.outputdir);
+            JFileChooser chooser = new JFileChooser(directorylock);
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("html", "html");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(new File(outfile));
+            int returnVal = chooser.showSaveDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION)
+            {
+                String selfile = chooser.getSelectedFile().getPath();
+                System.out.println("You chose to save to this League table to HTML file: " + selfile);
+                String defclass;
+                if (currentcomp.compclasslist.size() > 1) defclass = "**";
+                else defclass = currentcomp.compclasslist.getDefaulKey();
+                String defclub;
+                if (currentcomp.compclublist.size() > 1) defclub = "**";
+                else defclub = currentcomp.compclublist.firstKey();
+            //    PositionList rankedpositions = positions.rankMap();
+                PositionList rankedpositions = positions.averageMap();
+                rankedpositions.printLeagueTableToHTML(selfile, defclass, defclub);
+            }
+            refreshcompetition_gui();
+            compheader.setVisible(true);
+            scorespanel.setVisible(true);
+            editpanel.setVisible(false);
+        }
         if (command.equalsIgnoreCase("Export League Table to HTML"))
         {
             String outfile = "LEAGUE_TABLE_" + currentcomp.getRaceclasses() + "_" + currentcomp.getCompyear() + ".html";
@@ -329,14 +388,15 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
                 String selfile = chooser.getSelectedFile().getPath();
-                System.out.println("You chose to save to this html file: " + selfile);
+                System.out.println("You chose to save to this League table to HTML file: " + selfile);
                 String defclass;
                 if (currentcomp.compclasslist.size() > 1) defclass = "**";
                 else defclass = currentcomp.compclasslist.getDefaulKey();
                 String defclub;
                 if (currentcomp.compclublist.size() > 1) defclub = "**";
                 else defclub = currentcomp.compclublist.firstKey();
-                PositionList rankedpositions = positions.rankMap();
+                //    PositionList rankedpositions = positions.rankMap();
+                PositionList rankedpositions = positions.averageMap();
                 rankedpositions.printLeagueTableToHTML(selfile, defclass, defclub);
             }
             refreshcompetition_gui();
@@ -344,6 +404,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             scorespanel.setVisible(true);
             editpanel.setVisible(false);
         }
+
         if (command.equalsIgnoreCase("Save Competition"))
         {
             String selfile = currentcomp.competitionfile;
@@ -460,7 +521,7 @@ public class Competition_gui extends jswVerticalPanel implements ActionListener
             editpanel.setVisible(false);
         } else if (command.equalsIgnoreCase("Add New Raceday"))
         {
-            int nc = 4;
+            int nc = 6;
             int nr = currentcomp.competitors.size();
             if(nr==0) nr=10;
             String boatclass = currentcomp.compclasslist.toString();

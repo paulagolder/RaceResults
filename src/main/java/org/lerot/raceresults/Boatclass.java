@@ -6,12 +6,14 @@ public class Boatclass
     private String key;
     private String fullName;
     private String cypher;
+    private String symbol;
 
-    public Boatclass(String akey, String alongname, String acypher)
+    public Boatclass(String akey, String alongname, String acypher, String asymbol)
     {
         setKey(akey);
         setFullName(alongname);
         setCypher(acypher);
+        setSymbol(asymbol);
     }
 
     public String toString()
@@ -71,5 +73,13 @@ public class Boatclass
         return "<boatclass  key=\"" + this.key + "\" fullname=\"" + this.fullName + "\" cypher=\"" + this.cypher + "\" /> \n";
     }
 
+    public String getSymbol()
+    {
+        return symbol;
+    }
 
+    public void setSymbol(String symbol)
+    {
+        this.symbol = symbol;
+    }
 }

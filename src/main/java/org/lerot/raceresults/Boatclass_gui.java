@@ -23,6 +23,7 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
     private jswTextBox keyfield;
     private jswTextBox fullnamefield;
     private jswTextBox cypherfield;
+    private jswTextBox symbolfield;
 
     public Boatclass_gui(BoatclassList cl)
     {
@@ -110,12 +111,12 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
         }
         if (command.startsWith("newclass"))
         {
-            Boatclass aclub = new Boatclass("NC", "newclass", "x");
+            Boatclass aclub = new Boatclass("NC", "newclass", "x",  "x");
             classlist.put((aclub.getKey()), aclub);
         }
         if (command.startsWith("saveclass"))
         {
-            Boatclass aclub = new Boatclass(keyfield.getText(), fullnamefield.getText(), cypherfield.getText());
+            Boatclass aclub = new Boatclass(keyfield.getText(), fullnamefield.getText(), cypherfield.getText(), symbolfield.getText());
             classlist.put(aclub.getKey(), aclub);
         }
         if (command.startsWith("deleteclass"))
@@ -178,6 +179,13 @@ public class Boatclass_gui extends jswVerticalPanel implements ActionListener
         row3.add(" ", label3);
         row3.add(" ", cypherfield);
         form.add(" ", row3);
+        jswHorizontalPanel row4 = new jswHorizontalPanel("row4", false, false);
+        jswLabel label4 = new jswLabel("Symbol");
+        symbolfield = new jswTextBox(al, aclass.getSymbol(), 200, "classform");
+        symbolfield.setText(aclass.getSymbol());
+        row4.add(" ", label4);
+        row4.add(" ", symbolfield);
+        form.add(" ", row4);
         return form;
     }
 }

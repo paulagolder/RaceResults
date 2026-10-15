@@ -67,8 +67,9 @@ public class PositionList
         datagrid.addCell(new jswLabel("Races"), 0, 2);
         datagrid.addCell(new jswLabel("<html>Scored<br/>Races</html>"), 0, 3);
         datagrid.addCell(new jswLabel("Points"), 0, 4);
-        datagrid.addCell(new jswLabel("<html>Race<br/>Points</html>"), 0, 5);
-        datagrid.addCell(new jswLabel("<html>Missing Race<br/>Points</html>"), 0, 6);
+        datagrid.addCell(new jswLabel("<html>Average<br/>Score</html>"), 0, 5);
+        datagrid.addCell(new jswLabel("<html>Race<br/>Points</html>"), 0, 6);
+        datagrid.addCell(new jswLabel("<html>Missing Race<br/>Points</html>"), 0, 7);
         int r = 0;
         for (Map.Entry<String, Position> anentry : list.entrySet())
         {
@@ -78,8 +79,9 @@ public class PositionList
             datagrid.addCell(new jswLabel(aposition.getTotalraces()), r + 1, 2);
             datagrid.addCell(new jswLabel(aposition.getScoredraces()), r + 1, 3);
             datagrid.addCell(new jswLabel(aposition.getPoints()), r + 1, 4);
-            datagrid.addCell(new jswLabel(aposition.getRace_points()), r + 1, 5);
-            datagrid.addCell(new jswLabel(aposition.getMissing_race_points()), r + 1, 6);
+            datagrid.addCell(new jswLabel(String.format("%.2f", aposition.getAverage_points())), r + 1, 5);
+            datagrid.addCell(new jswLabel(aposition.getRace_points()), r + 1, 6);
+            datagrid.addCell(new jswLabel(aposition.getMissing_race_points()), r + 1, 7);
             r++;
         }
         return datagrid;
@@ -104,7 +106,7 @@ public class PositionList
             bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
             if (currentcomp.getTargetracecount() > 0)
             {
-                bw.write("<tr><td>Sail</td><td>sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Points</td><td>Race</br>Points</td><td>Missing race<br>points</td></tr>");
+                bw.write("<tr><td>Sail</td><td>sailor</td><td>Total<br/>Races</td><td>Scored<br/>#Races</td><td>Points</td><td>Race</br>Points</td><td>Missing race<br>points</td></tr>");
                 for (Map.Entry<String, Position> entry : list.entrySet())
                 {
                     Position posn = entry.getValue();
@@ -127,6 +129,47 @@ public class PositionList
         }
     }
 
+    public void printLeagueTableToHTML_v(String path, String defclass, String defclub)
+    {
+        try
+        {
+            File file = new File(path);
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(" <!DOCTYPE html>\n<html>\n");
+            bw.write("<head>\n<style>\n");
+            bw.write(" td { text-align: center; }\n");
+            bw.write(" table, th, td { border: 1px solid; }\n");
+            bw.write("</style>\n</head>\n<body>\n");
+            bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
+            if (currentcomp.getTargetracecount() > 0)
+            {
+                bw.write("<colgroup>\n<col class='col1'/>\n<col class='col2'/>\n<col class='col2'/>\n<col class='col2'/>\n<col class='col2'/>\n<col class='col3'/>\n</colgroup>\n");
+                bw.write("<tr><th>Sailor</th><th>Sail</th><th>Total<br/>Races</th><th>Scored<br/>Races</th><th>Points</th><th>Average<br/>Points</th></tr>\n");
+                for (Map.Entry<String, Position> entry : list.entrySet())
+                {
+                    Position posn = entry.getValue();
+                  //  if (posn.getScoredraces() >= currentcomp.getTargetracecount())
+                    {
+                         bw.write(posn.toHTML_short_v2(defclass, defclub));
+                    }
+                }
+            } else
+            {
+                bw.write("<tr><td>No no of races target</td></tr>\n");
+            }
+            bw.write("\n</table>\n</body>\n</html>\n");
+            bw.close();
+        } catch (Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+
     public void printLeagueTableToHTML(String path, String defclass, String defclub)
     {
         try
@@ -139,25 +182,56 @@ public class PositionList
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(" <!DOCTYPE html>\n<html>\n");
-            bw.write("<head>\n<style>");
+            bw.write("<head>\n<style>\n");
             bw.write(" td { text-align: center; }\n");
             bw.write(" table, th, td { border: 1px solid; }\n");
             bw.write("</style>\n</head>\n<body>\n");
-            bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
-            if (currentcomp.getTargetracecount() > 0)
+            int scored = 0;
+            int averaged = 0;
+            for (Map.Entry<String, Position> entry : list.entrySet())
             {
-                bw.write("<tr><td>Sail</td><td>Sailor</td><td>Total<br/>Races</td><td>Scored<br/>Races</td><td>Points</td></tr>");
+                Position posn = entry.getValue();
+                if (posn.getScoredraces() >= currentcomp.getTargetracecount())
+                {
+                    scored++;
+                } else averaged++;
+            }
+            if (scored > 0)
+            {
+                bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
+                if (currentcomp.getTargetracecount() > 0)
+                {
+                    bw.write("<colgroup>\n<col class='col1'/>\n<col class='col2'/>\n<col class='col2'/>\n<col class='col2'/>\n<col class='col2'/>\n<col class='col3'/>\n</colgroup>\n");
+                    bw.write("<tr><th>Sailor</th><th>Sail</th><th>Total<br/>Races</th><th>Scored<br/>Races</th><th>Points</th></tr>\n");
+                    for (Map.Entry<String, Position> entry : list.entrySet())
+                    {
+                        Position posn = entry.getValue();
+                        if (posn.getScoredraces() >= currentcomp.getTargetracecount())
+                        {
+                            bw.write(posn.toHTML_short_scored(defclass, defclub));
+                        }
+                    }
+                } else
+                {
+                    bw.write("<tr><td>No no of races target</td></tr>\n");
+                }
+                bw.write("\n</table>\n</body>\n</html>\n");
+                bw.write("<p><br><br></p>");
+            }
+            if (averaged > 0)
+            {
+
+                bw.write("<table id=\"" + getCssid() + "\" class=\"" + getCssclass() + "\">\n");
+                bw.write("<colgroup>\n<col class='col1'/>\n<col class='col2'/>\n<col class='col2'/>\n<col class='col2'/>\n<col class='col2'/>\n<col class='col3'/>\n</colgroup>\n");
+                bw.write("<tr><th>Sailor</th><th>Sail</th><th>Total<br/>Races</th><th>Points</th><th>Average<br/>Points</th></tr>\n");
                 for (Map.Entry<String, Position> entry : list.entrySet())
                 {
                     Position posn = entry.getValue();
-                    if (posn.getScoredraces() >= currentcomp.getTargetracecount())
+                    if (posn.getScoredraces() < currentcomp.getTargetracecount())
                     {
-                         bw.write(posn.toHTML_short(defclass, defclub));
+                        bw.write(posn.toHTML_short_averaged(defclass, defclub));
                     }
                 }
-            } else
-            {
-                bw.write("<tr><td>No no of races target</td></tr>");
             }
             bw.write("\n</table>\n</body>\n</html>\n");
             bw.close();
@@ -165,7 +239,9 @@ public class PositionList
         {
             System.out.println(e);
         }
+
     }
+
 
     public String getCssid()
     {
@@ -195,6 +271,26 @@ public class PositionList
         {
             Position posn = entry.getValue();
             rmap.put(posn.getRace_points() * 1000 + n, entry.getKey());
+            n++;
+        }
+        PositionList rposmap = new PositionList(currentcomp);
+        for (Map.Entry<Integer, String> entry : rmap.entrySet())
+        {
+            String key = entry.getValue();
+            Position apos = list.get(key);
+            rposmap.add(apos);
+        }
+        return rposmap;
+    }
+
+    public PositionList averageMap()
+    {
+        TreeMap<Integer, String> rmap = new TreeMap<Integer, String>();
+        int n = 1;
+        for (Map.Entry<String, Position> entry : list.entrySet())
+        {
+            Position posn = entry.getValue();
+            rmap.put((int) (posn.getAverage_points() * 1000 + n), entry.getKey());
             n++;
         }
         PositionList rposmap = new PositionList(currentcomp);
